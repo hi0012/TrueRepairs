@@ -13,7 +13,8 @@ Using AI detection, APIs, and user inputs (VIN/year/make/model), the platform br
 
 ## Tech Stack
 - Frontend: React
-- Backend: Monogodb
+- Backend: Node.js/Express.js
+- Database: Monogodb
 - APIs: CarMD & Vehicle Databases
 - AI: Pre-trained damage detection models (planned)
 
