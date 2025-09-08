@@ -1,12 +1,28 @@
-# React + Vite
+# TrueRepairs
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Overview
+TrueRepairs helps car owners estimate repair costs with transparency.  
+Using AI detection, APIs, and user inputs (VIN/year/make/model), the platform breaks down labor vs. parts costs and provides sourcing options.  
 
-Currently, two official plugins are available:
+## Features
+- Upload damage photos for AI analysis (planned)  
+- Enter VIN or car details for repair estimates  
+- Breaks down costs: labor vs. parts  
+- Suggests DIY vs. professional repair options  
+- Sources parts via APIs
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Tech Stack
+- Frontend: React
+- Backend: Node.js/Express.js
+- Database: Monogodb
+- APIs: CarMD & Vehicle Databases
+- AI: Pre-trained damage detection models (planned)
 
-## Expanding the ESLint configuration
+## Usage
+- Create an account and log in  
+- Enter your vehicle’s VIN/year/make/model  
+- Get a repair cost breakdown and sourcing suggestions  
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Roadmap
+- [ ] Multi-language support  
+
