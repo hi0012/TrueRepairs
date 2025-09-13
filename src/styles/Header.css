@@ -1,0 +1,103 @@
+
+
+.header{
+    height: auto;
+    margin: 30px auto;
+    aspect-ratio: 16 / 9;
+    background: url('../assets/Header-image.png');
+    position: relative;
+    overflow: hidden;
+    border-radius: 12px;
+    background-size: 100% auto;
+}
+
+.header-info{
+    display: flex;
+    justify-content: space-between;
+    position: absolute;
+    align-items: center;
+    gap: 128px;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    padding: 2vw;
+    box-sizing: border-box;
+    
+}
+
+.header-left{
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    transform:  translateX(-100%);
+    animation: slideInLeft 1s forwards;
+}
+
+.header-left button {
+    border: none;
+    color: #0068d2;
+    white-space: nowrap;
+    font-weight: 500;
+    
+    padding: 13px 32px;
+    background-color: white;
+    font-size: clamp(13px, 1vw, 20px);
+    border-radius: 50px;
+    cursor: pointer;
+    border: 1px solid #0068d2;
+    transition: all 0.3s;
+}
+.header-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;      
+    justify-content: center;
+    text-align: right;
+    display: block;
+    transform: translateX(100%);
+    animation: slideInRight 1s forwards;
+}
+
+@keyframes slideInLeft {
+    to { transform: translateX(0); }
+}
+
+@keyframes slideInRight {
+    to { transform: translateX(0); }
+}
+
+
+.header-right span {
+    background: linear-gradient(to right, rgb(0, 0, 0), white); 
+    -webkit-background-clip: text;  
+    background-clip: text;          
+    color: transparent; 
+}
+
+
+.header-right h2 {
+    font-weight: 500;
+    color: black;
+    font-size: clamp(22px, 4.5vw, 48px);
+}
+
+.header-right p {
+    color: whitesmoke;
+    font-size: clamp(12px, 1vw, 20px);
+    line-height: 1.6;
+    letter-spacing: 0.5px;
+    margin-top: 0.5rem;
+}
+
+.header-left button:hover {
+    background-color: #0068d2;
+    color: white;
+    border: 1px solid white;
+}
+
+@media (max-width: 768px) {
+    .header-right p {
+        display: none;
+    }
+}
