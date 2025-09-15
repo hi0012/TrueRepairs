@@ -23,12 +23,27 @@
     position: relative;
 }
 
+.form-name{
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+}
+
+.register-form h3 {
+    text-align: center;
+}
+
 .register-form input {
     padding: 10px 15px;
     border-radius: 10px;
     width: 100%;
     border: 1px solid #0068d2;
     margin-bottom: 15px;
+}
+
+.form-btns{
+    display: flex;
+    justify-content: space-between;
 }
 
 .register-form button[type="submit"] {
@@ -48,16 +63,14 @@
 }
 
 .close-btn {
-  position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
-  background: white;
+  background-color: white;
   font-size: 15px;
   color: red;
   cursor: pointer;
   border-radius: 50px;
   border: 1px solid red;
   padding: 10px 30px;
+  
 }
 
 .close-btn:hover{
@@ -65,3 +78,4 @@
     background-color: red;
     border: 1px solid white;
 }
+

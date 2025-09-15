@@ -5,16 +5,20 @@ const RegisterPopup = ({open, onClose}) => {
   return open && (
     <div onClick={onClose} className='register'>
         <div onClick={e => e.stopPropagation()} className='register-form'> 
-            <h3>Create Account</h3>
+            <h3>Create an Account</h3>
             <form>
-                <input type="text" placeholder='FirstName' required/>
-                <input type="text" placeholder='LastName' required />
-                <input type="email"  placeholder='Email' required/>
+              <div className='form-name'>
+                <input type="text" placeholder='First Name' required/>
+                <input type="text" placeholder='Last Name' required />
+              </div>
+                <input type="email"  placeholder='Email Address' required/>
                 <input type="password"  placeholder='Password' required/>
-                <input type="password"  placeholder='Password' required/>
-                <button type='submit'>Submit</button>
+                <input type="password"  placeholder='Confirm Password' required/>
+                <div className='form-btns'>
+                  <button type='submit'>Create Account</button>
+                  <button type='close' className='close-btn' onClick={onClose}>Close</button>
+                </div>
             </form>
-            <button className='close-btn' onClick={onClose}>Close</button>
         </div>
     </div>
   )
