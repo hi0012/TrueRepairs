@@ -1,10 +1,10 @@
 import React, { useState } from 'react'
 import '../styles/Navbar.css'
 import logo from '../assets/TrueRepairs.png'
+import SigninPopup from './SigninPopup'
+
 const Navbar = ({setSignInActive}) => {
-
-    
-
+  const [signinOpen, setSigninOpen] = useState(false)
   return (
     <div className='navbar'>
         <img className='nav-logo' src={logo} alt="" />
@@ -16,6 +16,7 @@ const Navbar = ({setSignInActive}) => {
         <div className='nav-right'>
             <button onClick={()=>setSignInActive(true)}>Sign In</button>
         </div>
+        <SigninPopup open={signinOpen} onClose={() => setSigninOpen(false)} />
     </div>
   )
 }

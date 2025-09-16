@@ -11,11 +11,11 @@ const App = () => {
   const [signInActive, setSignInActive] = useState(false);
   return (
     <div>
-      {signInActive?<SigninPopup/>:<></>}
+      <SigninPopup open={signInActive} onClose={() => setSignInActive(false)} />
       <div className='site'>
         <Navbar setSignInActive={setSignInActive}/>
         <Routes>
-          <Route path='/' element={<Home />} />
+          <Route path='/' element={<Home />} />t
         </Routes>
       </div>
       <Footer/>
