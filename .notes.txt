@@ -1,5 +1,4 @@
-merge
-db security
+
 
 start db when running app
 keep user profile after they login

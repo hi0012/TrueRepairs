@@ -15,7 +15,7 @@ const App = () => {
       <div className='site'>
         <Navbar setSignInActive={setSignInActive}/>
         <Routes>
-          <Route path='/' element={<Home />} />
+          <Route path='/' element={<Home />} />t
         </Routes>
       </div>
       <Footer/>
