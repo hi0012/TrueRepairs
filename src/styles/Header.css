@@ -57,6 +57,7 @@
     display: block;
     transform: translateX(100%);
     animation: slideInRight 1s forwards;
+    width: 65%;
 }
 
 @keyframes slideInLeft {
@@ -77,9 +78,10 @@
 
 
 .header-right h2 {
+    text-align: center;
     font-weight: 500;
     color: black;
-    font-size: clamp(22px, 4.5vw, 48px);
+    font-size: clamp(24px, 4.5vw, 70px);
 }
 
 .header-right p {
@@ -101,3 +103,4 @@
         display: none;
     }
 }
+
