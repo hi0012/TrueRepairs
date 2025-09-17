@@ -23,14 +23,19 @@ const RegisterPopup = ({open, onClose}) => {
     <div onClick={onClose} className='register'>
         <div onClick={e => e.stopPropagation()} className='register-form'> 
 
-            <h3>Create Account</h3>
+            <h3>Create an Account</h3>
             <form onSubmit={handleSubmit}>
-                <input type="text" placeholder='FirstName' required onChange={(e) => setFirstName(e.target.value)}/>
-                <input type="text" placeholder='LastName' required onChange={(e) => setLastName(e.target.value)}/>
-                <input type="email"  placeholder='Email' required onChange={(e) => setEmail(e.target.value)}/>
+                <div className='form-names'>
+                  <input type="text" placeholder='First Name' required onChange={(e) => setFirstName(e.target.value)}/>
+                <input type="text" placeholder='Last Name' required onChange={(e) => setLastName(e.target.value)}/>
+                </div>
+                <input type="email"  placeholder='Email Address' required onChange={(e) => setEmail(e.target.value)}/>
                 <input type="password"  placeholder='Password' required onChange={(e) => setPassword(e.target.value)}/>
-                <input type="password"  placeholder='Password' required onChange={(e) => setPasswordConfirm(e.target.value)}/>
-                <button type='submit'>Submit</button>
+                <input type="password"  placeholder='Confirm Password' required onChange={(e) => setPasswordConfirm(e.target.value)}/>
+                <div className='forms-btns'>
+                  <button type='submit'>Create Account</button>
+                  <button type='close' onClick={onClose}>Close</button>
+                </div>
             </form>
         </div>
     </div>

@@ -23,14 +23,16 @@
     position: relative;
 }
 
-.form-name{
-    display: flex;
-    justify-content: space-between;
-    gap: 15px;
-}
+
 
 .register-form h3 {
     text-align: center;
+}
+
+.form-names{
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
 }
 
 .register-form input {
@@ -41,7 +43,7 @@
     margin-bottom: 15px;
 }
 
-.form-btns{
+.forms-btns {
     display: flex;
     justify-content: space-between;
 }
@@ -59,6 +61,22 @@
 .register-form button[type="submit"]:hover {
     color: white;
     background-color: #0068d2;
+    border: 1px solid white;
+}
+
+.register-form button[type="close"] {
+    border-radius: 50px;
+    background-color: white;
+    color: red;
+    align-items: center;
+    cursor: pointer;
+    border: 1px solid red;
+    padding: 10px 30px;
+}
+
+.register-form button[type="close"]:hover {
+    color: white;
+    background-color: red;
     border: 1px solid white;
 }
 
