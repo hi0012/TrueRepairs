@@ -23,9 +23,11 @@ const SigninPopup = ({open, onClose}) => {
             <form onSubmit={handleSubmit}>
                 <input type="email"  placeholder='Email' required onChange={(e) => setEmail(e.target.value)}/>
                 <input type="password"  placeholder='Password' required onChange={(e) => setPassword(e.target.value)}/>
-                <button type='submit'>Login</button>
+                <div className='forms-btns'>
+                  <button type='submit'>Login</button>
+                  <button type='close' className='close-btn' onClick={onClose}>Close</button>
+                </div>
             </form>
-            <button className='close-btn' onClick={onClose}>Close</button>
         </div>
     </div>
   )
