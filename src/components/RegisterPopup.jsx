@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import '../styles/RegisterPopup.css'
 import { useState } from 'react';
 import { Link } from "react-router-dom";
@@ -9,7 +9,7 @@ const RegisterPopup = ({open, onClose}) => {
   const [firstName, setFirstName] = useState()
   const [lastName, setLastName] = useState()
   const [email, setEmail] = useState()
-  const [password, setPassword] = useState()
+  const [password, setPassword] = useState('')
   const [passwordConfirm, setPasswordConfirm] = useState()
 
   const handleSubmit = (e) => {
@@ -18,6 +18,23 @@ const RegisterPopup = ({open, onClose}) => {
       .then(result => console.log(result))
       .catch(err=> console.log(err))
   }
+
+  useEffect(()=> {
+    if(!open) {
+      setPassword('');
+    }
+  }, [open]);
+
+  const passwordReq = {
+    length: password.length >= 8,
+    specialChar: /[0-9!@#$%^&*().]/.test(password),
+    lowCase: /[a-z]/.test(password),
+    highCase: /[A-Z]/.test(password),
+  };
+
+  const passwordReqChecker = passwordReq.length && passwordReq.lowCase && passwordReq.specialChar && passwordReq.highCase;
+
+  const passwordWarning = password.length > 0 && !passwordReqChecker;
 
   return open && (
     <div onClick={onClose} className='register'>
@@ -32,8 +49,16 @@ const RegisterPopup = ({open, onClose}) => {
                 <input type="email"  placeholder='Email Address' required onChange={(e) => setEmail(e.target.value)}/>
                 <input type="password"  placeholder='Password' required onChange={(e) => setPassword(e.target.value)}/>
                 <input type="password"  placeholder='Confirm Password' required onChange={(e) => setPasswordConfirm(e.target.value)}/>
+                {passwordWarning && (
+                  <ul className='password-validator'>
+                  {!passwordReq.length && <li>Must be at least 8 characters long</li>}
+                  {!passwordReq.lowCase && <li>Must have at least one lowercase letter</li>}
+                  {!passwordReq.highCase && <li>Must have at least one uppercase letter</li>}
+                  {!passwordReq.specialChar && <li>Must have at least one special character</li>}
+                </ul>
+                )}
                 <div className='forms-btns'>
-                  <button type='submit'>Create Account</button>
+                  <button type='submit' disabled={!passwordReqChecker}>Create Account</button>
                   <button type='close' onClick={onClose}>Close</button>
                 </div>
             </form>

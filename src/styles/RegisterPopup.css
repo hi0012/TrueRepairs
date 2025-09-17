@@ -97,3 +97,12 @@
     border: 1px solid white;
 }
 
+.password-validator li {
+    color: #0068d2;
+    list-style: none;
+    margin-bottom: 3px;
+}
+
+.password-validator {
+    margin-bottom: 10px;
+}
