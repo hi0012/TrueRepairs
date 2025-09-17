@@ -23,12 +23,29 @@
     position: relative;
 }
 
+
+
+.register-form h3 {
+    text-align: center;
+}
+
+.form-names{
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+}
+
 .register-form input {
     padding: 10px 15px;
     border-radius: 10px;
     width: 100%;
     border: 1px solid #0068d2;
     margin-bottom: 15px;
+}
+
+.forms-btns {
+    display: flex;
+    justify-content: space-between;
 }
 
 .register-form button[type="submit"] {
@@ -47,17 +64,31 @@
     border: 1px solid white;
 }
 
+.register-form button[type="close"] {
+    border-radius: 50px;
+    background-color: white;
+    color: red;
+    align-items: center;
+    cursor: pointer;
+    border: 1px solid red;
+    padding: 10px 30px;
+}
+
+.register-form button[type="close"]:hover {
+    color: white;
+    background-color: red;
+    border: 1px solid white;
+}
+
 .close-btn {
-  position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
-  background: white;
+  background-color: white;
   font-size: 15px;
   color: red;
   cursor: pointer;
   border-radius: 50px;
   border: 1px solid red;
   padding: 10px 30px;
+  
 }
 
 .close-btn:hover{
@@ -65,3 +96,4 @@
     background-color: red;
     border: 1px solid white;
 }
+
