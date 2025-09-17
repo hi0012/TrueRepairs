@@ -50,20 +50,23 @@
 }
 
 .close-btn {
-  position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
-  background: white;
-  font-size: 15px;
+  background-color: white;
+  font-size: 13.5px !important; 
   color: red;
   cursor: pointer;
   border-radius: 50px;
   border: 1px solid red;
   padding: 10px 30px;
+  
 }
 
 .close-btn:hover{
     color: white;
     background-color: red;
     border: 1px solid white;
+}
+
+.forms-btns {
+    display: flex;
+    justify-content: space-between;
 }
