@@ -33,11 +33,35 @@ app.post("/login", (req, res) => {
     })
 })
 
-app.post('/register', (req, res) => {
-    UserModel.create(req.body)
-    .then(users => res.json(users))
-    .catch(err => res.json(err))
+app.post('/register', async (req, res) => {
+    try {
+        const { email } = req.body
+
+        // check if email already exists
+        const existingUser = await UserModel.findOne({ email })
+        if (existingUser) {
+            return res.json({
+                success: false,
+                message: "This email is already associated with an account."
+            })
+        }
+
+        // create new user if not found
+        const newUser = await UserModel.create(req.body);
+        res.json({
+            success: true,
+            user: newUser
+        })
+
+    } catch (err) {
+        console.error(err)
+        res.status(500).json({
+            success: false,
+            message: "Server error"
+        })
+    }
 })
+
 
 app.listen(3000, ()=> {
     console.log("App is running");

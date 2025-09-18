@@ -9,7 +9,7 @@
 
 .footer-container{
     width: 80%;
-  margin: auto;
+    margin: auto;
     color: #ccc;
 }
 .footer-top {
@@ -32,19 +32,6 @@
 
 .list li:hover {
     color: #0068d2;
-}
-.social{
-    display: flex;
-    gap: 1rem;
-}
-.social img {
-    width: 24px;
-    height: 24px;
-    transition: transform 0.2s;
-}
-
-.social img:hover{
-    transform: scale(1.1);
 }
 .footer-bottom{
     margin-top: 1rem;
