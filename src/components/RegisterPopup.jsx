@@ -3,6 +3,7 @@ import '../styles/RegisterPopup.css'
 import { useState } from 'react';
 import { Link } from "react-router-dom";
 import axios from 'axios'
+import { RiErrorWarningLine } from 'react-icons/ri';
 
 const RegisterPopup = ({open, onClose}) => {
 
@@ -10,7 +11,7 @@ const RegisterPopup = ({open, onClose}) => {
   const [lastName, setLastName] = useState()
   const [email, setEmail] = useState()
   const [password, setPassword] = useState('')
-  const [passwordConfirm, setPasswordConfirm] = useState()
+  const [passwordConfirm, setPasswordConfirm] = useState('')
 
   const handleSubmit = (e) => {
       e.preventDefault()
@@ -22,6 +23,7 @@ const RegisterPopup = ({open, onClose}) => {
   useEffect(()=> {
     if(!open) {
       setPassword('');
+      setPasswordConfirm('');
     }
   }, [open]);
 
@@ -35,6 +37,8 @@ const RegisterPopup = ({open, onClose}) => {
   const passwordReqChecker = passwordReq.length && passwordReq.lowCase && passwordReq.specialChar && passwordReq.highCase;
 
   const passwordWarning = password.length > 0 && !passwordReqChecker;
+
+  const passwordEqual = password === passwordConfirm;
 
   return open && (
     <div onClick={onClose} className='register'>
@@ -51,14 +55,17 @@ const RegisterPopup = ({open, onClose}) => {
                 <input type="password"  placeholder='Confirm Password' required onChange={(e) => setPasswordConfirm(e.target.value)}/>
                 {passwordWarning && (
                   <ul className='password-validator'>
-                  {!passwordReq.length && <li>Must be at least 8 characters long</li>}
-                  {!passwordReq.lowCase && <li>Must have at least one lowercase letter</li>}
-                  {!passwordReq.highCase && <li>Must have at least one uppercase letter</li>}
-                  {!passwordReq.specialChar && <li>Must have at least one special character</li>}
+                  {!passwordReq.length && <li><RiErrorWarningLine/> Must have at least 8 characters long</li>}
+                  {!passwordReq.lowCase && <li><RiErrorWarningLine/> Must have at least one lowercase letter</li>}
+                  {!passwordReq.highCase && <li><RiErrorWarningLine/> Must have at least one uppercase letter</li>}
+                  {!passwordReq.specialChar && <li><RiErrorWarningLine/> Must have at least one special character</li>}
                 </ul>
                 )}
+                {passwordConfirm.length > 0 && !passwordEqual && (
+                  <p className='password-mismatch'><RiErrorWarningLine/> Passwords don't match.</p>
+                )}
                 <div className='forms-btns'>
-                  <button type='submit' disabled={!passwordReqChecker}>Create Account</button>
+                  <button type='submit' disabled={!passwordReqChecker || !passwordEqual}>Create Account</button>
                   <button type='close' onClick={onClose}>Close</button>
                 </div>
             </form>
