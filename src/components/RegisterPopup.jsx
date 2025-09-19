@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react'
 import '../styles/RegisterPopup.css'
 import { useState } from 'react';
-import { Link } from "react-router-dom";
 import axios from 'axios'
 
 const RegisterPopup = ({open, onClose}) => {
@@ -13,11 +12,24 @@ const RegisterPopup = ({open, onClose}) => {
   const [passwordConfirm, setPasswordConfirm] = useState()
 
   const handleSubmit = (e) => {
-      e.preventDefault()
-      axios.post('http://localhost:3000/register', {firstName, lastName, email, password, passwordConfirm})
-      .then(result => console.log(result))
-      .catch(err=> console.log(err))
-  }
+  e.preventDefault();
+
+  axios.post("http://localhost:3000/register", {
+    firstName, lastName, email, password, passwordConfirm
+  })
+  .then((res) => {
+    if (!res.data.success) {
+      alert(res.data.message);
+    } else {
+      alert("Account created successfully!");
+      onClose();
+    }
+  })
+  .catch((err) => {
+      console.error(err);
+    alert("Error connecting to server");
+  });
+}
 
   useEffect(()=> {
     if(!open) {
@@ -27,7 +39,8 @@ const RegisterPopup = ({open, onClose}) => {
 
   const passwordReq = {
     length: password.length >= 8,
-    specialChar: /[0-9!@#$%^&*().]/.test(password),
+    number: /[0-9]/.test(password),
+    specialChar: /[!@#$%^&*().]/.test(password),
     lowCase: /[a-z]/.test(password),
     highCase: /[A-Z]/.test(password),
   };
@@ -37,7 +50,7 @@ const RegisterPopup = ({open, onClose}) => {
   const passwordWarning = password.length > 0 && !passwordReqChecker;
 
   return open && (
-    <div onClick={onClose} className='register'>
+    <div onMouseDown={(e) => { if (e.target === e.currentTarget) { onClose(); } }} className='register'>
         <div onClick={e => e.stopPropagation()} className='register-form'> 
 
             <h3>Create an Account</h3>
@@ -54,6 +67,7 @@ const RegisterPopup = ({open, onClose}) => {
                   {!passwordReq.length && <li>Must be at least 8 characters long</li>}
                   {!passwordReq.lowCase && <li>Must have at least one lowercase letter</li>}
                   {!passwordReq.highCase && <li>Must have at least one uppercase letter</li>}
+                  {!passwordReq.number && <li>Must have at least one number</li>}
                   {!passwordReq.specialChar && <li>Must have at least one special character</li>}
                 </ul>
                 )}
