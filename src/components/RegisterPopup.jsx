@@ -12,6 +12,7 @@ const RegisterPopup = ({open, onClose}) => {
   const [email, setEmail] = useState()
   const [password, setPassword] = useState('')
   const [passwordConfirm, setPasswordConfirm] = useState('')
+  const [displayToS, setDisplayToS] = useState(false);
 
   const handleSubmit = (e) => {
       e.preventDefault()
@@ -67,6 +68,18 @@ const RegisterPopup = ({open, onClose}) => {
                 <div className='forms-btns'>
                   <button type='submit' disabled={!passwordReqChecker || !passwordEqual}>Create Account</button>
                   <button type='close' onClick={onClose}>Close</button>
+                </div>
+                <div className='tos-container'>
+                  <p className='tos-agreement'>By creating this account, you agree to our <a href='#' className='tos-link' onClick={(e) => {
+                    e.preventDefault();
+                    setDisplayToS(!displayToS);
+                  }}>Terms of Service</a></p>
+                  {displayToS && (
+                    <div className='tos-inline-box' onClick={() => setDisplayToS(false)}>
+                      <p>When you register for an account, you agree to use our site in a lawful and respectful manner. You are responsible for keeping your login information secure and for any actions taken under your account. Misuse of the site—such as attempting unauthorized access, sharing harmful material, or disrupting the experience of other users—is strictly prohibited.<br/><br/>We may suspend or remove accounts that break these Terms of Service. These Terms may be updated periodically, and by continuing to use the site after changes are posted, you agree to the revised terms.<br/><br/> If you do not accept these Terms, please do not create an account or use this service.</p>
+                      <p className='tos-update'>Last update: 09/19/2025</p>
+                    </div>
+                  )}
                 </div>
             </form>
         </div>
