@@ -1,8 +1,17 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+
 import '../styles/Dashboard.css'
+
 const Dashboard = () => {
-  const user = JSON.parse(localStorage.getItem("user"));
+  const user = JSON.parse(localStorage.getItem("user"))
+  const navigate = useNavigate();
+
+  // Handles Logouts
+  const handleLogout = () => {
+    localStorage.removeItem("user")
+    navigate("/");
+  }
 
   return (
     <div className="dashboard">
@@ -10,6 +19,7 @@ const Dashboard = () => {
         <h1>Welcome to your Dashboard</h1>
         <div className="user-info">
           {user && <span>Hello, {user.firstName} {user.lastName}</span>}
+          <button className="logout-btn" onClick={handleLogout}>Logout</button>
         </div>
       </header>
 
@@ -24,7 +34,7 @@ const Dashboard = () => {
         </div>
       </main>
     </div>
-  );
-};
+  )
+}
 
 export default Dashboard;
