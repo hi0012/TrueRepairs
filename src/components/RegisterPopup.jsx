@@ -2,6 +2,7 @@ import React, { useEffect } from 'react'
 import '../styles/RegisterPopup.css'
 import { useState } from 'react';
 import axios from 'axios'
+import { RiErrorWarningLine } from 'react-icons/ri';
 
 const RegisterPopup = ({open, onClose}) => {
 
@@ -9,7 +10,8 @@ const RegisterPopup = ({open, onClose}) => {
   const [lastName, setLastName] = useState()
   const [email, setEmail] = useState()
   const [password, setPassword] = useState('')
-  const [passwordConfirm, setPasswordConfirm] = useState()
+  const [passwordConfirm, setPasswordConfirm] = useState('')
+  const [displayToS, setDisplayToS] = useState(false);
 
   const handleSubmit = (e) => {
   e.preventDefault();
@@ -34,6 +36,7 @@ const RegisterPopup = ({open, onClose}) => {
   useEffect(()=> {
     if(!open) {
       setPassword('');
+      setPasswordConfirm('');
     }
   }, [open]);
 
@@ -48,6 +51,8 @@ const RegisterPopup = ({open, onClose}) => {
   const passwordReqChecker = passwordReq.length && passwordReq.lowCase && passwordReq.specialChar && passwordReq.highCase;
 
   const passwordWarning = password.length > 0 && !passwordReqChecker;
+
+  const passwordEqual = password === passwordConfirm;
 
   return open && (
     <div onMouseDown={(e) => { if (e.target === e.currentTarget) { onClose(); } }} className='register'>
@@ -71,9 +76,24 @@ const RegisterPopup = ({open, onClose}) => {
                   {!passwordReq.specialChar && <li>Must have at least one special character</li>}
                 </ul>
                 )}
+                {passwordConfirm.length > 0 && !passwordEqual && (
+                  <p className='password-mismatch'><RiErrorWarningLine/> Passwords don't match.</p>
+                )}
                 <div className='forms-btns'>
-                  <button type='submit' disabled={!passwordReqChecker}>Create Account</button>
+                  <button type='submit' disabled={!passwordReqChecker || !passwordEqual}>Create Account</button>
                   <button type='close' onClick={onClose}>Close</button>
+                </div>
+                <div className='tos-container'>
+                  <p className='tos-agreement'>By creating this account, you agree to our <a href='#' className='tos-link' onClick={(e) => {
+                    e.preventDefault();
+                    setDisplayToS(!displayToS);
+                  }}>Terms of Service</a></p>
+                  {displayToS && (
+                    <div className='tos-inline-box' onClick={() => setDisplayToS(false)}>
+                      <p>When you register for an account, you agree to use our site in a lawful and respectful manner. You are responsible for keeping your login information secure and for any actions taken under your account. Misuse of the site—such as attempting unauthorized access, sharing harmful material, or disrupting the experience of other users—is strictly prohibited.<br/><br/>We may suspend or remove accounts that break these Terms of Service. These Terms may be updated periodically, and by continuing to use the site after changes are posted, you agree to the revised terms.<br/><br/> If you do not accept these Terms, please do not create an account or use this service.</p>
+                      <p className='tos-update'>Last update: 09/19/2025</p>
+                    </div>
+                  )}
                 </div>
             </form>
         </div>

@@ -102,11 +102,65 @@
 }
 
 .password-validator li {
-    color: #0068d2;
+    color: red;
     list-style: none;
     margin-bottom: 3px;
+    font-size: 15px;
 }
 
-.password-validator {
+.password-mismatch {
+    color: red;
+    font-size: 15px;
+    margin-bottom: 15px;
+}
+
+.tos-container{
+    margin-top: 12px;
+    text-align: left;
+}
+
+.tos-inline-box {
+    margin: 0 auto;
+    padding: 10px;
+    background: rgb(235, 230, 230, 0.6);
+    max-height: 140px;
+    overflow-y: auto;
+    border-radius: 5px;
+    font-size: 13px;
+    color: black;
+    cursor: pointer;
+}
+.tos-container .tos-agreement {
+    text-align: center;
     margin-bottom: 10px;
+}
+.tos-container .tos-update {
+    text-align: center;
+}
+
+.tos-agreement{
+    font-size: 13px;
+    color: gray;
+    margin-top: 15px;
+}
+
+.tos-link {
+    font-size: 13px;
+    color: #0068d2;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.tos-inline-box::-webkit-scrollbar{
+    width: 5px;
+}
+
+.tos-inline-box::-webkit-scrollbar-thumb {
+    background-color: #0068d2;
+    border-radius: 5px;
+}
+
+.tos-inline-box::-webkit-scrollbar-track{
+    background-color: gray;
+    border-radius: 5px;
 }
