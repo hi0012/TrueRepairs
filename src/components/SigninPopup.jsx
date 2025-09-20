@@ -10,6 +10,8 @@ const SigninPopup = ({open, onClose}) => {
   const [email, setEmail] = useState()
   const [password, setPassword] = useState()
   const navigate = useNavigate();
+  const [displayToS, setDisplayToS] = useState(false);
+  const [message, setMessage] = useState("");
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -43,6 +45,28 @@ const SigninPopup = ({open, onClose}) => {
                 <div className='forms-btns'>
                   <button type='submit'>Login</button>
                   <button type='button' className='close-btn' onClick={onClose}>Close</button>
+                </div>
+                <div className='tos-container'>
+                  <p className='tos-forgot'><a href='#' className='tos-link' onClick={(e) => {
+                    e.preventDefault();
+                    setDisplayToS(!displayToS);
+                  }}>Forgot Password?</a></p>
+                  {displayToS && (
+                    <div className='tos-inline-box' onClick={() => setDisplayToS(false)}>
+                          <form onSubmit={handleSubmit}>
+                            <h3>Forgot Password</h3>
+                            <input
+                              type="email"
+                              placeholder="Enter your email"
+                              value={email}
+                              onChange={(e) => setEmail(e.target.value)}
+                              required
+                            />
+                            <button type="submit">Send Reset Link</button>
+                            <p>{message}</p>
+                          </form>
+                    </div>
+                  )}
                 </div>
             </form>
         </div>

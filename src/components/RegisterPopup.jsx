@@ -12,6 +12,7 @@ const RegisterPopup = ({open, onClose}) => {
   const [password, setPassword] = useState('')
   const [passwordConfirm, setPasswordConfirm] = useState('')
   const [displayToS, setDisplayToS] = useState(false);
+  
 
   const handleSubmit = (e) => {
   e.preventDefault();
