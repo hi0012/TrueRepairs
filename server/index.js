@@ -11,7 +11,7 @@ app.use(cors())
 connectDB()
 
 app.post("/login", (req, res) => {
-    const {email, password} = req.body;
+    const { email, password } = req.body;
     UserModel.findOne({ email: email })
     .then(user => {
       if (user) {
@@ -54,14 +54,14 @@ app.post('/register', async (req, res) => {
             })
         }
 
-        const hashedPassword = await bcrypt.hash(password, 10);
+        //const hashedPassword = await bcrypt.hash(password, 10);
 
         // create new user if not found
         const newUser = await UserModel.create({
             firstName,
             lastName,
             email,
-            password: hashedPassword
+            password
         });
 
         res.json({
