@@ -3,6 +3,7 @@ const connectDB = require('./db.js')
 const cors = require("cors")
 const UserModel = require('./models/users.js')
 const bcrypt = require('bcryptjs')
+const crypto = require("crypto"); 
 
 const app = express()
 app.use(express.json())
@@ -83,7 +84,66 @@ app.post('/register', async (req, res) => {
     }
 })
 
+app.post("/forgot-password", async (req, res) => {
+  try {
+    const { email } = req.body;
+    const user = await UserModel.findOne({ email })
+
+    if (!user) {
+      return res.status(400).json({ message: "No account with that email found." })
+    }
+
+    // Generate token
+    const token = crypto.randomBytes(20).toString("hex")
+
+    // Save token + expiry
+    user.resetPasswordToken = token;
+    user.resetPasswordExpires = Date.now() + 3600000 // 1 hr
+    await user.save();
+
+    // Reset link points to your frontend
+    const resetURL = `http://localhost:5173/reset-password/${token}`
+
+    // For now, log instead of emailing
+    console.log("Password reset link:", resetURL)
+
+    res.json({ message: "Password reset link generated. Check console for link." })
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ message: "Server error" })
+  }
+})
+
+// Reset password route
+app.post("/reset-password/:token", async (req, res) => {
+  try {
+    const { token } = req.params;
+    const { password } = req.body;
+
+    const user = await UserModel.findOne({
+      resetPasswordToken: token,
+      resetPasswordExpires: { $gt: Date.now() }
+    });
+
+    if (!user) {
+      return res.status(400).json({ message: "Invalid or expired token." });
+    }
+
+    user.password = password;
+
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+
+    await user.save();
+
+    res.json({ message: "Password reset successful!" })
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" })
+  }
+})
+
 
 app.listen(3000, ()=> {
-    console.log("App is running");
+    console.log("App is running")
 })

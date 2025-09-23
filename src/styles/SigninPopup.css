@@ -1,4 +1,3 @@
-
 .signin {
     position: fixed;
     top: 0;
@@ -50,13 +49,13 @@
 }
 
 .close-btn {
-  background-color: white;
-  font-size: 13.5px !important; 
-  color: red;
-  cursor: pointer;
-  border-radius: 50px;
-  border: 1px solid red;
-  padding: 10px 30px;
+    background-color: white;
+    font-size: 13.5px !important; 
+    color: red;
+    cursor: pointer;
+    border-radius: 50px;
+    border: 1px solid red;
+    padding: 10px 30px;
   
 }
 
@@ -69,4 +68,55 @@
 .forms-btns {
     display: flex;
     justify-content: space-between;
+}
+
+.fp-container{
+    margin-top: 12px;
+    text-align: left;
+}
+
+.fp-inline-box {
+    margin: 0 auto;
+    padding: 10px;
+    background: rgb(235, 230, 230, 0.6);
+    max-height: 140px;
+    overflow-y: auto;
+    border-radius: 5px;
+    font-size: 13px;
+    color: black;
+    cursor: pointer;
+}
+.fp-container .fp-agreement {
+    text-align: center;
+    margin-bottom: 10px;
+}
+.fp-container .fp-update {
+    text-align: center;
+}
+
+.fp-agreement{
+    font-size: 13px;
+    color: gray;
+    margin-top: 15px;
+}
+
+.fp-link {
+    font-size: 13px;
+    color: #0068d2;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.fp-inline-box::-webkit-scrollbar{
+    width: 5px;
+}
+
+.fp-inline-box::-webkit-scrollbar-thumb {
+    background-color: #0068d2;
+    border-radius: 5px;
+}
+
+.fp-inline-box::-webkit-scrollbar-track{
+    background-color: gray;
+    border-radius: 5px;
 }

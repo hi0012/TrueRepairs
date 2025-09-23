@@ -7,7 +7,6 @@
 
 .navbar .nav-logo {
     width: 150px;
-
 }
 
 .nav-list {
@@ -18,7 +17,6 @@
     font-size: 16px;
 
 }
-
 
 .navbar li {
     cursor: pointer;
@@ -41,6 +39,7 @@
     border-radius: 50px;
     cursor: pointer;
     transition: 0.4s;
+    margin-left: 5px;
 }
 
 .navbar button:hover {
