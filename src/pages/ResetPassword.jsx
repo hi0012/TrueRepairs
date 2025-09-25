@@ -69,7 +69,7 @@ const ResetPassword = () => {
             {!passwordReq.specialChar && <li>Must have at least one special character</li>}
           </ul>
 
-          <div className="forms-btns">
+          <div className="reset-forms-btns">
             <button type="submit">Update Password</button>
           </div>
         </form>
