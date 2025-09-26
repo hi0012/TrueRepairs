@@ -108,7 +108,9 @@
     margin-bottom: 3px;
     font-size: 15px;
 }
-
+.password-validator li.correct {
+    color: #28a745;
+}
 .password-mismatch {
     color: red;
     font-size: 15px;

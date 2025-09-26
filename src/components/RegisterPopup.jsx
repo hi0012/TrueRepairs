@@ -3,6 +3,7 @@ import '../styles/RegisterPopup.css'
 import { useState } from 'react';
 import axios from 'axios'
 import { RiErrorWarningLine } from 'react-icons/ri';
+import { FaCheckCircle } from 'react-icons/fa';
 
 const RegisterPopup = ({open, onClose}) => {
 
@@ -67,15 +68,13 @@ const RegisterPopup = ({open, onClose}) => {
                 <input type="email"  placeholder='Email Address' required onChange={(e) => setEmail(e.target.value)}/>
                 <input type="password"  placeholder='Password' required onChange={(e) => setPassword(e.target.value)}/>
                 <input type="password"  placeholder='Confirm Password' required onChange={(e) => setPasswordConfirm(e.target.value)}/>
-                {passwordWarning && (
-                  <ul className='password-validator'>
-                  {!passwordReq.length && <li>Must be at least 8 characters long</li>}
-                  {!passwordReq.lowCase && <li>Must have at least one lowercase letter</li>}
-                  {!passwordReq.highCase && <li>Must have at least one uppercase letter</li>}
-                  {!passwordReq.number && <li>Must have at least one number</li>}
-                  {!passwordReq.specialChar && <li>Must have at least one special character</li>}
+                <ul className='password-validator'>
+                  <li className={passwordReq.length ? "correct" : "incorrect"}>{passwordReq.length ? <FaCheckCircle/> : <RiErrorWarningLine/>} At least 8 characters long</li>
+                  <li className={passwordReq.lowCase ? "correct" : "incorrect"}>{passwordReq.lowCase ? <FaCheckCircle/> : <RiErrorWarningLine/>} At least 1 lowercase letter (a-z)</li>
+                  <li className={passwordReq.highCase ? "correct" : "incorrect"}>{passwordReq.highCase ? <FaCheckCircle/> : <RiErrorWarningLine/>} At least 1 uppercase letter (A-Z)</li>
+                  <li className={passwordReq.number ? "correct" : "incorrect"}>{passwordReq.number ? <FaCheckCircle/> : <RiErrorWarningLine/>} At least 1 number (0-9)</li>
+                  <li className={passwordReq.specialChar ? "correct" : "incorrect"}>{passwordReq.specialChar ? <FaCheckCircle/> : <RiErrorWarningLine/>} At least 1 special character (@ # $ % ^ &)</li>
                 </ul>
-                )}
                 {passwordConfirm.length > 0 && !passwordEqual && (
                   <p className='password-mismatch'><RiErrorWarningLine/> Passwords don't match.</p>
                 )}
