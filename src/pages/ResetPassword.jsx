@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios"; 
 import '../styles/ResetPassword.css'
+import { RiErrorWarningLine } from 'react-icons/ri';
+import { FaCheckCircle } from 'react-icons/fa';
 
 const ResetPassword = () => {
   const { token } = useParams();   
@@ -62,11 +64,11 @@ const ResetPassword = () => {
 
           {/* Password requirements */}
           <ul className="password-validator">
-            {!passwordReq.length && <li>Must be at least 8 characters long</li>}
-            {!passwordReq.lowCase && <li>Must have at least one lowercase letter</li>}
-            {!passwordReq.highCase && <li>Must have at least one uppercase letter</li>}
-            {!passwordReq.number && <li>Must have at least one number</li>}
-            {!passwordReq.specialChar && <li>Must have at least one special character</li>}
+            <li className={passwordReq.length ? "correct" : "incorrect"}>{passwordReq.length ? <FaCheckCircle/> : <RiErrorWarningLine/>} Must be at least 8 characters long</li>
+            <li className={passwordReq.lowCase ? "correct" : "incorrect"}>{passwordReq.lowCase ? <FaCheckCircle/> : <RiErrorWarningLine/>} Must have at least one lowercase letter</li>
+            <li className={passwordReq.highCase ? "correct" : "incorrect"}>{passwordReq.highCase ? <FaCheckCircle/> : <RiErrorWarningLine/>} Must have at least one uppercase letter</li>
+            <li className={passwordReq.number ? "correct" : "incorrect"}>{passwordReq.number ? <FaCheckCircle/> : <RiErrorWarningLine/>} Must have at least one number</li>
+            <li className={passwordReq.specialChar ? "correct" : "incorrect"}>{passwordReq.specialChar ? <FaCheckCircle/> : <RiErrorWarningLine/>} Must have at least one special character</li>
           </ul>
 
           <div className="reset-forms-btns">
