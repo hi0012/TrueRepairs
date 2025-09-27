@@ -80,7 +80,7 @@ const RegisterPopup = ({open, onClose}) => {
                 )}
                 <div className='forms-btns'>
                   <button type='submit' disabled={!passwordReqChecker || !passwordEqual}>Create Account</button>
-                  <button type='close' onClick={onClose}>Close</button>
+                  <button type='close' onClick={onClose}>Cancel</button>
                 </div>
                 <div className='tos-container'>
                   <p className='tos-agreement'>By creating this account, you agree to our <a href='#' className='tos-link' onClick={(e) => {

@@ -43,8 +43,8 @@ const SigninPopup = ({open, onClose}) => {
             <input type="email"  placeholder='Email' required={!displayfp} onChange={(e) => setEmail(e.target.value)}/>
             <input type="password"  placeholder='Password' required={!displayfp} onChange={(e) => setPassword(e.target.value)}/>
             <div className='forms-btns'>
-              <button type='submit'>Login</button>
-              <button type='button' className='close-btn' onClick={onClose}>Close</button>
+              <button type='submit' className='sub-btn'>Login</button>
+              <button type='button' className='close-btn' onClick={onClose}>Cancel</button>
             </div>
             <div className='fp-container'>
               <p className='fp-agreement'><a href='#' className='fp-link' onClick={(e) => {
