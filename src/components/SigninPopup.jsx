@@ -44,7 +44,7 @@ const SigninPopup = ({open, onClose}) => {
             <input type="password"  placeholder='Password' required={!displayfp} onChange={(e) => setPassword(e.target.value)}/>
             <div className='forms-btns'>
               <button type='submit'>Login</button>
-              <button type='button' className='close-btn' onClick={onClose}>Close</button>
+              <button type='button' className='close-btn' onClick={onClose}>Cancel</button>
             </div>
             <div className='fp-container'>
               <p className='fp-agreement'><a href='#' className='fp-link' onClick={(e) => {

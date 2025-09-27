@@ -34,6 +34,7 @@
 
 .signin-form button[type="submit"] {
     border-radius: 50px;
+    font-size: 15px;
     background-color: white;
     color: #0068d2;
     cursor: pointer;
@@ -50,7 +51,7 @@
 
 .close-btn {
     background-color: white;
-    font-size: 13.5px !important; 
+    font-size: 15px !important; 
     color: red;
     cursor: pointer;
     border-radius: 50px;
