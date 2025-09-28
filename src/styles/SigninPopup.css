@@ -59,7 +59,9 @@
     padding: 10px 30px;
   
 }
-
+.sub-btn {
+    font-size: 15px;
+}
 .close-btn:hover{
     color: white;
     background-color: red;
