@@ -16,10 +16,8 @@ const App = () => {
     <div>
       <SigninPopup open={signInActive} onClose={() => setSignInActive(false)} />
       <div className="site">
-        {/* Hide navbar only on dashboard */}
-        {location.pathname !== "/dashboard" && (
-          <Navbar setSignInActive={setSignInActive} />
-        )}
+        {/* Displays Nav */}
+        <Navbar setSignInActive={setSignInActive} />
 
         <Routes>
           <Route path="/" element={<Home />} />
