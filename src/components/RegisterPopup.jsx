@@ -78,8 +78,16 @@ const RegisterPopup = ({open, onClose}) => {
                   <li className={passwordReq.specialChar ? "correct" : "incorrect"}>{passwordReq.specialChar ? <FaCheckCircle/> : <RiErrorWarningLine/>} At least 1 special character (@ # $ % ^ &)</li>
                 </ul>
                 )}
-                {passwordConfirm.length > 0 && !passwordEqual && (
-                  <p className='password-mismatch'><RiErrorWarningLine/> Passwords don't match.</p>
+                {passwordConfirm.length > 0 && (
+                  <p className={passwordEqual ? "password-equal" : "password-mismatch"}>{passwordEqual ? (
+                    <>
+                      <FaCheckCircle/> Passwords match.
+                    </>
+                  ): (
+                    <>
+                      <RiErrorWarningLine/> Passwords don't match.
+                    </>
+                  )}</p>
                 )}
                 <div className='forms-btns'>
                   <button type='submit' disabled={!passwordReqChecker || !passwordEqual}>Create Account</button>
