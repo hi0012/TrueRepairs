@@ -104,6 +104,11 @@
     font-size: 15px;
     margin-bottom: 15px;
 }
+.password-equal {
+    color: #28a745;
+    font-size: 15px;
+    margin-bottom: 15px;
+}
 
 .tos-container{
     margin-top: 12px;
