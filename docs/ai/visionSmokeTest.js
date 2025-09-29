@@ -29,9 +29,4 @@ async function run() {
 run().catch(err => {
   console.error("Vision smoke test failed:", err.message);
   process.exit(1);
-<<<<<<< HEAD
 });
-=======
-});
-
->>>>>>> 0ee7c39 (Hishams GlobalCss/Docs/AI)
