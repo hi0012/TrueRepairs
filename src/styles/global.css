@@ -1,0 +1,45 @@
+:root{
+  --bg:white; 
+  --fg:#e7edf3; 
+  --muted:#98a2b3; 
+  --brand:#4ea8ff; 
+  --card:#121821; 
+  --border:#223046;
+  --radius:12px; --space:14px;
+}
+*{box-sizing:border-box}
+
+html,body,#root{height:100%}
+
+body{margin:0;
+    background:var(--bg);
+    color:var(--fg);
+    font:15px/1.5 system-ui,Segoe UI,Roboto,Arial}
+
+.container{max-width:1080px;
+    margin:0 auto;
+    padding:calc(var(--space)*1.5)}
+
+.card{background:var(--card);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:calc(var(--space)*1.25)}
+
+input,button{font:inherit}
+
+input{
+  width:100%;
+  padding:12px;
+  border-radius:10px;
+  border:1px solid var(--border);
+  background:#0f151d;color:var(--fg)
+}
+
+button{
+  padding:10px 14px;
+  border-radius:10px;
+  border:1px solid var(--border);
+  background:var(--brand);
+  color:#031627;
+  cursor:pointer
+}

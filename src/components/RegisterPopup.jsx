@@ -63,7 +63,6 @@ const RegisterPopup = ({open, onClose}) => {
             <form onSubmit={handleSubmit}>
                 <div className='form-names'>
                   <input type="text" placeholder='First Name' required onChange={(e) => setFirstName(e.target.value)}/>
-                <input type="text" placeholder='Last Name' required onChange={(e) => setLastName(e.target.value)}/>
                 </div>
                 <input type="email"  placeholder='Email Address' required onChange={(e) => setEmail(e.target.value)}/>
                 <input type="password"  placeholder='Password' required onChange={(e) => setPassword(e.target.value)}/>
