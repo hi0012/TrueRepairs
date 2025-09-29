@@ -40,7 +40,7 @@
     
     padding: 13px 32px;
     background-color: white;
-    font-size: clamp(13px, 1vw, 20px);
+    font-size: clamp(15px, 1vw, 15px);
     border-radius: 50px;
     cursor: pointer;
     border: 1px solid #0068d2;

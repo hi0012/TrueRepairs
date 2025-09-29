@@ -83,7 +83,11 @@ const RegisterPopup = ({open, onClose}) => {
                 )}
                 <div className='forms-btns'>
                   <button type='submit' disabled={!passwordReqChecker || !passwordEqual}>Create Account</button>
+<<<<<<< HEAD
                   <button type='close' onClick={onClose}>Cancel</button>
+=======
+                  <button type='button' className='cancel-btn' onClick={onClose}>Cancel</button>
+>>>>>>> 2f884d4 (Update close button text to 'Cancel' in Register and Sign-in popups)
                 </div>
                 <div className='tos-container'>
                   <p className='tos-agreement'>By creating this account, you agree to our <a href='#' className='tos-link' onClick={(e) => {

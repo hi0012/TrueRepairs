@@ -34,6 +34,7 @@
 
 .signin-form button[type="submit"] {
     border-radius: 50px;
+    font-size: 15px;
     background-color: white;
     color: #0068d2;
     cursor: pointer;

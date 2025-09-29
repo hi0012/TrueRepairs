@@ -50,6 +50,8 @@
 }
 
 .register-form button[type="submit"] {
+    margin: 0;
+    font-size: 15px;
     border-radius: 50px;
     background-color: white;
     color: #0068d2;
@@ -69,34 +71,20 @@
     cursor: not-allowed;
 }
 
-.register-form button[type="close"] {
+
+.forms-btns .cancel-btn {
     border-radius: 50px;
+    font-size: 15px;
     background-color: white;
     color: red;
     align-items: center;
     cursor: pointer;
     border: 1px solid red;
     padding: 10px 30px;
-}
-
-.register-form button[type="close"]:hover {
-    color: white;
-    background-color: red;
-    border: 1px solid white;
-}
-
-.close-btn {
-  background-color: white;
-  font-size: 15px;
-  color: red;
-  cursor: pointer;
-  border-radius: 50px;
-  border: 1px solid red;
-  padding: 10px 30px;
   
 }
 
-.close-btn:hover{
+.forms-btns .cancel-btn:hover{
     color: white;
     background-color: red;
     border: 1px solid white;
