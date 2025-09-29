@@ -8,4 +8,8 @@ This folder contains the output of a one-time Google Vision smoke test: `visionS
 
 Demo talking points:
 - Vision API is enabled and reachable with our project credentials.
+<<<<<<< HEAD
 - The service returned label predictions for a car image, which we can later wire into the repair-estimation flow.
+=======
+- The service returned label predictions for a car image, which we can later wire into the repair-estimation
+>>>>>>> 0ee7c39 (Hishams GlobalCss/Docs/AI)
