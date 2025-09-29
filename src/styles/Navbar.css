@@ -47,3 +47,20 @@
     color: white;
     border: 1px solid white;
 }
+
+.navbar .logout-btn {
+    background-color: #d9534f;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 8px;
+    color: white;
+    font-weight: bold;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.navbar .logout-btn:hover {
+    background-color: #c9302c;
+    transform: translateY(-2px);
+}
