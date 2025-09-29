@@ -71,8 +71,7 @@
     cursor: not-allowed;
 }
 
-
-.forms-btns .cancel-btn {
+.register-form button[type="close"] {
     border-radius: 50px;
     font-size: 15px;
     background-color: white;
@@ -84,7 +83,8 @@
   
 }
 
-.forms-btns .cancel-btn:hover{
+.register-form button[type="close"]:hover {
+    font-size: 15px;
     color: white;
     background-color: red;
     border: 1px solid white;
