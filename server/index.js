@@ -27,8 +27,7 @@ app.post("/login", (req, res) => {
               success: true,
               user: {
                 id: user._id,
-                firstName: user.firstName,
-                lastName: user.lastName,
+                userName: user.userName,
                 email: user.email
               }
             });
@@ -44,7 +43,7 @@ app.post("/login", (req, res) => {
 
 app.post('/register', async (req, res) => {
     try {
-        const { firstName, lastName, email, password } = req.body
+        const { userName, email, password } = req.body
 
         // check if email already exists
         const existingUser = await UserModel.findOne({ email })
@@ -59,8 +58,7 @@ app.post('/register', async (req, res) => {
 
         // create new user if not found
         const newUser = await UserModel.create({
-            firstName,
-            lastName,
+            userName,
             email,
             password
         });
@@ -69,8 +67,7 @@ app.post('/register', async (req, res) => {
         success: true,
         user: {
             id: newUser._id,
-            firstName: newUser.firstName,
-            lastName: newUser.lastName,
+            userName: newUser.userName,
             email: newUser.email
         }
         });
