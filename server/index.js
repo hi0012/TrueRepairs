@@ -46,12 +46,17 @@ app.post('/register', async (req, res) => {
         const { userName, email, password } = req.body
 
         // check if email already exists
-        const existingUser = await UserModel.findOne({ email })
+        const existingUser = await UserModel.findOne({
+          $or: [{ email }, { userName }]
+        });
+
         if (existingUser) {
-            return res.json({
-                success: false,
-                message: "This email is already associated with an account."
-            })
+          return res.json({
+            success: false,
+            message: existingUser.email === email
+              ? "This email is already associated with an account."
+              : "This username is already taken."
+          });
         }
 
         //const hashedPassword = await bcrypt.hash(password, 10);
