@@ -12,8 +12,10 @@ app.use(cors())
 connectDB()
 
 app.post("/login", (req, res) => {
-    const { email, password } = req.body;
-    UserModel.findOne({ email: email })
+    const { identifier, password } = req.body;
+    UserModel.findOne({
+      $or: [{ email: identifier }, { userName: identifier }]
+    })
     .then(user => {
       if (user) {
         // Compare plain text password with hashed password in DB

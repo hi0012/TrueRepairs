@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom";
 
 const SigninPopup = ({open, onClose}) => {
 
-  const [email, setEmail] = useState()
+  const [identifier, setIdentifier] = useState();
   const [password, setPassword] = useState()
   const navigate = useNavigate();
   const [displayfp, setDisplayfp] = useState(false);
@@ -16,7 +16,7 @@ const SigninPopup = ({open, onClose}) => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    axios.post("http://localhost:3000/login", { email, password })
+    axios.post("http://localhost:3000/login", { identifier, password })
     .then((res) => {
       console.log(res.data);
 
@@ -40,7 +40,7 @@ const SigninPopup = ({open, onClose}) => {
         <div onClick={e => e.stopPropagation()} className='signin-form'>
           <h3>Sign In</h3>
           <form onSubmit={handleSubmit}>
-            <input type="email"  placeholder='Email' required={!displayfp} onChange={(e) => setEmail(e.target.value)}/>
+            <input type="text"  placeholder='User Name or Email' required={!displayfp} onChange={(e) => setIdentifier(e.target.value)}/>
             <input type="password"  placeholder='Password' required={!displayfp} onChange={(e) => setPassword(e.target.value)}/>
             <div className='forms-btns'>
               <button type='submit' className='sub-btn'>Login</button>
