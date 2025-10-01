@@ -13,7 +13,7 @@ connectDB()
 
 app.post("/login", (req, res) => {
     const { email, password } = req.body;
-    UserModel.findOne({ email: email })
+    UserModel.findOne({ email: email})
     .then(user => {
       if (user) {
         // Compare plain text password with hashed password in DB
