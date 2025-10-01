@@ -64,7 +64,7 @@ const RegisterPopup = ({open, onClose}) => {
             <h3>Create an Account</h3>
             <form onSubmit={handleSubmit}>
                 <div className='form-names'>
-                  <input type="text" placeholder='First Name' required onChange={(e) => setFirstName(e.target.value)}/>
+                  <input type="text" placeholder='Username' required onChange={(e) => setFirstName(e.target.value)}/>
                 </div>
                 <input type="email"  placeholder='Email Address' required onChange={(e) => setEmail(e.target.value)}/>
                 <input type="password"  placeholder='Password' required onChange={(e) => {setPassword(e.target.value); setClickPassword(true);}}/>
@@ -91,11 +91,7 @@ const RegisterPopup = ({open, onClose}) => {
                 )}
                 <div className='forms-btns'>
                   <button type='submit' disabled={!passwordReqChecker || !passwordEqual}>Create Account</button>
-<<<<<<< HEAD
                   <button type='close' onClick={onClose}>Cancel</button>
-=======
-                  <button type='button' className='cancel-btn' onClick={onClose}>Cancel</button>
->>>>>>> 2f884d4 (Update close button text to 'Cancel' in Register and Sign-in popups)
                 </div>
                 <div className='tos-container'>
                   <p className='tos-agreement'>By creating this account, you agree to our <a href='#' className='tos-link' onClick={(e) => {
