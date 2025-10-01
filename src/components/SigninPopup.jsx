@@ -12,7 +12,8 @@ const SigninPopup = ({open, onClose}) => {
   const [password, setPassword] = useState()
   const navigate = useNavigate();
   const [displayfp, setDisplayfp] = useState(false);
-
+  const [email, setEmail] = useState("");
+   
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -35,12 +36,27 @@ const SigninPopup = ({open, onClose}) => {
     });
   }
 
+  const handlePassReset = () => {
+  if (!email) {
+    alert("Please enter your email first.");
+    return;
+  }
+
+  axios
+    .post("http://localhost:3000/forgot-password", { email })
+    .then((res) => alert(res.data.message || "Reset link sent!"))
+    .catch((err) => {
+      console.error(err);
+      alert("Error sending reset request.");
+    });
+};
+
   return open && (
     <div onMouseDown={(e) => { if (e.target === e.currentTarget) { onClose(); } }} className='signin'>
         <div onClick={e => e.stopPropagation()} className='signin-form'>
           <h3>Sign In</h3>
           <form onSubmit={handleSubmit}>
-            <input type="text"  placeholder='User Name or Email' required={!displayfp} onChange={(e) => setIdentifier(e.target.value)}/>
+            <input type="text"  placeholder='Username or Email' required={!displayfp} onChange={(e) => setIdentifier(e.target.value)}/>
             <input type="password"  placeholder='Password' required={!displayfp} onChange={(e) => setPassword(e.target.value)}/>
             <div className='forms-btns'>
               <button type='submit' className='sub-btn'>Login</button>
@@ -52,22 +68,22 @@ const SigninPopup = ({open, onClose}) => {
               setDisplayfp(!displayfp);
               }}>Forgot Password?</a></p>
             </div>
-            {/* Forgot Password inline form--Robert*/}
+          </form>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handlePassReset();
+            }}
+          >
+            {/* Forgot Password inline form -- Robert */}
             {displayfp && (
-              <div className='forgot-container'>
-                <input type="email" placeholder="Enter your email to reset password" onChange={(e) => setEmail(e.target.value)}/>
-                <button type="submit" onClick={() => {
-                  if (!email) {
-                    alert("Please enter your email first.");
-                    return;
-                  }
-                  axios.post("http://localhost:3000/forgot-password", { email })
-                  .then((res) => alert(res.data.message || "Reset link sent!"))
-                  .catch((err) => {
-                      console.error(err);
-                      alert("Error sending reset request.");
-                  });
-                }}>Send Reset Link</button>
+              <div className="forgot-container">
+                <input
+                  type="email"
+                  placeholder="Enter your email to reset password"
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+                <button type="submit">Send Reset Link</button>
               </div>
             )}
           </form>
