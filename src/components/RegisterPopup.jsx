@@ -7,8 +7,7 @@ import { FaCheckCircle } from 'react-icons/fa';
 
 const RegisterPopup = ({open, onClose}) => {
 
-  const [firstName, setFirstName] = useState()
-  const [lastName, setLastName] = useState()
+  const [userName, setUserName] = useState()
   const [email, setEmail] = useState()
   const [password, setPassword] = useState('')
   const [passwordConfirm, setPasswordConfirm] = useState('')
@@ -19,7 +18,7 @@ const RegisterPopup = ({open, onClose}) => {
   e.preventDefault();
 
   axios.post("http://localhost:3000/register", {
-    firstName, lastName, email, password, passwordConfirm
+    userName, email, password, passwordConfirm
   })
   .then((res) => {
     if (!res.data.success) {
@@ -64,7 +63,7 @@ const RegisterPopup = ({open, onClose}) => {
             <h3>Create an Account</h3>
             <form onSubmit={handleSubmit}>
                 <div className='form-names'>
-                  <input type="text" placeholder='Username' required onChange={(e) => setFirstName(e.target.value)}/>
+                <input type="text" placeholder='Username' required onChange={(e) => setUserName(e.target.value)}/>
                 </div>
                 <input type="email"  placeholder='Email Address' required onChange={(e) => setEmail(e.target.value)}/>
                 <input type="password"  placeholder='Password' required onChange={(e) => {setPassword(e.target.value); setClickPassword(true);}}/>

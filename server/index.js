@@ -12,8 +12,10 @@ app.use(cors())
 connectDB()
 
 app.post("/login", (req, res) => {
-    const { email, password } = req.body;
-    UserModel.findOne({ email: email})
+    const { identifier, password } = req.body;
+    UserModel.findOne({
+      $or: [{ email: identifier }, { userName: identifier }]
+    })
     .then(user => {
       if (user) {
         // Compare plain text password with hashed password in DB
@@ -27,8 +29,7 @@ app.post("/login", (req, res) => {
               success: true,
               user: {
                 id: user._id,
-                firstName: user.firstName,
-                lastName: user.lastName,
+                userName: user.userName,
                 email: user.email
               }
             });
@@ -44,23 +45,27 @@ app.post("/login", (req, res) => {
 
 app.post('/register', async (req, res) => {
     try {
-        const { firstName, lastName, email, password } = req.body
+        const { userName, email, password } = req.body
 
         // check if email already exists
-        const existingUser = await UserModel.findOne({ email })
+        const existingUser = await UserModel.findOne({
+          $or: [{ email }, { userName }]
+        });
+
         if (existingUser) {
-            return res.json({
-                success: false,
-                message: "This email is already associated with an account."
-            })
+          return res.json({
+            success: false,
+            message: existingUser.email === email
+              ? "This email is already associated with an account."
+              : "This username is already taken."
+          });
         }
 
         //const hashedPassword = await bcrypt.hash(password, 10);
 
         // create new user if not found
         const newUser = await UserModel.create({
-            firstName,
-            lastName,
+            userName,
             email,
             password
         });
@@ -69,8 +74,7 @@ app.post('/register', async (req, res) => {
         success: true,
         user: {
             id: newUser._id,
-            firstName: newUser.firstName,
-            lastName: newUser.lastName,
+            userName: newUser.userName,
             email: newUser.email
         }
         });

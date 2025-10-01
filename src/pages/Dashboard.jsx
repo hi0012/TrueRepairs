@@ -11,7 +11,7 @@ const Dashboard = () => {
         {user && (
           <div className="user-info">
             <h1>Welcome to your Dashboard</h1>
-            <span>Hello, {user.firstName} {user.lastName}</span>
+            <span>Hello, {user.userName}</span>
           </div>
         )}
       </header>
