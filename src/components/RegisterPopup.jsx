@@ -24,7 +24,7 @@ const RegisterPopup = ({open, onClose}) => {
     if (!res.data.success) {
       alert(res.data.message);
     } else {
-      alert("Account created successfully!");
+      alert("Please verify your account first. Verification link generated (check console).");
       onClose();
     }
   })
