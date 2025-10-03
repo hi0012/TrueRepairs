@@ -1,9 +1,13 @@
+require("dotenv").config(); 
 const express = require('express')
 const connectDB = require('./db.js')
 const cors = require("cors")
 const UserModel = require('./models/users.js')
 const bcrypt = require('bcryptjs')
 const crypto = require("crypto"); 
+const sgMail = require("@sendgrid/mail"); 
+
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 const app = express()
 app.use(express.json())
@@ -106,12 +110,29 @@ app.post("/forgot-password", async (req, res) => {
     await user.save();
 
     // Reset link points to your frontend
-    const resetURL = `http://localhost:5173/reset-password/${token}`
+    const resetURL = `${process.env.CLIENT_URL}/reset-password/${token}`;
 
     // For now, log instead of emailing
-    console.log("Password reset link:", resetURL)
+    //console.log("Password reset link:", resetURL)
 
-    res.json({ message: "Password reset link generated. Check console for link." })
+    //res.json({ message: "Password reset link generated. Check console for link." })
+
+    const msg = {
+      to: email,
+      from: { email: process.env.FROM_EMAIL, name: "TrueRepairs Support" },
+      subject: "Reset your password",
+      text: `Reset your password using the link below (valid 1 hour): ${resetURL}`,
+      html: `<p>Reset your password using the link below (valid 1 hour):</p><p><a href="${resetURL}">Reset password</a></p>`,
+    };
+
+    try {
+      await sgMail.send(msg);
+      return res.send({ ok: true });
+    } catch (err) {
+      console.error("SendGrid error:", err);
+      return res.status(500).send({ ok: false });
+    }
+
   } catch (err) {
     console.error(err)
     res.status(500).json({ message: "Server error" })
