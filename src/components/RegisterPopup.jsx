@@ -26,6 +26,8 @@ const RegisterPopup = ({open, onClose}) => {
       setMessage(res.data.message || "Registration failed.");
       setTimeout(() => setMessage(""), 2000);
     } else {
+      alert("Please verify your account first. Verification link generated (check console).");
+      onClose();
       setMessage("Account created successfully!");
       setTimeout(() => {
         setMessage("");
