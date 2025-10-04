@@ -6,6 +6,7 @@ import SigninPopup from './components/SigninPopup';
 import Footer from './components/Footer';
 import Dashboard from "./pages/Dashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
+import ResetPassword from "./pages/ResetPassword";
 
 const App = () => {
   const [signInActive, setSignInActive] = useState(false);
@@ -15,13 +16,14 @@ const App = () => {
     <div>
       <SigninPopup open={signInActive} onClose={() => setSignInActive(false)} />
       <div className="site">
-        {/* Hide navbar only on dashboard */}
-        {location.pathname !== "/dashboard" && (
-          <Navbar setSignInActive={setSignInActive} />
-        )}
+        {/* Displays Nav */}
+        <Navbar setSignInActive={setSignInActive} />
 
         <Routes>
           <Route path="/" element={<Home />} />
+          
+          {/* Reset password page with token */}
+          <Route path="/reset-password/:token" element={<ResetPassword />} /> 
 
           {/* Protect the dashboard route */}
           <Route

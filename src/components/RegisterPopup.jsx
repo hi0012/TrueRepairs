@@ -3,41 +3,52 @@ import '../styles/RegisterPopup.css'
 import { useState } from 'react';
 import axios from 'axios'
 import { RiErrorWarningLine } from 'react-icons/ri';
+import { FaCheckCircle } from 'react-icons/fa';
 
 const RegisterPopup = ({open, onClose}) => {
 
-  const [firstName, setFirstName] = useState()
-  const [lastName, setLastName] = useState()
+  const [userName, setUserName] = useState()
   const [email, setEmail] = useState()
   const [password, setPassword] = useState('')
   const [passwordConfirm, setPasswordConfirm] = useState('')
   const [displayToS, setDisplayToS] = useState(false);
   
+  const [clickPassword, setClickPassword] = useState(false);
+  const [message, setMessage] = useState("");
 
   const handleSubmit = (e) => {
   e.preventDefault();
 
   axios.post("http://localhost:3000/register", {
-    firstName, lastName, email, password, passwordConfirm
+    userName, email, password, passwordConfirm
   })
   .then((res) => {
     if (!res.data.success) {
-      alert(res.data.message);
+      setMessage(res.data.message || "Registration failed.");
+      setTimeout(() => setMessage(""), 2000);
     } else {
-      alert("Account created successfully!");
+      alert("Please verify your account first. Verification link generated (check console).");
       onClose();
+      setMessage("Account created successfully!");
+      setTimeout(() => {
+        setMessage("");
+        onClose();
+      }, 2000);
     }
   })
   .catch((err) => {
-      console.error(err);
-    alert("Error connecting to server");
+    console.error(err);
+    setMessage("Error connecting to server");
+    setTimeout(() => setMessage(""), 2000);
   });
-}
+  }
 
   useEffect(()=> {
     if(!open) {
       setPassword('');
       setPasswordConfirm('');
+      setClickPassword(false);
+      setMessage("");
     }
   }, [open]);
 
@@ -62,27 +73,37 @@ const RegisterPopup = ({open, onClose}) => {
             <h3>Create an Account</h3>
             <form onSubmit={handleSubmit}>
                 <div className='form-names'>
-                  <input type="text" placeholder='First Name' required onChange={(e) => setFirstName(e.target.value)}/>
-                <input type="text" placeholder='Last Name' required onChange={(e) => setLastName(e.target.value)}/>
+                <input type="text" placeholder='Username' required onChange={(e) => setUserName(e.target.value)}/>
                 </div>
                 <input type="email"  placeholder='Email Address' required onChange={(e) => setEmail(e.target.value)}/>
-                <input type="password"  placeholder='Password' required onChange={(e) => setPassword(e.target.value)}/>
+                <input type="password"  placeholder='Password' required onChange={(e) => {setPassword(e.target.value); setClickPassword(true);}}/>
                 <input type="password"  placeholder='Confirm Password' required onChange={(e) => setPasswordConfirm(e.target.value)}/>
-                {passwordWarning && (
+                { clickPassword && (
                   <ul className='password-validator'>
-                  {!passwordReq.length && <li>Must be at least 8 characters long</li>}
-                  {!passwordReq.lowCase && <li>Must have at least one lowercase letter</li>}
-                  {!passwordReq.highCase && <li>Must have at least one uppercase letter</li>}
-                  {!passwordReq.number && <li>Must have at least one number</li>}
-                  {!passwordReq.specialChar && <li>Must have at least one special character</li>}
+                  <li className={passwordReq.length ? "correct" : "incorrect"}>{passwordReq.length ? <FaCheckCircle/> : <RiErrorWarningLine/>} At least 8 characters long</li>
+                  <li className={passwordReq.lowCase ? "correct" : "incorrect"}>{passwordReq.lowCase ? <FaCheckCircle/> : <RiErrorWarningLine/>} At least 1 lowercase letter (a-z)</li>
+                  <li className={passwordReq.highCase ? "correct" : "incorrect"}>{passwordReq.highCase ? <FaCheckCircle/> : <RiErrorWarningLine/>} At least 1 uppercase letter (A-Z)</li>
+                  <li className={passwordReq.number ? "correct" : "incorrect"}>{passwordReq.number ? <FaCheckCircle/> : <RiErrorWarningLine/>} At least 1 number (0-9)</li>
+                  <li className={passwordReq.specialChar ? "correct" : "incorrect"}>{passwordReq.specialChar ? <FaCheckCircle/> : <RiErrorWarningLine/>} At least 1 special character (@ # $ % ^ &)</li>
                 </ul>
                 )}
-                {passwordConfirm.length > 0 && !passwordEqual && (
-                  <p className='password-mismatch'><RiErrorWarningLine/> Passwords don't match.</p>
+                {passwordConfirm.length > 0 && (
+                  <p className={passwordEqual ? "password-equal" : "password-mismatch"}>{passwordEqual ? (
+                    <>
+                      <FaCheckCircle/> Passwords match.
+                    </>
+                  ): (
+                    <>
+                      <RiErrorWarningLine/> Passwords don't match.
+                    </>
+                  )}</p>
                 )}
+                {message && (
+                  <p className={`reset-message ${message.includes("successfully") ? "correct" : "incorrect"}`}>
+                {message}</p>)}
                 <div className='forms-btns'>
                   <button type='submit' disabled={!passwordReqChecker || !passwordEqual}>Create Account</button>
-                  <button type='close' onClick={onClose}>Close</button>
+                  <button type='close' onClick={onClose}>Cancel</button>
                 </div>
                 <div className='tos-container'>
                   <p className='tos-agreement'>By creating this account, you agree to our <a href='#' className='tos-link' onClick={(e) => {

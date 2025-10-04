@@ -1,19 +1,35 @@
+/* Dashboard layout */
 .dashboard {
     padding: 20px;
+    min-height: calc(100vh - 60px);
+    display: flex;
+    flex-direction: column;
+    background: url('../assets/Header-Image.png') no-repeat center center;
+    background-size: cover;   
+    border-radius: 20px;
+    overflow: hidden; 
+    margin-bottom: 40px;
 }
 
 .dashboard-header {
     margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
 }
 
 .user-info {
-    margin-top: 10px;
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 8px 14px;
+    border-radius: 6px;
     font-weight: bold;
-    display: flex;
-    align-items: center;
-    gap: 15px;
+    font-size: 1.1rem;
+    color: #333;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
 }
 
+/* Box grid */
 .box-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -21,6 +37,7 @@
     margin-top: 30px;
 }
 
+/* Dashboard cards */
 .dashboard-box {
     display: flex;
     align-items: center;
@@ -28,7 +45,7 @@
     height: 220px;
     background-color: #f0f4f8;
     border-radius: 10px;
-    font-size: 15px;
+    font-size: 35px;
     text-decoration: none;
     color: #333;
     font-weight: bold;
@@ -38,20 +55,4 @@
 .dashboard-box:hover {
     background-color: #dbeafe;
     transform: translateY(-5px);
-}
-
-
-.logout-btn {
-  background-color: #d9534f;
-  border: none;
-  padding: 8px 14px;
-  border-radius: 6px;
-  color: white;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.logout-btn:hover {
-  background-color: #c9302c;
 }

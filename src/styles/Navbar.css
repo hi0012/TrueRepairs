@@ -7,7 +7,6 @@
 
 .navbar .nav-logo {
     width: 150px;
-
 }
 
 .nav-list {
@@ -18,7 +17,6 @@
     font-size: 16px;
 
 }
-
 
 .navbar li {
     cursor: pointer;
@@ -34,17 +32,35 @@
 
 .navbar button {
     background: transparent;
-    font-size: 16px;
+    font-size: 15px;
     color: #0068d2;
     border: 1px solid #0068d2;
     padding: 10px 30px;
     border-radius: 50px;
     cursor: pointer;
     transition: 0.4s;
+    margin-left: 5px;
 }
 
 .navbar button:hover {
     background-color: #0068d2;
     color: white;
     border: 1px solid white;
+}
+
+.navbar .logout-btn {
+    background-color: #d9534f;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 8px;
+    color: white;
+    font-weight: bold;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.navbar .logout-btn:hover {
+    background-color: #c9302c;
+    transform: translateY(-2px);
 }

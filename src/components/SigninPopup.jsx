@@ -1,77 +1,134 @@
-import React from 'react'
-import '../styles/SigninPopup.css'
-import { useState } from 'react';
-import { Link } from "react-router-dom";
-import axios from 'axios'
+import React, { useState, useEffect } from 'react';
+import '../styles/SigninPopup.css';
 import { useNavigate } from "react-router-dom";
+import axios from 'axios';
 
 const SigninPopup = ({open, onClose}) => {
 
-  const [email, setEmail] = useState()
-  const [password, setPassword] = useState()
-  const navigate = useNavigate();
-  const [displayToS, setDisplayToS] = useState(false);
+  const [identifier, setIdentifier] = useState("");
+  const [password, setPassword] = useState("");
+  const [displayfp, setDisplayfp] = useState(false);
+  const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
+  const [message2, setMessage2] = useState("");
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (open) {
+      setDisplayfp(false);
+      setEmail("");
+      setMessage("");
+      setMessage2("");
+      setIdentifier("");
+      setPassword("");
+    }
+  }, [open]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    axios.post("http://localhost:3000/login", { email, password })
-    .then((res) => {
-      console.log(res.data);
+    axios.post("http://localhost:3000/login", { identifier, password })
+      .then((res) => {
+        if (res.data.success) {
+          localStorage.setItem("user", JSON.stringify(res.data.user));
+          setMessage2("Login Successfully");
 
-      if (res.data.success) {
-        // Grabbing info from DB to store in local storage and redirect to dashboard
-        localStorage.setItem("user", JSON.stringify(res.data.user));
-        onClose();
-        navigate("/dashboard");
-      } else {
-        alert("Invalid Login Credentials");
-      }
-    })
-    .catch((err) => {
-       console.error(err);
-      alert("Error connecting to server");
-    });
-  }
+          setTimeout(() => {
+            onClose();
+            navigate("/dashboard");
+          }, 1000);
+
+          setTimeout(() => setMessage2(""), 1000);
+        } else {
+          setMessage2("Invalid Login Credentials");
+          setTimeout(() => setMessage2(""), 1000);
+        }
+      })
+      .catch((err) => {
+        console.error(err);
+        alert("Error connecting to server");
+      });
+  };
+
+  const handlePassReset = () => {
+    if (!email) {
+      alert("Please enter your email first.");
+      return;
+    }
+
+    axios.post("http://localhost:3000/forgot-password", { email })
+      .then((res) => {
+        setMessage(res.data.message || "Reset link sent!");
+        setTimeout(() => setMessage(""), 2000);
+        setTimeout(() => onClose(), 2000);
+      })
+      .catch((err) => {
+        console.error(err);
+        setMessage("Error sending reset request.");
+        setTimeout(() => setMessage(""), 2000);
+      });
+  };
 
   return open && (
     <div onMouseDown={(e) => { if (e.target === e.currentTarget) { onClose(); } }} className='signin'>
-        <div onClick={e => e.stopPropagation()} className='signin-form'> 
-            <h3>Sign In</h3>
-            <form onSubmit={handleSubmit}>
-                <input type="email"  placeholder='Email' required onChange={(e) => setEmail(e.target.value)}/>
-                <input type="password"  placeholder='Password' required onChange={(e) => setPassword(e.target.value)}/>
-                <div className='forms-btns'>
-                  <button type='submit'>Login</button>
-                  <button type='button' className='close-btn' onClick={onClose}>Close</button>
-                </div>
-                <div className='tos-container'>
-                  <p className='tos-forgot'><a href='#' className='tos-link' onClick={(e) => {
-                    e.preventDefault();
-                    setDisplayToS(!displayToS);
-                  }}>Forgot Password?</a></p>
-                  {displayToS && (
-                    <div className='tos-inline-box' onClick={() => setDisplayToS(false)}>
-                          <form onSubmit={handleSubmit}>
-                            <h3>Forgot Password</h3>
-                            <input
-                              type="email"
-                              placeholder="Enter your email"
-                              value={email}
-                              onChange={(e) => setEmail(e.target.value)}
-                              required
-                            />
-                            <button type="submit">Send Reset Link</button>
-                            <p>{message}</p>
-                          </form>
-                    </div>
-                  )}
-                </div>
-            </form>
-        </div>
+      <div onClick={e => e.stopPropagation()} className='signin-form'>
+        <h3>Sign In</h3>
+        <form onSubmit={handleSubmit}>
+          <input 
+            type="text"  
+            placeholder='Username or Email' 
+            required={!displayfp} 
+            onChange={(e) => setIdentifier(e.target.value)}
+          />
+          <input 
+            type="password"  
+            placeholder='Password' 
+            required={!displayfp} 
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          <div className='forms-btns'>
+            <button type='submit' className='sub-btn'>Login</button>
+            <button type='button' className='close-btn' onClick={onClose}>Cancel</button>
+          </div>
+          <div className='fp-container'>
+            <p className='fp-agreement'>
+              <a href='#' className='fp-link' onClick={(e) => {
+                e.preventDefault();
+                setDisplayfp(!displayfp);
+              }}>
+                Forgot Password?
+              </a>
+            </p>
+          </div>
+        </form>
+
+        {message2 && (
+          <p className={`reset-message ${message2 === "Login Successfully" ? "correct" : "incorrect"}`}>
+            {message2}
+          </p>
+        )}
+
+        <form onSubmit={(e) => { e.preventDefault(); handlePassReset(); }}>
+          {displayfp && (
+            <div className="forgot-container">
+              <input
+                type="email"
+                placeholder="Enter your email to reset password"
+                onChange={(e) => setEmail(e.target.value)}
+              />
+              <button type="submit">Send Reset Link</button>
+            </div>
+          )}
+        </form>
+
+        {message && (
+          <p className={`reset-message ${message === "Reset link sent!" ? "correct" : "incorrect"}`}>
+            {message}
+          </p>
+        )}
+      </div>
     </div>
-  )
+  );
 }
 
-export default SigninPopup
+export default SigninPopup;
