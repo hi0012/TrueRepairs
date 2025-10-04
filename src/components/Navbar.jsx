@@ -26,7 +26,7 @@ const Navbar = ({ setSignInActive }) => {
       </Link>
 
       <ul className="nav-list">
-        <li>Features</li>
+        <li><a href="#features">Features</a></li>
         <li>About Us</li>
         <li>Contact Us</li>
       </ul>

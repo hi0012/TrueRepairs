@@ -19,3 +19,7 @@ a {
   width: 80%;
   margin: auto;
 }
+
+html {
+  scroll-behavior: smooth;
+}
