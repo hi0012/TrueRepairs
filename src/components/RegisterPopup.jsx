@@ -13,6 +13,7 @@ const RegisterPopup = ({open, onClose}) => {
   const [passwordConfirm, setPasswordConfirm] = useState('')
   const [displayToS, setDisplayToS] = useState(false);
   const [clickPassword, setClickPassword] = useState(false);
+  const [message, setMessage] = useState("");
 
   const handleSubmit = (e) => {
   e.preventDefault();
@@ -22,23 +23,29 @@ const RegisterPopup = ({open, onClose}) => {
   })
   .then((res) => {
     if (!res.data.success) {
-      alert(res.data.message);
+      setMessage(res.data.message || "Registration failed.");
+      setTimeout(() => setMessage(""), 2000);
     } else {
-      alert("Account created successfully!");
-      onClose();
+      setMessage("Account created successfully!");
+      setTimeout(() => {
+        setMessage("");
+        onClose();
+      }, 2000);
     }
   })
   .catch((err) => {
-      console.error(err);
-    alert("Error connecting to server");
+    console.error(err);
+    setMessage("Error connecting to server");
+    setTimeout(() => setMessage(""), 2000);
   });
-}
+  }
 
   useEffect(()=> {
     if(!open) {
       setPassword('');
       setPasswordConfirm('');
       setClickPassword(false);
+      setMessage("");
     }
   }, [open]);
 
@@ -88,6 +95,9 @@ const RegisterPopup = ({open, onClose}) => {
                     </>
                   )}</p>
                 )}
+                {message && (
+                  <p className={`reset-message ${message.includes("successfully") ? "correct" : "incorrect"}`}>
+                {message}</p>)}
                 <div className='forms-btns'>
                   <button type='submit' disabled={!passwordReqChecker || !passwordEqual}>Create Account</button>
                   <button type='close' onClick={onClose}>Cancel</button>
