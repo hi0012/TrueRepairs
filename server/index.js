@@ -1,9 +1,15 @@
+require("dotenv").config(); 
 const express = require('express')
 const connectDB = require('./db.js')
 const cors = require("cors")
 const UserModel = require('./models/users.js')
 const bcrypt = require('bcryptjs')
-const crypto = require("crypto"); 
+const crypto = require("crypto");
+const jwt = require("jsonwebtoken");
+const TEMP_SECRET = process.env.TEMP_SECRET;
+const sgMail = require("@sendgrid/mail"); 
+
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 const app = express()
 app.use(express.json())
@@ -60,23 +66,20 @@ app.post('/register', async (req, res) => {
               : "This username is already taken."
           });
         }
+        
+        const token = jwt.sign(
+          { userName, email, password },
+          TEMP_SECRET,
+          { expiresIn: "15m" }
+        );
 
-        //const hashedPassword = await bcrypt.hash(password, 10);
+        const verificationLink = `http://localhost:3000/verify/${token}`;
+        console.log("Verification link:", verificationLink);
 
-        // create new user if not found
-        const newUser = await UserModel.create({
-            userName,
-            email,
-            password
-        });
-
+        //not sure where this message is going
         res.json({
-        success: true,
-        user: {
-            id: newUser._id,
-            userName: newUser.userName,
-            email: newUser.email
-        }
+          success: true,
+          message: "Verification link generated (check console)."
         });
 
     } catch (err) {
@@ -87,6 +90,38 @@ app.post('/register', async (req, res) => {
         });
     }
 })
+
+app.get("/verify/:token", async (req, res) => {
+  try {
+    const { token } = req.params;
+
+    const decoded = jwt.verify(token, TEMP_SECRET);
+
+    // create user in DB after verification
+    const newUser = await UserModel.create({
+      userName: decoded.userName,
+      email: decoded.email,
+      password: decoded.password
+    });
+
+    res.json({
+      success: true,
+      message: "Email verified! Account created.",
+      user: {
+        id: newUser._id,
+        userName: newUser.userName,
+        email: newUser.email
+      }
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(400).json({
+      success: false,
+      message: "Invalid or expired verification link"
+    });
+  }
+});
 
 app.post("/forgot-password", async (req, res) => {
   try {
@@ -106,12 +141,29 @@ app.post("/forgot-password", async (req, res) => {
     await user.save();
 
     // Reset link points to your frontend
-    const resetURL = `http://localhost:5173/reset-password/${token}`
+    const resetURL = `${process.env.CLIENT_URL}/reset-password/${token}`;
 
     // For now, log instead of emailing
-    console.log("Password reset link:", resetURL)
+    //console.log("Password reset link:", resetURL)
 
-    res.json({ message: "Password reset link generated. Check console for link." })
+    //res.json({ message: "Password reset link generated. Check console for link." })
+
+    const msg = {
+      to: email,
+      from: { email: process.env.FROM_EMAIL, name: "TrueRepairs Support" },
+      subject: "Reset your password",
+      text: `Reset your password using the link below (valid 1 hour): ${resetURL}`,
+      html: `<p>Reset your password using the link below (valid 1 hour):</p><p><a href="${resetURL}">Reset password</a></p>`,
+    };
+
+    try {
+      await sgMail.send(msg);
+      return res.send({ ok: true });
+    } catch (err) {
+      console.error("SendGrid error:", err);
+      return res.status(500).send({ ok: false });
+    }
+
   } catch (err) {
     console.error(err)
     res.status(500).json({ message: "Server error" })
