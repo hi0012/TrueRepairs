@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import '../styles/Navbar.css'
 import logo from '../assets/TrueRepairs.png'
+import TinyLogo from '../assets/logo.png'
 import SigninPopup from './SigninPopup'
 import RegisterPopup from './RegisterPopup'
 import { useLocation, Link, useNavigate } from 'react-router-dom'
@@ -22,6 +23,7 @@ const Navbar = ({ setSignInActive }) => {
   return (
     <div className="navbar">
       <Link to="/">
+        <img className="nav-logo" src={TinyLogo} alt="TrueRepairs Logo" style={{ cursor: "pointer" }}/>
         <img className="nav-logo" src={logo} alt="TrueRepairs Logo" style={{ cursor: "pointer" }}/>
       </Link>
 
