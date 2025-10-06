@@ -3,6 +3,10 @@ import { useLocation } from 'react-router-dom';
 import '../styles/Home.css';
 import Header from '../components/Header';
 import Features from '../components/Features';
+import AboutUs from '../components/AboutUs'
+import ContactUs from '../components/ContactUs'
+import ReturnToTopButton from '../components/ReturnToTopButton'
+
 
 const Home = () => {
   const location = useLocation();
@@ -34,6 +38,9 @@ const Home = () => {
       )}
       <Header />
       <Features />
+      <AboutUs/>
+      <ContactUs/>
+      <ReturnToTopButton/>
     </div>
   );
 };
