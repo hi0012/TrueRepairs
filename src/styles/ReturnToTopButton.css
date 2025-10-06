@@ -1,0 +1,25 @@
+.return-to-top-button-container{
+    cursor: pointer;
+    left: 20px;
+    position: fixed;
+    z-index: 1000;
+    transition: bottom 0.3s ease;
+}
+
+.return-to-top-image{
+    width: 70px;
+    height: 70px;
+    display: block;
+
+}
+
+@media (max-width: 768px) {
+  .return-to-top-button-container {
+    left: 15px;
+  }
+
+  .return-to-top-image {
+    width: 30px;
+    height: 30px;
+  }
+}
