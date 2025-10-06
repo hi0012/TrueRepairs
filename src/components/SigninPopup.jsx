@@ -5,7 +5,7 @@ import axios from 'axios';
 
 const SigninPopup = ({open, onClose}) => {
 
-  const [identifier, setIdentifier] = useState("");
+  //const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [displayfp, setDisplayfp] = useState(false);
   const [email, setEmail] = useState("");
@@ -27,7 +27,7 @@ const SigninPopup = ({open, onClose}) => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    axios.post("http://localhost:3000/login", { identifier, password })
+    axios.post("http://localhost:3000/login", { email, password })
       .then((res) => {
         if (res.data.success) {
           localStorage.setItem("user", JSON.stringify(res.data.user));
@@ -76,7 +76,7 @@ const SigninPopup = ({open, onClose}) => {
         <form onSubmit={handleSubmit}>
           <input 
             type="text"  
-            placeholder='Username or Email' 
+            placeholder='Email' 
             required={!displayfp} 
             onChange={(e) => setIdentifier(e.target.value)}
           />
