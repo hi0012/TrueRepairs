@@ -48,20 +48,18 @@ app.post("/login", (req, res) => {
 
 app.post('/register', async (req, res) => {
   try {
-    const { userName, email, password } = req.body
+    const { email, password } = req.body
     // check if email already exists
-    const existingUser = await UserModel.findOne({ $or: [{ email }, { userName }]});
+    const existingUser = await UserModel.findOne({ email });
       if (existingUser) {
         return res.json({
           success: false,
-          message: existingUser.email === email
-          ? "This email is already associated with an account."
-          : "This username is already taken."
+          message: "This email is already associated with an account."
         });
       }
         
       const token = jwt.sign(
-        { userName, email, password },
+        { email, password },
         TEMP_SECRET,
         { expiresIn: "15m" }
       );
@@ -110,7 +108,6 @@ app.get("/verify/:token", async (req, res) => {
 
     // Create the user after verification
     const newUser = await UserModel.create({
-      userName: decoded.userName,
       email: decoded.email,
       password: decoded.password,
     });
