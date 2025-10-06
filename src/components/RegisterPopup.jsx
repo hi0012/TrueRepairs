@@ -25,15 +25,13 @@ const RegisterPopup = ({open, onClose}) => {
   .then((res) => {
     if (!res.data.success) {
       setMessage(res.data.message || "Registration failed.");
-      setTimeout(() => setMessage(""), 2000);
+      setTimeout(() => setMessage(""), 3000);
     } else {
-      alert("Please verify your account first. Verification link generated (check console).");
-      onClose();
-      setMessage("Account created successfully!");
+      setMessage(res.data.message || "Verification email sent!");
       setTimeout(() => {
         setMessage("");
         onClose();
-      }, 2000);
+      }, 3000);
     }
   })
   .catch((err) => {
@@ -99,8 +97,18 @@ const RegisterPopup = ({open, onClose}) => {
                   )}</p>
                 )}
                 {message && (
-                  <p className={`reset-message ${message.includes("successfully") ? "correct" : "incorrect"}`}>
-                {message}</p>)}
+                  <p
+                    className={`reset-message ${
+                      message.toLowerCase().includes("verification email") ||
+                      message.toLowerCase().includes("success") ||
+                      message.toLowerCase().includes("check your inbox")
+                        ? "correct"
+                        : "incorrect"
+                    }`}
+                  >
+                    {message}
+                  </p>
+                )}
                 <div className='forms-btns'>
                   <button type='submit' disabled={!passwordReqChecker || !passwordEqual}>Create Account</button>
                   <button type='close' onClick={onClose}>Cancel</button>
