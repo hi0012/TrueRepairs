@@ -6,9 +6,9 @@ import axios from 'axios';
 const SigninPopup = ({open, onClose}) => {
 
   //const [identifier, setIdentifier] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayfp, setDisplayfp] = useState(false);
-  const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [message2, setMessage2] = useState("");
   const navigate = useNavigate();
@@ -19,7 +19,7 @@ const SigninPopup = ({open, onClose}) => {
       setEmail("");
       setMessage("");
       setMessage2("");
-      setIdentifier("");
+      //setIdentifier("");
       setPassword("");
     }
   }, [open]);
@@ -78,7 +78,7 @@ const SigninPopup = ({open, onClose}) => {
             type="text"  
             placeholder='Email' 
             required={!displayfp} 
-            onChange={(e) => setIdentifier(e.target.value)}
+            onChange={(e) => setEmail(e.target.value)}
           />
           <input 
             type="password"  
