@@ -1,12 +1,16 @@
-import React from 'react'
+import React, { useState } from 'react'
 import '../styles/Footer.css'
 import footerLogo from '../assets/TrueRepairs.png'
 import footerWhiteLogo from '../assets/logowhite.png'
 import { MdLocationPin } from 'react-icons/md'
 import { AiOutlineMail } from 'react-icons/ai'
 import { FaPhone } from 'react-icons/fa'
+import PrivacyPolicy from './PrivacyPolicy'
+import TermsAndConditions from './TermsAndConditions'
 
 const Footer = () => {
+  const [displayTermsAndConditions, setDisplayTermsAndConditions] = useState(false);
+  const [displayPrivacyPopup, setDisplayPrivacyPopup] = useState(false);
   return (
     <div className='footer'>
       <div className='footer-container'>
@@ -29,12 +33,14 @@ const Footer = () => {
           </div>
           <div className='footer-bottom-right'>
             <ul className='list'>
-              <li className='tos'>Terms of Service</li>
-              <li className='privacy'>Privacy Policy</li>
+              <li className='tos' onClick={()=>setDisplayTermsAndConditions(true)}>Terms and Conditions</li>
+              <li className='privacy' onClick={()=>setDisplayPrivacyPopup(true)}>Privacy Policy</li>
             </ul>
           </div>
         </div>
       </div>
+      {displayTermsAndConditions && <TermsAndConditions onClose={()=> setDisplayTermsAndConditions(false)}/>}
+      {displayPrivacyPopup && <PrivacyPolicy onClose={()=> setDisplayPrivacyPopup(false)}/>}
     </div>
   )
 }
