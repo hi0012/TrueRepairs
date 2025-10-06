@@ -5,7 +5,6 @@ import axios from 'axios';
 
 const SigninPopup = ({open, onClose}) => {
 
-  //const [identifier, setIdentifier] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayfp, setDisplayfp] = useState(false);
@@ -19,7 +18,6 @@ const SigninPopup = ({open, onClose}) => {
       setEmail("");
       setMessage("");
       setMessage2("");
-      //setIdentifier("");
       setPassword("");
     }
   }, [open]);
