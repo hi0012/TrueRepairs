@@ -16,7 +16,8 @@
     flex-wrap: wrap; 
     padding-top: 15px; 
     padding-bottom: 15px; 
-} 
+}
+
 .footer-top-left p { 
     color: white; 
     font-size: 14px; 
@@ -24,11 +25,10 @@
 .footer-container hr { 
     background-color: beige; 
 } 
-.footer-top-right h2{ 
-    color: white; 
-    font-size: 20px; 
-    margin-bottom: 8px; 
-} 
+.footer-top-right {
+    display: flex;
+    flex-direction: column;
+}
 .footer-top-right p { 
     font-size: 14px; 
     color: white; 
