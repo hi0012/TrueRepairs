@@ -20,9 +20,9 @@ const Dashboard = () => {
           <Link to="" className="dashboard-box">Vehicle Info</Link>
           <Link to="" className="dashboard-box">Profile</Link>
           <Link to="" className="dashboard-box">AI Scan</Link>
-          <Link to="" className="dashboard-box">Settings</Link>
           <Link to="" className="dashboard-box">Reports</Link>
           <Link to="" className="dashboard-box">Support</Link>
+          <Link to="" className="dashboard-box">Settings</Link>
         </div>
       </main>
     </div>
