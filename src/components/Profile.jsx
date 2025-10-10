@@ -162,7 +162,7 @@ const Profile = ({ open, onClose }) => {
                                 <button type='submit' disabled={!passwordReqChecker || !passwordEqual} className='password-save-btn'>Save Changes</button>
                             </div>
                         </form>
-                        {message && (<p className={`reset-message ${message === "Password reset successful!"? "correct": "incorrect"}`}>{message}</p>)}
+                        {message && (<p className={`reset-message ${message === "Password updated successfully!"? "correct": "incorrect"}`}>{message}</p>)}
                     </div>
                 </div>
                 <div className='profile-bottom'>

@@ -21,22 +21,21 @@ app.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
     const user = await UserModel.findOne({ email });
-
     if (!user) {
       return res.json("User does not exist. Please try again.");
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
+
     if (!isMatch) {
       return res.json("The password is incorrect. Please try again.");
     }
 
     res.json({
       success: true,
-      user: { id: user._id, email: user.email }
+      user: { id: user._id, email: user.email },
     });
   } catch (err) {
-    console.error(err);
     res.status(500).json({ message: "Server error" });
   }
 })
@@ -204,25 +203,23 @@ app.post("/update-password", async (req, res) => {
       return res.status(404).json({ message: "User not found." });
     }
 
-    // Compare
+    // Verify current password
     const isMatch = await bcrypt.compare(currentPassword, user.password);
     if (!isMatch) {
       return res.status(400).json({ message: "Current password is incorrect." });
     }
 
-    const alreadyHashed = newPassword.startsWith("$2a$") || newPassword.startsWith("$2b$");
-    const hashedPassword = alreadyHashed ? newPassword : await bcrypt.hash(newPassword, 10);
+    user.password = newPassword;
 
-    user.password = hashedPassword;
     await user.save();
 
-    return res.json({ message: "Password reset successful!" });
+    //console.log("Password updated successfully for:", email);
+    return res.json({ message: "Password updated successfully!" });
   } catch (err) {
-    console.error(err);
+    //console.error("ERROR:", err);
     return res.status(500).json({ message: "Server error" });
   }
 })
-
 
 app.listen(5000, ()=> {
   console.log("App is running")
