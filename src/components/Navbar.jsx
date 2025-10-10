@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import '../styles/Navbar.css'
 import logo from '../assets/TrueRepairs.png'
 import TinyLogo from '../assets/logo.png'
@@ -14,11 +14,25 @@ const Navbar = ({ setSignInActive }) => {
   const onDashboard = location.pathname.startsWith("/dashboard")
   const navigate = useNavigate();
 
+  const retrieveUser = () => {
+    try {
+      return JSON.parse(localStorage.getItem("user"))
+    } catch {
+      return null
+    }
+  }
+  const [user, setUser] = useState(retrieveUser);
+
   // Handles Logouts
   const handleLogout = () => {
     localStorage.removeItem("user")
+    setUser(null);
     navigate("/");
   }
+  useEffect(()=> {
+    const userData = localStorage.getItem("user")
+    setUser(userData ? JSON.parse(userData) : null)
+  }, [location.pathname])
 
   return (
     <div className="navbar">
@@ -37,11 +51,16 @@ const Navbar = ({ setSignInActive }) => {
         {onDashboard ? (
           // Show profile icon on dashboard only
           <button className="logout-btn" onClick={handleLogout}>Logout</button>
-        ) : (
+        ) : !user ? (
           // Otherwise show auth buttons
           <>
             <button onClick={() => setSignInActive(true)}>Sign In</button>
             <button onClick={() => setRegisterOpen(true)}>Register</button>
+          </>
+        ) : (
+          <>
+            <button onClick={()=>navigate("/dashboard")}>Dashboard</button>
+            <button className='homepage-logout-btn' onClick={handleLogout}>Logout</button>
           </>
         )}
       </div>
