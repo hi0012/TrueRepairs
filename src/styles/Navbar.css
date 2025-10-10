@@ -48,6 +48,24 @@
     border: 1px solid white;
 }
 
+.navbar .homepage-logout-btn {
+    background: transparent; 
+    font-size: 15px; 
+    color: red; 
+    border: 1px solid red; 
+    padding: 10px 30px; 
+    border-radius: 50px; 
+    cursor: pointer; 
+    transition: 0.4s; 
+    margin-left: 5px; 
+}
+
+.navbar .homepage-logout-btn:hover{
+    background-color: red; 
+    color: white; 
+    border: 1px solid white; 
+}
+
 .navbar .logout-btn {
     background-color: #d9534f;
     border: none;

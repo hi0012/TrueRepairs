@@ -168,7 +168,8 @@
     gap: 6px;
 }
 .correct {
-    color: green;
+    color: #28a745;
+    font-size: 15px;
 }
 
 .incorrect,
@@ -177,7 +178,8 @@
 }
 
 .password-equal {
-    color: green;
+    color: #28a745;
+    font-size: 15px;
 }
 
 .password-save-container{
