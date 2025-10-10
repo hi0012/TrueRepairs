@@ -25,7 +25,7 @@ const SigninPopup = ({open, onClose}) => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    axios.post("http://localhost:3000/login", { email, password })
+    axios.post("http://localhost:5000/login", { email, password })
       .then((res) => {
         if (res.data.success) {
           localStorage.setItem("user", JSON.stringify(res.data.user));
@@ -54,7 +54,7 @@ const SigninPopup = ({open, onClose}) => {
       return;
     }
 
-    axios.post("http://localhost:3000/forgot-password", { email })
+    axios.post("http://localhost:5000/forgot-password", { email })
       .then((res) => {
         setMessage(res.data.message || "Reset link sent!");
         setTimeout(() => setMessage(""), 2000);

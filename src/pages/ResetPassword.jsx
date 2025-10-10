@@ -32,7 +32,7 @@ const ResetPassword = () => {
       return;
     }
 
-    axios.post(`http://localhost:3000/reset-password/${token}`, { password })
+    axios.post(`http://localhost:5000/reset-password/${token}`, { password })
       .then((res) => {
         setMessage(res.data.message || "Password reset successful!");
         setTimeout(() => {

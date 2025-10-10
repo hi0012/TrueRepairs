@@ -18,7 +18,7 @@ const RegisterPopup = ({open, onClose}) => {
   const handleSubmit = (e) => {
   e.preventDefault();
 
-  axios.post("http://localhost:3000/register", {
+  axios.post("http://localhost:5000/register", {
     email, password, passwordConfirm
   })
   .then((res) => {
