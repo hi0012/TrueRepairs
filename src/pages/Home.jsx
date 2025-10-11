@@ -12,6 +12,12 @@ const Home = () => {
   const location = useLocation();
   const [message, setMessage] = useState('');
 
+  useEffect(()=> {
+    requestAnimationFrame(()=>
+      document.getElementById(location.hash?.slice(1))?.scrollIntoView({behavior: "smooth"})
+    )
+  }, [location.pathname, location.hash])
+
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const verified = params.get('verified');
