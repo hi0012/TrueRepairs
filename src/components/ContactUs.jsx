@@ -1,15 +1,37 @@
 import React, { useState } from 'react'
 import '../styles/ContactUs.css'
 import contactImage from '../assets/contact-image.png'
+import axios from 'axios';
 
 const ContactUs = () => {
     const [displayContactForm, setDisplayContactForm] = useState(false);
-
-    const handleSubmit = (e) => { 
+    const [message, setMessage] = useState("");
+    const handleSubmit = async (e) => { 
         e.preventDefault(); 
-        alert("sucess") 
-        setDisplayContactForm(false); 
-    } 
+
+        const formData = {
+        name: e.target[0].value,
+        email: e.target[1].value,
+        feedback: e.target[2].value
+        };
+
+        try {
+        const res = await axios.post("http://localhost:5000/send-support", formData);
+        if (res.status === 200) {
+            setMessage("Support message sent!");
+        } else {
+            setMessage("Failed to send message. Try again later.");
+        }
+        } catch (err) {
+        console.error(err);
+        setMessage("Server error, please try again.");
+        }
+
+        setTimeout(() => {
+        setMessage("");
+        setDisplayContactForm(false);
+        }, 3000);
+    }
 
   return (
     <div className='contactus' id='contactus'> 
@@ -21,7 +43,7 @@ const ContactUs = () => {
                             <img src={contactImage} alt="" /> 
                         </div> 
                         <div className='header-content'> 
-                            <p>Have questions or feedback?<br/>We’re here to listen.</p> 
+                            <p>Have questions or feedback?<br/>We're here to listen.</p> 
                             <button onClick={() => setDisplayContactForm(true)} className='contact-us-btn'>Contact Us</button> 
                         </div> 
                     </div> 
@@ -39,8 +61,8 @@ const ContactUs = () => {
                             <button type='submit' className='contact-us-send-btn'>Send</button> 
                             <button type='button' className='contact-us-cancel-btn' onClick={()=>setDisplayContactForm(false)}>Cancel</button>
                         </div> 
-                        
-                    </form> 
+                    </form>
+                    {message && <p className="support-message">{message}</p>}
                 </div> 
             )} 
         </div> 
