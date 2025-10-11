@@ -17,33 +17,27 @@ app.use(cors())
 
 connectDB()
 
-app.post("/login", (req, res) => {
+app.post("/login", async (req, res) => {
+  try {
     const { email, password } = req.body;
-    UserModel.findOne({ email: email })
-    .then(user => {
-      if (user) {
-        // Compare plain text password with hashed password in DB
-        bcrypt.compare(password, user.password, (err, isMatch) => {
-          if (err) {
-            return res.json("Error while checking password");
-          }
+    const user = await UserModel.findOne({ email });
+    if (!user) {
+      return res.json("User does not exist. Please try again.");
+    }
 
-          if (isMatch) {
-            res.json({
-              success: true,
-              user: {
-                id: user._id,
-                email: user.email
-              }
-            });
-          } else {
-            res.json("The password is incorrect. Please try again.");
-          }
-        });
-      } else {
-        res.json("User does not exist. Please try again.");
-      }
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (!isMatch) {
+      return res.json("The password is incorrect. Please try again.");
+    }
+
+    res.json({
+      success: true,
+      user: { id: user._id, email: user.email },
     });
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
 })
 
 app.post('/register', async (req, res) => {
@@ -100,16 +94,17 @@ app.get("/verify/:token", async (req, res) => {
     const { token } = req.params;
     const decoded = jwt.verify(token, TEMP_SECRET);
 
-    // Check if user already exists to avoid duplicates
+    // Check if user already exists
     const existingUser = await UserModel.findOne({ email: decoded.email });
     if (existingUser) {
       return res.redirect(`${process.env.CLIENT_URL}/?verified=exists`);
     }
 
-    // Create the user after verification
+    const hashedPassword = await bcrypt.hash(decoded.password, 10);
+
     const newUser = await UserModel.create({
       email: decoded.email,
-      password: decoded.password,
+      password: hashedPassword,
     });
 
     console.log("Verified & created:", newUser.email);
@@ -120,7 +115,7 @@ app.get("/verify/:token", async (req, res) => {
     console.error("Verification error:", err);
     res.redirect(`${process.env.CLIENT_URL}/?verified=false`);
   }
-});
+})
 
 app.post("/forgot-password", async (req, res) => {
   try {
@@ -199,6 +194,33 @@ app.post("/reset-password/:token", async (req, res) => {
 })
 
 
-app.listen(3000, ()=> {
-    console.log("App is running")
+app.post("/update-password", async (req, res) => {
+  try {
+    const { currentPassword, newPassword, email } = req.body;
+
+    const user = await UserModel.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    // Verify current password
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Current password is incorrect." });
+    }
+
+    user.password = newPassword;
+
+    await user.save();
+
+    //console.log("Password updated successfully for:", email);
+    return res.json({ message: "Password updated successfully!" });
+  } catch (err) {
+    //console.error("ERROR:", err);
+    return res.status(500).json({ message: "Server error" });
+  }
+})
+
+app.listen(5000, ()=> {
+  console.log("App is running")
 })

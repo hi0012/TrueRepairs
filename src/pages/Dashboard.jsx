@@ -29,9 +29,9 @@ const Dashboard = () => {
           <Link to="" className="dashboard-box">Vehicle Info</Link>
           <div className="dashboard-box" onClick={() => popupOpen("profile")}>Profile</div>
           <Link to="" className="dashboard-box">AI Scan</Link>
-          <Link to="" className="dashboard-box">Settings</Link>
           <Link to="" className="dashboard-box">Reports</Link>
           <Link to="" className="dashboard-box">Support</Link>
+          <Link to="" className="dashboard-box">Settings</Link>
         </div>
       </main>
       <Profile open={displayPopup === "profile"} onClose={popupClose}/>
