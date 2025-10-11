@@ -221,6 +221,28 @@ app.post("/update-password", async (req, res) => {
   }
 })
 
+app.post("/send-support", async (req, res) => {
+  try {
+    const { name, email, feedback } = req.body;
+
+    const msg = {
+      to: "truerepairs.noreply@gmail.com",
+      from: {
+        email: "truerepairs.noreply@gmail.com",
+        name: "TrueRepairs Support",
+      },
+      subject: "New Support Message from Contact Form",
+      text: `From: ${name || "Anonymous"} (${email})\n\n${feedback}`,
+    }
+
+    await sgMail.send(msg);
+    res.status(200).json({ success: true });
+  } catch (error) {
+    console.error("SendGrid error:", error);
+    res.status(500).json({ success: false });
+  }
+})
+
 app.listen(5000, ()=> {
   console.log("App is running")
 })
