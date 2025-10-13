@@ -3,6 +3,7 @@ import { Link} from "react-router-dom";
 
 import '../styles/Dashboard.css'
 import Profile from "../components/Profile";
+import Settings from "../components/Settings";
 
 const Dashboard = () => {
   const [displayPopup, setDisplayPopup] = useState(null);
@@ -31,10 +32,11 @@ const Dashboard = () => {
           <Link to="" className="dashboard-box">AI Scan</Link>
           <Link to="" className="dashboard-box">Reports</Link>
           <Link to="" className="dashboard-box">Support</Link>
-          <Link to="" className="dashboard-box">Settings</Link>
+          <div className="dashboard-box" onClick={()=> popupOpen("settings")}>Settings</div>
         </div>
       </main>
       <Profile open={displayPopup === "profile"} onClose={popupClose}/>
+      <Settings open={displayPopup === "settings"} onClose={popupClose} />
     </div>
   )
 }
