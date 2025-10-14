@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
-import Navbar from './components/Navbar';
-import { Route, Routes, useLocation } from 'react-router-dom';
-import Home from './pages/Home';
-import SigninPopup from './components/SigninPopup';
-import Footer from './components/Footer';
+import React, { useState } from "react";
+import Navbar from "./components/Navbar";
+import { Route, Routes, useLocation } from "react-router-dom";
+import Home from "./pages/Home";
+import SigninPopup from "./components/SigninPopup";
+import Footer from "./components/Footer";
 import Dashboard from "./pages/Dashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ResetPassword from "./pages/ResetPassword";
+import VehicleInfo from "./pages/VehicleInfo";
 
 const App = () => {
   const [signInActive, setSignInActive] = useState(false);
@@ -16,21 +17,23 @@ const App = () => {
     <div>
       <SigninPopup open={signInActive} onClose={() => setSignInActive(false)} />
       <div className="site">
-        {/* Displays Nav */}
         <Navbar setSignInActive={setSignInActive} />
-
         <Routes>
           <Route path="/" element={<Home />} />
-          
-          {/* Reset password page with token */}
-          <Route path="/reset-password/:token" element={<ResetPassword />} /> 
-
-          {/* Protect the dashboard route */}
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
           <Route
             path="/dashboard"
             element={
               <ProtectedRoute>
                 <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/vehicle"
+            element={
+              <ProtectedRoute>
+                <VehicleInfo />
               </ProtectedRoute>
             }
           />
