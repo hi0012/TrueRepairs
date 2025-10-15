@@ -1,26 +1,29 @@
 import React, { useState } from "react";
-import Navbar from "./components/Navbar";
 import { Route, Routes, useLocation } from "react-router-dom";
-import Home from "./pages/Home";
-import SigninPopup from "./components/SigninPopup";
+
+import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
-import Dashboard from "./pages/Dashboard";
+import SigninPopup from "./components/SigninPopup";
 import ProtectedRoute from "./components/ProtectedRoute";
+
+import Home from "./pages/Home";
+import Dashboard from "./pages/Dashboard";
 import ResetPassword from "./pages/ResetPassword";
-import VehicleInfo from "./pages/VehicleInfo";
 
 const App = () => {
   const [signInActive, setSignInActive] = useState(false);
   const location = useLocation();
 
   return (
-    <div>
+    <div className="app-container">
       <SigninPopup open={signInActive} onClose={() => setSignInActive(false)} />
       <div className="site">
         <Navbar setSignInActive={setSignInActive} />
+
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
+
           <Route
             path="/dashboard"
             element={
@@ -29,16 +32,9 @@ const App = () => {
               </ProtectedRoute>
             }
           />
-          <Route
-            path="/vehicle"
-            element={
-              <ProtectedRoute>
-                <VehicleInfo />
-              </ProtectedRoute>
-            }
-          />
         </Routes>
       </div>
+
       <Footer />
     </div>
   );

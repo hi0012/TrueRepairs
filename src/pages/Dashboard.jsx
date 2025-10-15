@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import "../styles/Dashboard.css";
 import Profile from "../components/Profile";
+import VehicleInfo from "../components/VehicleInfo";
 
 const Dashboard = () => {
   const [displayPopup, setDisplayPopup] = useState(null);
@@ -15,15 +16,14 @@ const Dashboard = () => {
       <header className="dashboard-header">
         {user && (
           <div className="user-info">
-            <h1>Welcome to your Dashboard</h1>
-            <span>Hello, {user.email}</span>
+            <h1>Dashboard</h1>
           </div>
         )}
       </header>
 
       <main className="dashboard-content">
         <div className="box-grid">
-          <Link to="/vehicle" className="dashboard-box">Vehicle Info</Link>
+          <div className="dashboard-box" onClick={() => popupOpen("vehicle")}>Vehicle Info</div>
           <div className="dashboard-box" onClick={() => popupOpen("profile")}>Profile</div>
           <Link to="/scan" className="dashboard-box">AI Scan</Link>
           <Link to="/reports" className="dashboard-box">Reports</Link>
@@ -33,6 +33,7 @@ const Dashboard = () => {
       </main>
 
       <Profile open={displayPopup === "profile"} onClose={popupClose} />
+      <VehicleInfo open={displayPopup === "vehicle"} onClose={popupClose} />
     </div>
   );
 };
