@@ -56,6 +56,34 @@ const Profile = ({ open, onClose }) => {
 
     const passwordEqual = newPassword === confirmNewPassword;
 
+    const handleProfileSave = async () => {
+        try {
+            const res = await axios.post("http://localhost:5000/update-profile", {
+            email: currentEmail,
+            firstName,
+            lastName,
+            userName
+            });
+
+            setMessage(res.data.message);
+
+            const updatedUser = {
+            ...JSON.parse(localStorage.getItem("user")),
+            firstName,
+            lastName,
+            userName
+            };
+            localStorage.setItem("user", JSON.stringify(updatedUser));
+
+            setTimeout(() => setMessage(""), 3000);
+        } catch (err) {
+            console.error(err);
+            setMessage("Error updating profile");
+            setTimeout(() => setMessage(""), 3000);
+        }
+    };
+
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -118,7 +146,7 @@ const Profile = ({ open, onClose }) => {
                             </div>
                         </div>
                         <div className='edit-save-container'>
-                            <button className='email-save-btn'>Save Changes</button>
+                            <button className='email-save-btn' onClick={handleProfileSave}>Save Changes</button>
                         </div>
                     </div>
 
