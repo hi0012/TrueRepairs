@@ -52,7 +52,16 @@
   margin-top: 10px;
 }
 
-.vi-left,
+.vi-left{
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 20px;
+  background: #fafafa;
+  display: flex;
+  flex-direction: column;
+  max-height: 550px;
+}
+
 .vi-right {
   border: 1px solid #ddd;
   border-radius: 10px;
@@ -60,6 +69,22 @@
   background: #fafafa;
   display: flex;
   flex-direction: column;
+  max-height: 550px;
+  overflow-y: auto;
+  overflow-x: hidden;  
+}
+
+.vi-right::-webkit-scrollbar {
+  width: 8px;
+}
+
+.vi-right::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 4px;
+}
+
+.vi-right::-webkit-scrollbar-thumb:hover {
+  background: #888;
 }
 
 .vi-left h2,
