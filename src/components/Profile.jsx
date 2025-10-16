@@ -12,6 +12,10 @@ const Profile = ({ open, onClose }) => {
     const [currentPassword, setCurrentPassword] = useState("");
     const [clickPassword, setClickPassword] = useState(false);
     const [message, setMessage] = useState("");
+    const [firstName, setFirstName] = useState("");
+    const [lastName, setLastName] = useState("");
+    const [userName, setUserName] = useState("");
+
 
     const storedUser = JSON.parse(localStorage.getItem("user"));
     const email = storedUser?.email || localStorage.getItem("userEmail");
@@ -29,6 +33,9 @@ const Profile = ({ open, onClose }) => {
             const user = JSON.parse(localStorage.getItem("user"));
             if (user && user.email) {
                 setCurrentEmail(user.email);
+                setFirstName(user.firstName || "");
+                setLastName(user.lastName || "");
+                setUserName(user.userName || "");
             }
         } else {
             setNewPassword("");
@@ -88,16 +95,16 @@ const Profile = ({ open, onClose }) => {
                         <div className='profile-name'>
                             <div className='profile-first-name'>
                                 <label htmlFor="">First Name</label>
-                                <input type="text" placeholder='First Name (Optional)' />
+                                <input type="text" placeholder='First Name (Optional)' value={firstName} onChange={(e) => setFirstName(e.target.value)} />
                             </div>
                             <div className='profile-last-name'>
                                 <label htmlFor="">Last Name</label>
-                                <input type="text" placeholder='Last Name (Optional)' />
+                                <input type="text" placeholder='Last Name (Optional)' value={lastName} onChange={(e) => setLastName(e.target.value)} />
                             </div>
                         </div>
                         <div className='profile-username'>
                             <label htmlFor="">Username</label>
-                            <input type="text" placeholder='Username (Optional)' />
+                            <input type="text" placeholder='Username (Optional)' value={userName} onChange={(e) => setUserName(e.target.value)} />
                         </div>
                         <div className='profile-email-container'>
                             <hr className='hr-divider'/>
