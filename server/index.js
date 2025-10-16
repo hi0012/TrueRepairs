@@ -243,6 +243,37 @@ app.post("/send-support", async (req, res) => {
   }
 })
 
+app.post("/update-profile", async (req, res) => {
+  try {
+    const { email, firstName, lastName, userName } = req.body;
+
+    const user = await UserModel.findOneAndUpdate(
+      { email },
+      { firstName, lastName, userName },
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    res.json({
+      success: true,
+      message: "Profile updated successfully",
+      user: {
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        userName: user.userName
+      }
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+
 app.listen(5000, ()=> {
   console.log("App is running")
 })
