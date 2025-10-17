@@ -384,16 +384,12 @@ app.get("/verify/:token", async (req, res) => {
       return res.redirect(`${process.env.CLIENT_URL}/?verified=exists`);
     }
 
-    const hashedPassword = await bcrypt.hash(decoded.password, 10);
-
     const newUser = await UserModel.create({
       email: decoded.email,
-      password: hashedPassword,
+      password: decoded.password,
     });
 
     console.log("Verified & created:", newUser.email);
-
-    // Redirect to frontend with success flag
     res.redirect(`${process.env.CLIENT_URL}/?verified=true`);
   } catch (err) {
     console.error("Verification error:", err);
