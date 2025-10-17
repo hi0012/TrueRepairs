@@ -36,14 +36,6 @@ const Dashboard = () => {
       <Profile open={displayPopup === "profile"} onClose={popupClose}/>
       <Settings open={displayPopup === "settings"} onClose={popupClose} />
       <Support open={displayPopup === "support"} onClose={popupClose}/>
-          <Link to="/scan" className="dashboard-box">AI Scan</Link>
-          <Link to="/reports" className="dashboard-box">Reports</Link>
-          <Link to="/support" className="dashboard-box">Support</Link>
-          <Link to="/settings" className="dashboard-box">Settings</Link>
-        </div>
-      </main>
-
-      <Profile open={displayPopup === "profile"} onClose={popupClose} />
       <VehicleInfo open={displayPopup === "vehicle"} onClose={popupClose} />
     </div>
   );
