@@ -23,7 +23,7 @@ const Features = () => {
                 <div className='estimate-feature-left'>
                     <div className='estimate-feature-content'>
                         <h2>Instant Repair Cost Estimates</h2>
-                        <p>Get real-time cost estimates for replacement parts and repairs based on your vehicle’s make, model, and location.</p>
+                        <p>Get real-time cost estimates for replacement parts and repairs based on your vehicle's make, model, and location.</p>
                     </div>
                 </div>
                 <div className='estimate-feature-right'>

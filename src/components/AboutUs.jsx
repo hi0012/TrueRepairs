@@ -24,7 +24,7 @@ const AboutUs = () => {
                     <div className='aboutus-right-bottom'>
                         <div className='future'>
                             <h2>Looking Ahead</h2>
-                            <p>TrueRepairs is more than a tool — it’s a community resource built to grow with you. As we continue to expand, our goal is to bring even more innovation and support to drivers everywhere, ensuring that car ownership feels less like a burden and more like freedom.</p>
+                            <p>TrueRepairs is more than a tool — it's a community resource built to grow with you. As we continue to expand, our goal is to bring even more innovation and support to drivers everywhere, ensuring that car ownership feels less like a burden and more like freedom.</p>
                         </div>
                     </div>
                 </div>
