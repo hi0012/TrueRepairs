@@ -14,7 +14,7 @@ const vehdb = require("./src/services/vehdb");
 const Vehicle = require("./models/Vehicle.js");
 const { getCarSpecs, vinDecode } = require("./src/services/ninjaApi");
 //const externalRoutes = require("./src/routes/external.js");
-
+const { scrapeRockAuto } = require("./src/services/rockauto");
 const TEMP_SECRET = process.env.TEMP_SECRET;
 if (process.env.SENDGRID_API_KEY) sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
@@ -23,6 +23,31 @@ app.use(cors());
 app.use(express.json());
 
 connectDB();
+
+app.post("/api/scrape-rockauto", async (req, res) => {
+  try {
+    const { make, year, model, engine, category, subcategory } = req.body;
+    if (!make || !year || !model || !engine || !category || !subcategory) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    console.log(`Scraping RockAuto for ${year} ${make} ${model} (${engine}) - ${category}/${subcategory}`);
+
+    const parts = await scrapeRockAuto({
+      make,
+      year,
+      model,
+      engine,
+      category,
+      subcategory,
+    });
+
+    res.json({ success: true, parts });
+  } catch (err) {
+    console.error("Scraper error:", err);
+    res.status(500).json({ success: false, error: err.toString() });
+  }
+})
 
 app.get("/api/cardetails/makes", async (req, res) => {
   try {
@@ -230,19 +255,134 @@ app.delete("/api/vehicles/:id", async (req, res) => {
 app.post("/api/vehicleinfo", async (req, res) => {
   try {
     const { vin, email } = req.body;
-    if (!vin || !email)
+    if (!vin || !email) {
       return res.status(400).json({ message: "VIN and email required" });
+    }
 
-    const apiResp = await vehdb.vinDecode(vin);
-    const payload = { vehicledb: apiResp.data };
+    let payload = null;
 
+    // Helper functions
+    function formatFuel(fuel) {
+      if (!fuel) return "Unknown";
+      const f = fuel.toLowerCase();
+      if (f === "gas") return "Gasoline";
+      if (f === "diesel") return "Diesel";
+      if (f === "electric") return "Electric";
+      return fuel.charAt(0).toUpperCase() + fuel.slice(1);
+    }
+
+    function formatDrivetrain(drive) {
+      if (!drive) return "Unknown";
+      const d = drive.toLowerCase();
+      if (d === "awd") return "AWD";
+      if (d === "fwd") return "FWD";
+      if (d === "rwd") return "RWD";
+      if (d === "4wd") return "4WD";
+      return drive.toUpperCase();
+    }
+
+    try {
+      // Try VehicleDatabase first
+      const apiResp = await vehdb.vinDecode(vin);
+      payload = { source: "VehicleDatabase", data: apiResp.data };
+      console.log("VehicleDatabase VIN success");
+    } catch (vehdbErr) {
+      console.warn("VehicleDatabase failed, trying NinjaAPI...");
+
+      try {
+        // Fallback to NinjaAPI
+        const ninjaResp = await vinDecode(vin);
+        payload = { source: "NinjaAPI", data: ninjaResp };
+        console.log("Ninja VIN success (raw):", ninjaResp);
+
+        // Attempt enrichment for missing specs
+        if (ninjaResp.manufacturer && ninjaResp.model && ninjaResp.year) {
+          const specsList = await getCarSpecs({
+            make: ninjaResp.manufacturer,
+            model: ninjaResp.model,
+            year: ninjaResp.year,
+          });
+
+          if (specsList && specsList.length > 0) {
+            const specs = specsList[0];
+            payload.data = {
+              ...ninjaResp,
+              engine: specs.displacement
+                ? `${specs.displacement}L ${specs.cylinders || ""}-Cyl`.trim()
+                : "Unknown",
+              fuel_type: specs.fuel_type || "Unknown",
+              drive: specs.drive || "Unknown",
+              transmission: specs.transmission || "Unknown",
+              city_mpg: specs.city_mpg || "Unknown",
+              highway_mpg: specs.highway_mpg || "Unknown",
+            };
+            console.log("Enriched Ninja data:", payload.data);
+          }
+        }
+      } catch (ninjaErr) {
+        console.error(
+          "Both VIN lookups failed:",
+          ninjaErr.response?.data || ninjaErr.message
+        );
+        return res.status(500).json({ message: "VIN lookup failed" });
+      }
+    }
+
+    const v = payload.data || {};
+
+    // Normalize fields before saving
+    const make = v.make || v.manufacturer || v.brand || "Unknown";
+    const model = v.model || "Unknown";
+    const year = v.year || "Unknown";
+    const trim = v.trim || "Unknown";
+
+    const engine =
+      v.engine || v.engine_size
+        ? String(v.engine || v.engine_size).replace(/\b([a-z])/g, (c) =>
+            c.toUpperCase()
+          )
+        : "Unknown";
+
+    const fuel = formatFuel(v.fuel_type);
+    const drivetrain = formatDrivetrain(v.drive || v.drivetrain);
+    const transmission = v.transmission || "Unknown";
+    const mpg_city = v.city_mpg || "Unknown";
+    const mpg_highway = v.highway_mpg || "Unknown";
+    const vehicleClass = v.class || "Unknown";
+
+    const nickname = `${year} ${make} ${model}`.trim() || "Unnamed Vehicle";
+
+    // Save to Vehicle collection
+    const newVehicle = new Vehicle({
+      email,
+      vin,
+      nickname,
+      year,
+      make,
+      model,
+      trim,
+      engine,
+      fuel,
+      drivetrain,
+      transmission,
+      mpg_city,
+      mpg_highway,
+      class: vehicleClass,
+      data: v,
+    });
+    await newVehicle.save();
+
+    // Save to Lookup history
     await Lookup.create({ userEmail: email, vin, data: payload });
-    res.json(payload);
-  } catch (e) {
-    console.error(e);
-    res
-      .status(e.response?.status || 500)
-      .json({ message: e.message || "VIN lookup failed" });
+
+    return res.json({
+      message: `${nickname} added successfully!`,
+      source: payload.source,
+      vehicle: newVehicle,
+    });
+  } catch (err) {
+    console.error("Unexpected VIN lookup error:", err);
+    return res.status(500).json({ message: "Server error" });
   }
 })
 

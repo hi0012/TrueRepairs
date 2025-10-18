@@ -9,6 +9,14 @@ const VehicleSchema = new mongoose.Schema(
     make: { type: String },
     model: { type: String },
     trim: { type: String },
+    engine: { type: String },
+    fuel: { type: String },
+    drivetrain: { type: String },
+    transmission: { type: String },
+    mpg_city: { type: String },
+    mpg_highway: { type: String },
+    class: { type: String },
+
     data: { type: mongoose.Schema.Types.Mixed },
   },
   { timestamps: true }

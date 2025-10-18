@@ -5,6 +5,7 @@ import Profile from "../components/Profile";
 import Settings from "../components/Settings";
 import Support from "../components/Support";
 import VehicleInfo from "../components/VehicleInfo";
+import Report from "../components/Reports";
 
 const Dashboard = () => {
   const [displayPopup, setDisplayPopup] = useState(null);
@@ -28,8 +29,8 @@ const Dashboard = () => {
           <div className="dashboard-box" onClick={() => popupOpen("vehicle")}>Vehicle Info</div>
           <div className="dashboard-box" onClick={() => popupOpen("profile")}>Profile</div>
           <Link to="" className="dashboard-box">AI Scan</Link>
-          <Link to="" className="dashboard-box">Reports</Link>
-          <div className="dashboard-box" onClick={()=>popupOpen("support")}>Support</div>
+          <div className="dashboard-box" onClick={()=> popupOpen("report")}>Reports</div>
+          <div className="dashboard-box" onClick={()=> popupOpen("support")}>Support</div>
           <div className="dashboard-box" onClick={()=> popupOpen("settings")}>Settings</div>
         </div>
       </main>
@@ -37,6 +38,7 @@ const Dashboard = () => {
       <Settings open={displayPopup === "settings"} onClose={popupClose} />
       <Support open={displayPopup === "support"} onClose={popupClose}/>
       <VehicleInfo open={displayPopup === "vehicle"} onClose={popupClose} />
+      <Report open={displayPopup === "report"} onClose={popupClose} />
     </div>
   );
 };
