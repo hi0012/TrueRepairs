@@ -530,11 +530,11 @@ app.post("/send-support", async (req, res) => {
 
 app.post("/update-profile", async (req, res) => {
   try {
-    const { email, firstName, lastName, userName } = req.body;
+    const { email, firstName, lastName } = req.body;
 
     const user = await UserModel.findOneAndUpdate(
       { email },
-      { firstName, lastName, userName },
+      { firstName, lastName },
       { new: true }
     );
 
@@ -548,8 +548,7 @@ app.post("/update-profile", async (req, res) => {
       user: {
         email: user.email,
         firstName: user.firstName,
-        lastName: user.lastName,
-        userName: user.userName
+        lastName: user.lastName
       }
     });
   } catch (err) {

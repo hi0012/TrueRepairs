@@ -14,7 +14,6 @@ const Profile = ({ open, onClose }) => {
     const [message, setMessage] = useState("");
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
-    const [userName, setUserName] = useState("");
 
 
     const storedUser = JSON.parse(localStorage.getItem("user"));
@@ -35,7 +34,6 @@ const Profile = ({ open, onClose }) => {
                 setCurrentEmail(user.email);
                 setFirstName(user.firstName || "");
                 setLastName(user.lastName || "");
-                setUserName(user.userName || "");
             }
         } else {
             setNewPassword("");
@@ -62,7 +60,6 @@ const Profile = ({ open, onClose }) => {
             email: currentEmail,
             firstName,
             lastName,
-            userName
             });
 
             setMessage(res.data.message);
@@ -70,8 +67,7 @@ const Profile = ({ open, onClose }) => {
             const updatedUser = {
             ...JSON.parse(localStorage.getItem("user")),
             firstName,
-            lastName,
-            userName
+            lastName
             };
             localStorage.setItem("user", JSON.stringify(updatedUser));
 
