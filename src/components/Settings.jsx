@@ -8,6 +8,7 @@ const Settings = ({ open, onClose }) => {
     const [loginTime, setLoginTime] = useState(null);
     const [locateCity, setLocateCity] = useState("");
     const [deactivatePassword, setDeactivatePassword] = useState("");
+    const [deletePassword, setDeletePassword] = useState("");
     const [message, setMessage] = useState("");
     const storedUser = JSON.parse(localStorage.getItem("user"));
     const email = storedUser?.email
@@ -46,6 +47,25 @@ const Settings = ({ open, onClose }) => {
         }
     };
 
+    const handleDeleteAccount = async () => {
+        try {
+            const res = await axios.post("http://localhost:5000/delete-account", {
+                email: email,
+                password: deletePassword
+            });
+
+            if (res.data.success) {
+                setMessage("Account deleted successfully.");
+                localStorage.clear();
+                setTimeout(() => window.location.reload(), 2000);
+            } else {
+                setMessage(res.data.message);
+            }
+        } catch (err) {
+            console.error(err);
+            setMessage("Error deleting account.");
+        }
+    };
 
     return (
         open && (
@@ -108,10 +128,10 @@ const Settings = ({ open, onClose }) => {
                             <span onClick={() => setDisplayDeletePopup(false)} className="close-confirm-password-popup">×</span>
                             <h2>Confirm Password to delete account</h2>
                             <div className='delete-password-input'>
-                                <input type="password" placeholder='Enter Password' />
+                                <input type="password" placeholder='Enter Password' value={deletePassword} onChange={(e) => setDeletePassword(e.target.value)} />
                             </div>
                             <div className='delete-popup-btns'>
-                                <button className='delete-account'>Delete account</button>
+                                <button onClick={handleDeleteAccount} className='delete-account'>Delete account</button>
                             </div>
                         </div>
                     </div>

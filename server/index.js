@@ -562,29 +562,49 @@ app.post("/deactivate-account", async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // 1. Find user by email
     const user = await UserModel.findOne({ email });
     if (!user) {
       return res.status(404).json({ success: false, message: "User not found" });
     }
 
-    // 2. Verify password
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) {
       return res.status(401).json({ success: false, message: "Invalid password" });
     }
 
-    // 3. Deactivate account
     user.isActive = false;
     await user.save();
 
-    // 4. Respond to frontend
     res.json({ success: true, message: "Account deactivated successfully" });
   } catch (err) {
     console.error("Deactivate account error:", err);
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
+
+app.post("/delete-account", async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const user = await UserModel.findOne({ email });
+    if (!user) return res.status(404).json({ success: false, message: "User not found." });
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) return res.status(401).json({ success: false, message: "Incorrect password." });
+
+    await Promise.all([
+      UserModel.deleteOne({ email }),
+      //Order.deleteMany({ userEmail: email }),
+      //Review.deleteMany({ userEmail: email })
+    ]);
+
+    return res.json({ success: true, message: "Account deleted successfully." });
+  } catch (err) {
+    console.error("Delete account error:", err);
+    return res.status(500).json({ success: false, message: "Server error." });
+  }
+});
+
 
 app.listen(5000, ()=> {
   console.log("App is running")
