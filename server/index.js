@@ -315,6 +315,11 @@ app.post("/login", async (req, res) => {
       return res.json("The password is incorrect. Please try again.");
     }
 
+    if (!user.isActive) {
+      user.isActive = true;
+      await user.save();
+    }
+
     res.json({
       success: true,
       user: { id: user._id, email: user.email },
@@ -553,6 +558,33 @@ app.post("/update-profile", async (req, res) => {
   }
 });
 
+app.post("/deactivate-account", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    // 1. Find user by email
+    const user = await UserModel.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    // 2. Verify password
+    const validPassword = await bcrypt.compare(password, user.password);
+    if (!validPassword) {
+      return res.status(401).json({ success: false, message: "Invalid password" });
+    }
+
+    // 3. Deactivate account
+    user.isActive = false;
+    await user.save();
+
+    // 4. Respond to frontend
+    res.json({ success: true, message: "Account deactivated successfully" });
+  } catch (err) {
+    console.error("Deactivate account error:", err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
 
 app.listen(5000, ()=> {
   console.log("App is running")
