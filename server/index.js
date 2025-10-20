@@ -1,21 +1,305 @@
-require("dotenv").config(); 
-const express = require('express')
-const connectDB = require('./db.js')
-const cors = require("cors")
-const UserModel = require('./models/users.js')
-const bcrypt = require('bcryptjs')
+require("dotenv").config({ path: "../.env" });
+
+const express = require("express");
+const cors = require("cors");
+const mongoose = require("mongoose");
+const connectDB = require("./db.js");
+const UserModel = require("./models/users.js");
+const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
+const sgMail = require("@sendgrid/mail");
+const Lookup = require("./models/lookup.js");
+const vehdb = require("./src/services/vehdb");
+const Vehicle = require("./models/Vehicle.js");
+const { getCarSpecs, vinDecode } = require("./src/services/ninjaApi");
+//const externalRoutes = require("./src/routes/external.js");
+
 const TEMP_SECRET = process.env.TEMP_SECRET;
-const sgMail = require("@sendgrid/mail"); 
+if (process.env.SENDGRID_API_KEY) sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+const app = express();
+app.use(cors());
+app.use(express.json());
 
-const app = express()
-app.use(express.json())
-app.use(cors())
+connectDB();
 
-connectDB()
+app.get("/api/cardetails/makes", async (req, res) => {
+  try {
+    const { year } = req.query;
+    if (!year) return res.status(400).json({ message: "Year required" })
+
+    let allData = [];
+    let offset = 0;
+    const limit = 50;
+    let hasMore = true;
+
+    while (hasMore) {
+      const data = await getCarSpecs({ year, limit, offset });
+      if (!data.length) break;
+
+      allData = allData.concat(data);
+      offset += limit;
+      hasMore = data.length === limit;
+    }
+    const cap = (str = "") =>
+      str
+        .toLowerCase()
+        .split(" ")
+        .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
+        .join(" ");
+
+    const uniqueMakes = [
+      ...new Set(allData.map((c) => cap(c.make)))
+    ].sort();
+
+    console.log(`Found ${uniqueMakes.length} makes`);
+    res.json(uniqueMakes);
+  } catch (err) {
+    res.status(500).json({ message: "Failed to load makes" })
+  }
+})
+
+
+app.get("/api/cardetails/models", async (req, res) => {
+  try {
+    const { year, make } = req.query;
+    if (!year || !make)
+      return res.status(400).json({ message: "Year and make required" })
+    let allData = [];
+    let offset = 0;
+    const limit = 50;
+    let hasMore = true;
+
+    while (hasMore) {
+      const data = await getCarSpecs({ year, make, limit, offset });
+      if (!data.length) break;
+      allData = allData.concat(data);
+      offset += limit;
+      hasMore = data.length === limit;
+    }
+
+    // Capitalize helper
+    const cap = (str = "") =>
+      str
+        .toLowerCase()
+        .split(/([\s-]+)/)
+        .map((part) =>
+          /^[a-z]/.test(part)
+            ? part.charAt(0).toUpperCase() + part.slice(1)
+            : part
+        )
+        .join("");
+
+    // Apply to each model and remove duplicates
+    const uniqueModels = [...new Set(allData.map((c) => cap(c.model)))].sort();
+
+    res.json(uniqueModels);
+  } catch (err) {
+    console.error("Error in /models:", err.message);
+    res.status(500).json({ message: "Failed to load models" });
+  }
+})
+
+
+app.post("/api/manual-vehicle", async (req, res) => {
+  try {
+    const { year, make, model, trim, email } = req.body;
+
+    if (!year || !make || !model || !email) {
+      return res.status(400).json({ message: "Year, make, model, and email required" })
+    }
+
+    // Fetch specs from API Ninja
+    const specs = await getCarSpecs({ year, make, model })
+    const carData = specs?.[0];
+
+    if (!carData) {
+      return res.status(404).json({ message: "Vehicle specs not found." })
+    }
+
+    // Capitalize helper
+    const cap = (str = "") =>
+      str
+        .toLowerCase()
+        .split(" ")
+        .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
+        .join(" ");
+
+    const yearStr = String(year);
+    const makeFormatted = cap(make);
+    const modelFormatted = cap(model);
+    const trimFormatted = trim && trim.trim() !== "" ? cap(trim) : "";
+
+    // Engine & drivetrain info
+    const engine = carData.displacement
+      ? `${carData.displacement}L ${carData.cylinders || ""}-Cyl`.trim()
+      : "Unknown";
+
+    let fuel = carData.fuel_type ? cap(carData.fuel_type) : "Unknown";
+    if (fuel.toLowerCase() === "gas") fuel = "Gasoline";
+
+    const drivetrain = carData.drive ? carData.drive.toUpperCase() : "FWD";
+    const transmission = carData.transmission?.toUpperCase() || "AUTO";
+
+    // Build nickname
+    const nickname = `${yearStr} ${makeFormatted} ${modelFormatted}${
+      trimFormatted ? ` ${trimFormatted}` : ""
+    }`.trim();
+
+    // Construct final vehicle entry
+    const newVehicle = new Vehicle({
+      email,
+      nickname,
+      year: yearStr,
+      make: makeFormatted,
+      model: modelFormatted,
+      trim: trimFormatted,
+      engine,
+      fuel,
+      drivetrain,
+      transmission,
+      mpg_city: carData.city_mpg || "Unknown",
+      mpg_highway: carData.highway_mpg || "Unknown",
+      class: carData.class || "Unknown",
+    });
+
+    await newVehicle.save();
+
+    res.json({
+      message: "Manual vehicle added successfully!",
+      vehicle: {
+        ...newVehicle.toObject(),
+        data: {
+          engine: { engine_size: engine },
+          fuel: { fuel_type: fuel },
+          drivetrain: { drive_type: drivetrain },
+        },
+      },
+    });
+  } catch (err) {
+    console.error("Error adding manual vehicle:", err);
+    res.status(500).json({ message: "Failed to add manual vehicle." });
+  }
+})
+
+app.get("/api/cardetails/details", async (req, res) => {
+  try {
+    const { year, make, model } = req.query;
+    if (!year || !make || !model)
+      return res.status(400).json({ message: "Missing params" });
+
+    const data = await getCarSpecs({ year, make, model });
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ message: "Failed to load details" });
+  }
+})
+
+app.get("/api/vehicles", async (req, res) => {
+  try {
+    const { email } = req.query;
+    if (!email) return res.status(400).json({ message: "Email is required" });
+
+    const vehicles = await Vehicle.find({ email });
+    res.json({ items: vehicles });
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+})
+
+app.post("/api/vehicles", async (req, res) => {
+  try {
+    const newVehicle = new Vehicle(req.body);
+    await newVehicle.save();
+    res.json(newVehicle);
+  } catch (err) {
+    res.status(500).json({ message: "Error saving vehicle" });
+  }
+})
+
+app.delete("/api/vehicles/:id", async (req, res) => {
+  try {
+    await Vehicle.findByIdAndDelete(req.params.id);
+    res.json({ message: "Deleted" });
+  } catch {
+    res.status(500).json({ message: "Failed to delete" });
+  }
+})
+
+app.post("/api/vehicleinfo", async (req, res) => {
+  try {
+    const { vin, email } = req.body;
+    if (!vin || !email)
+      return res.status(400).json({ message: "VIN and email required" });
+
+    const apiResp = await vehdb.vinDecode(vin);
+    const payload = { vehicledb: apiResp.data };
+
+    await Lookup.create({ userEmail: email, vin, data: payload });
+    res.json(payload);
+  } catch (e) {
+    console.error(e);
+    res
+      .status(e.response?.status || 500)
+      .json({ message: e.message || "VIN lookup failed" });
+  }
+})
+
+app.get("/api/history", async (req, res) => {
+  try {
+    const email = (req.query.email || "").trim().toLowerCase();
+    if (!email) return res.status(400).json({ message: "email is required" });
+
+    const items = await Lookup.find({ userEmail: email })
+      .sort({ createdAt: -1 })
+      .limit(20)
+      .lean();
+
+    res.json({ items });
+  } catch (e) {
+    res.status(500).json({ message: "Server error" });
+  }
+})
+
+app.post("/api/history", async (req, res) => {
+  try {
+    const email = (req.body.email || "").trim().toLowerCase();
+    const vin = (req.body.vin || "").trim().toUpperCase();
+    if (!email || !vin)
+      return res
+        .status(400)
+        .json({ message: "email and vin are required" });
+
+    const apiResp = await vehdb.vinDecode(vin);
+    const payload = { vehicledb: apiResp.data };
+
+    await Lookup.create({ userEmail: email, vin, data: payload });
+    res.json(payload);
+  } catch (e) {
+    res
+      .status(e.response?.status || 500)
+      .json({ message: e.message || "Lookup failed" });
+  }
+})
+
+app.delete("/api/history/:id", async (req, res) => {
+  try {
+    await Lookup.deleteOne({ _id: req.params.id });
+    res.json({ ok: true });
+  } catch {
+    res.status(500).json({ ok: false });
+  }
+});
+
+app.get("/", (req, res) => res.send("TrueRepairs API"));
+app.get("/api/health", (req, res) => res.json({ ok: true }));
+app.get("/db-health", (req, res) => {
+  res.json({
+    connected: mongoose.connection.readyState === 1,
+    state: mongoose.connection.readyState,
+  });
+})
 
 app.post("/login", async (req, res) => {
   try {
@@ -100,16 +384,12 @@ app.get("/verify/:token", async (req, res) => {
       return res.redirect(`${process.env.CLIENT_URL}/?verified=exists`);
     }
 
-    const hashedPassword = await bcrypt.hash(decoded.password, 10);
-
     const newUser = await UserModel.create({
       email: decoded.email,
-      password: hashedPassword,
+      password: decoded.password,
     });
 
     console.log("Verified & created:", newUser.email);
-
-    // Redirect to frontend with success flag
     res.redirect(`${process.env.CLIENT_URL}/?verified=true`);
   } catch (err) {
     console.error("Verification error:", err);

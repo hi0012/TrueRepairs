@@ -22,6 +22,11 @@ const SigninPopup = ({open, onClose}) => {
     }
   }, [open]);
 
+  const getLoginTime = () => {
+    const time = new Date().toISOString();
+    localStorage.setItem("loginTime", time);
+  }
+
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -37,6 +42,7 @@ const SigninPopup = ({open, onClose}) => {
           }, 1000);
 
           setTimeout(() => setMessage2(""), 1000);
+          getLoginTime();
         } else {
           setMessage2("Invalid Login Credentials");
           setTimeout(() => setMessage2(""), 1000);

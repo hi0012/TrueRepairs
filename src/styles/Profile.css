@@ -1,4 +1,4 @@
-.profile-overlay{
+.profile-overlay {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -9,7 +9,8 @@
     width: 100%;
     height: 100%;
     backdrop-filter: blur(4px);
-    background: rgba(0, 0, 0, 0.2); 
+    background: rgba(0, 0, 0, 0.2);
+    animation: fadeIn 0.3s ease-in-out;
 }
 .profile-popup {
     background: #fff;
@@ -22,6 +23,7 @@
     justify-content: space-between;
     box-shadow: 0 6px 25px rgba(0, 0, 0, 0.5);
     z-index: 1000;
+    animation: slideUp 0.4s ease-in-out;
 }
 
 .profile-header{
@@ -242,4 +244,20 @@
     background-color: red;
     color: white;
     border: 1px solid white;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(40px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
 }
