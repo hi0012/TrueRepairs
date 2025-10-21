@@ -530,43 +530,50 @@ app.post("/send-support", async (req, res) => {
 
 app.post("/update-profile", async (req, res) => {
   try {
-    const { currentEmail, newEmail, firstName, lastName } = req.body;
+    const { currentEmail, newEmail } = req.body;
 
-    // find user by their current email
+    // Validate input
+    if (!currentEmail || !newEmail) {
+      return res.status(400).json({
+        success: false,
+        message: "Both currentEmail and newEmail are required",
+      });
+    }
+
+    // Find user by current email
     const user = await UserModel.findOne({ email: currentEmail });
     if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
     }
 
-    // If the user entered a new email and it's different from the current one
-    if (newEmail && newEmail !== currentEmail) {
-      const emailExists = await UserModel.findOne({ email: newEmail });
-      if (emailExists) {
-        return res
-          .status(409)
-          .json({ success: false, message: "Email already in use" });
-      }
-      user.email = newEmail; // update to new email
+    // Check if new email already exists
+    const emailExists = await UserModel.findOne({ email: newEmail });
+    if (emailExists) {
+      return res.status(409).json({
+        success: false,
+        message: "Email already in use",
+      });
     }
 
-    // Update name fields
-    if (firstName) user.firstName = firstName;
-    if (lastName) user.lastName = lastName;
-
+    // Update user email
+    user.email = newEmail;
     await user.save();
 
     res.json({
       success: true,
-      message: "Profile updated successfully",
-      user: {
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-      },
+      message: "Email updated successfully",
+      user: { email: user.email },
     });
+
   } catch (err) {
     console.error("Error in /update-profile:", err);
-    res.status(500).json({ success: false, message: "Server error" });
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
   }
 });
 
