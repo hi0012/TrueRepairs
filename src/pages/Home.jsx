@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import '../styles/Home.css';
+
 import Header from '../components/Header';
 import Features from '../components/Features';
 import AboutUs from '../components/AboutUs'
