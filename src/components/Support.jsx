@@ -31,16 +31,19 @@ const Support = ({ open, onClose }) => {
                         <h1>Support</h1>
                     </div>
                     <div className='support-container'>
+                        {showCards.map((card, i) => {
+                            const mainIndex = index + i;
+                            return (
+                                <div className={`support-showcase ${mainIndex === 0 ? 'first-card' : ''}`} key={i}>
+                                    {card.icon}
+                                    {card.title}
+                                    {card.content}
+                                </div>
+                            );
+                        })}
                         {index > 0 && (
                             <button className="left-btn" onClick={previousPage}>◁</button>
                         )}
-                        {showCards.map((card, i) => (
-                            <div className="support-showcase" key={i}>
-                                {card.icon}
-                                {card.title}
-                                {card.content}
-                            </div>
-                        ))}
                         {index + displayCards < Cards.length && (
                             <button className="right-btn" onClick={nextPage}>▷</button>
                         )}

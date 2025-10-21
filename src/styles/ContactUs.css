@@ -157,3 +157,8 @@
   } 
 } 
 
+@media (max-width: 768px) {
+  .contact-image {
+    display: none;
+  }
+}

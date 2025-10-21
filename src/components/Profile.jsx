@@ -4,6 +4,7 @@ import { FaCheckCircle } from "react-icons/fa";
 import { RiErrorWarningLine } from "react-icons/ri";
 import axios from "axios";
 
+
 const Profile = ({ open, onClose }) => {
     const [currentEmail, setCurrentEmail] = useState("");
     const [newEmail, setNewEmail] = useState("");
