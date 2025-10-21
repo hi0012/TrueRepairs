@@ -315,6 +315,11 @@ app.post("/login", async (req, res) => {
       return res.json("The password is incorrect. Please try again.");
     }
 
+    if (!user.isActive) {
+      user.isActive = true;
+      await user.save();
+    }
+
     res.json({
       success: true,
       user: { id: user._id, email: user.email },
@@ -522,6 +527,103 @@ app.post("/send-support", async (req, res) => {
     res.status(500).json({ success: false });
   }
 })
+
+app.post("/update-profile", async (req, res) => {
+  try {
+    const { currentEmail, newEmail } = req.body;
+
+    // Validate input
+    if (!currentEmail || !newEmail) {
+      return res.status(400).json({
+        success: false,
+        message: "Both currentEmail and newEmail are required",
+      });
+    }
+
+    // Find user by current email
+    const user = await UserModel.findOne({ email: currentEmail });
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // Check if new email already exists
+    const emailExists = await UserModel.findOne({ email: newEmail });
+    if (emailExists) {
+      return res.status(409).json({
+        success: false,
+        message: "Email already in use",
+      });
+    }
+
+    // Update user email
+    user.email = newEmail;
+    await user.save();
+
+    res.json({
+      success: true,
+      message: "Email updated successfully",
+      user: { email: user.email },
+    });
+
+  } catch (err) {
+    console.error("Error in /update-profile:", err);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+});
+
+app.post("/deactivate-account", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    const user = await UserModel.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    const validPassword = await bcrypt.compare(password, user.password);
+    if (!validPassword) {
+      return res.status(401).json({ success: false, message: "Invalid password" });
+    }
+
+    user.isActive = false;
+    await user.save();
+
+    res.json({ success: true, message: "Account deactivated successfully" });
+  } catch (err) {
+    console.error("Deactivate account error:", err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+app.post("/delete-account", async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const user = await UserModel.findOne({ email });
+    if (!user) return res.status(404).json({ success: false, message: "User not found." });
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) return res.status(401).json({ success: false, message: "Incorrect password." });
+
+    await Promise.all([
+      UserModel.deleteOne({ email }),
+      //Order.deleteMany({ userEmail: email }),
+      //Review.deleteMany({ userEmail: email })
+    ]);
+
+    return res.json({ success: true, message: "Account deleted successfully." });
+  } catch (err) {
+    console.error("Delete account error:", err);
+    return res.status(500).json({ success: false, message: "Server error." });
+  }
+});
+
 
 app.listen(5000, ()=> {
   console.log("App is running")
