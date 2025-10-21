@@ -1,263 +1,447 @@
-.profile-overlay {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 999;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    backdrop-filter: blur(4px);
-    background: rgba(0, 0, 0, 0.2);
-    animation: fadeIn 0.3s ease-in-out;
-}
-.profile-popup {
-    background: #fff;
-    width: 95%;
-    height: 90%;
-    border-radius: 12px;
-    padding: 50px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.5);
-    z-index: 1000;
-    animation: slideUp 0.4s ease-in-out;
-}
-
-.profile-header{
-    text-align: center;
-}
-.profile-header p {
-    font-size: 25px;
-    font-weight: 600;
-}
-.profile-container {
-    display: flex;
-    justify-content: space-between;
-    height: 70%;
-    gap: 20px;
-    width: 100%;
-}
-.profile-edit-left{
-    gap: 10px;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    border: 2px solid #ccc;
-    height: 100%;
-    width: 50%;
-    border-radius: 6px;
-}
-.profile-edit-left input {
-    border-radius: 6px;
-    padding: 10px;
-    width: 100%;
-    border: 1px solid #ccc;
-}
-.profile-edit-left h2 {
-    margin-bottom: 20px;
-}
-.profile-email-container{
-    margin-top: 30px;
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-}
-.profile-current-email input{
-    color: gray;
-}
-.email-save-container {
-    margin-top: auto;
-    display: flex;
-    justify-content: center;
-}
-.hr-divider {
-    border: none;
-    height: 2px;
-    background-color: #ccc;
+.profile-overlay { 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    z-index: 999; 
+    position: fixed; 
+    top: 0; 
+    left: 0; 
     width: 100%; 
-    border-radius: 2px;
-}
-.email-save-btn{
-    border: none;
-    color: #0068d2;
-    white-space: nowrap;
-    font-weight: 500;
-    padding: 13px 32px;
-    background-color: white;
-    font-size: clamp(15px, 1vw, 15px);
-    border-radius: 50px;
-    cursor: pointer;
-    border: 1px solid #0068d2;
-    transition: all 0.3s;
-}
-.email-save-btn:hover{
-    background-color: #0068d2;
-    color: white;
-    border: 1px solid white;
-}
+    height: 100%; 
+    backdrop-filter: blur(4px); 
+    background: rgba(0, 0, 0, 0.2); 
+    animation: fadeIn 0.3s ease-in-out; 
+} 
 
-.profile-name{
-    display: flex;
-    justify-content: space-between;
-    gap: 5px;
-}
-.profile-first-name{
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-}
-.profile-last-name{
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-}
+.profile-popup { 
+    background: #fff; 
+    width: 95%; 
+    height: 90%; 
+    border-radius: 12px; 
+    padding: 50px; 
+    display: flex; 
+    flex-direction: column; 
+    justify-content: space-between; 
+    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.5); 
+    z-index: 1000; 
+    animation: slideUp 0.4s ease-in-out; 
+} 
 
+.profile-header{ 
+    text-align: center; 
+} 
 
+.profile-header p { 
+    font-size: 25px; 
+    font-weight: 600; 
+} 
 
+.profile-container { 
+    display: flex; 
+    justify-content: space-between; 
+    height: 70%; 
+    gap: 20px; 
+    width: 100%; 
+} 
 
+.profile-edit-left{
+    gap: 10px; 
+    padding: 20px; 
+    display: flex; 
+    flex-direction: column; 
+    border: 2px solid #ccc; 
+    height: 100%; 
+    width: 50%; 
+    border-radius: 6px; 
+    transition: transform 0.2s ease, box-shadow 0.2s ease;   
+} 
 
-.profile-password-right{
-    gap: 10px;
-    padding: 20px;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    border: 2px solid #ccc;
-    width: 50%;
-    border-radius: 6px;
-}
+.profile-edit-left:hover{ 
+    transform: scale(1.03);   
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);   
+} 
 
-.profile-passwords-fields {
-    display: flex;
-    justify-content: space-between;
-    gap: 5px;
-}
-.password-new-password-container{
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-}
-.password-confirm-password-container{
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-}
-.profile-password-right input {
-    border-radius: 6px;
-    padding: 10px;
-    width: 100%;
-    border: 1px solid #ccc;
-}
+.profile-edit-left input { 
+    border-radius: 6px; 
+    padding: 10px; 
+    width: 100%; 
+    border: 1px solid #ccc; 
+} 
+
+.profile-edit-left h2 { 
+    margin-bottom: 20px; 
+} 
 
 
-.profile-password-validator{
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 6px 20px;
-    list-style: none;
-    padding: 0;
-    margin: 10px 0;
-    align-items: start;
-}
 
-.profile-password-validator li {
-     font-size: 14px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-.correct {
-    color: #28a745;
-    font-size: 15px;
-}
+.email-form{ 
+    display: flex; 
+    flex-direction: column; 
+    gap: 10px; 
+    justify-content: space-between; 
+    height: 100%; 
+    box-sizing: border-box; 
+} 
 
-.incorrect,
-.password-mismatch {
-    color: red;
-}
+.profile-save-new-email{ 
+    display: flex; 
+    justify-content: center; 
+    margin-top: auto; 
+} 
 
-.password-equal {
-    color: #28a745;
-    font-size: 15px;
-}
+.save-email-btn{ 
+    border: none; 
+    color: #0068d2; 
+    white-space: nowrap; 
+    font-weight: 500; 
+    padding: 13px 32px; 
+    background-color: white; 
+    font-size: clamp(15px, 1vw, 15px); 
+    border-radius: 50px; 
+    cursor: pointer; 
+    border: 1px solid #0068d2; 
+    transition: all 0.3s; 
+} 
 
-.password-save-container{
-    margin-top: auto;
+.save-email-btn:hover{ 
+    background-color: #0068d2; 
+    color: white; 
+    border: 1px solid white; 
+} 
+
+.current-email{ 
+    opacity: 70%; 
+} 
+
+.email-confirm-overlay{ 
+    position: fixed;  
+    top: 0;  
+    left: 0;  
+    width: 100%;  
+    height: 100%;  
+    background: rgba(0,0,0,0.5);  
+    display: flex;  
+    justify-content: center;  
+    align-items: center;  
+    z-index: 2000;  
+} 
+
+.email-confirm-popup{ 
+    position: relative;  
+    background: #fff;  
+    padding: 30px 20px;  
+    border-radius: 12px;  
+    width: 400px;  
+    max-width: 90%;  
+    text-align: center;  
+    box-shadow: 0 8px 25px rgba(0,0,0,0.5);  
+    display: flex;  
+    flex-direction: column; 
+} 
+
+.email-confirm-popup h2{ 
+    margin-top: 30px; 
+} 
+
+.close-email-confirm-popup{ 
+    position: absolute;  
+    top: 15px;  
+    right: 20px;  
+    height: 25px;  
+    width: 25px;  
+    border: 1px solid red;  
+    border-radius: 50%;  
+    color: red;  
+    font-size: 18px;  
+    font-weight: bold;  
+    display: flex;  
+    align-items: center;  
+    justify-content: center;  
+    cursor: pointer;  
+    transition: all 0.2s ease;  
+    background-color: white;  
+} 
+
+.close-email-confirm-popup:hover{ 
+    background-color: red;  
+    color: white;  
+    border: 1px solid red; 
+} 
+
+.email-confirm-password-input{ 
+    margin-top: 15px;  
+    margin-bottom: 10px; 
+} 
+
+.email-confirm-popup-container{ 
+    padding: 10px;  
+    display: flex;  
+    justify-content: center;  
+} 
+
+.email-confirm-password-input input { 
+    border-radius: 6px;  
+    padding: 10px;  
+    width: 80%;  
+    border: 1px solid #ccc;  
+} 
+
+.confirm-save-email-btn{ 
+     border: none;  
+    color: #0068d2;  
+    white-space: nowrap;  
+    font-weight: 500;  
+    padding: 13px 32px;  
+    background-color: white;  
+    font-size: clamp(15px, 1vw, 15px);  
+    border-radius: 50px;  
+    cursor: pointer;  
+    border: 1px solid #0068d2;  
+    transition: all 0.3s;  
+} 
+
+.confirm-save-email-btn:hover{ 
+    background-color: #0068d2;  
+    color: white;  
+} 
+
+ 
+.profile-password-right{ 
+    gap: 10px; 
+    padding: 20px; 
+    display: flex; 
+    flex-direction: column; 
+    border: 2px solid #ccc; 
+    height: 100%; 
+    width: 50%; 
+    border-radius: 6px; 
+    transition: transform 0.2s ease, box-shadow 0.2s ease; 
+} 
+
+.profile-password-right:hover{ 
+    transform: scale(1.03);   
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);   
+} 
+
+.password-form { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 10px; 
+    height: 100%; 
+    justify-content: space-between; 
+    box-sizing: border-box; 
+} 
+
+.profile-password-right input { 
+    border-radius: 6px; 
+    padding: 10px; 
+    width: 100%; 
+    border: 1px solid #ccc; 
+} 
+
+.profile-password-validator{ 
+    display: grid; 
+    grid-template-columns: repeat(2, 1fr); 
+    gap: 6px 20px; 
+    list-style: none; 
+    padding: 0; 
+    margin: 10px 0; 
+    align-items: start; 
+} 
+
+.profile-password-validator li { 
+     font-size: 14px; 
+    display: flex; 
+    align-items: center; 
+    gap: 6px; 
+} 
+
+.correct { 
+    color: #28a745; 
+    font-size: 15px; 
+} 
+
+.incorrect, 
+.password-mismatch { 
+    color: red; 
+} 
+
+.password-equal { 
+    color: #28a745; 
+    font-size: 15px; 
+} 
+
+.password-save-container{ 
+    margin-top: auto; 
+    display: flex; 
+    justify-content: center; 
+} 
+
+.password-save-btn:disabled { 
+    opacity: 0.5; 
+    cursor: not-allowed; 
+} 
+
+.profile-password-right h2 { 
+    margin-bottom: 20px; 
+} 
+
+
+.password-save-btn { 
+    border: none; 
+    color: #0068d2; 
+    white-space: nowrap; 
+    font-weight: 500; 
+    padding: 13px 32px; 
+    background-color: white; 
+    font-size: clamp(15px, 1vw, 15px); 
+    border-radius: 50px; 
+    cursor: pointer; 
+    border: 1px solid #0068d2; 
+    transition: all 0.3s; 
+} 
+
+.password-save-btn:hover { 
+    background-color: #0068d2; 
+    color: white; 
+    border: 1px solid white; 
+} 
+
+.profile-bottom{ 
+    display: flex; 
+    justify-content: center; 
+} 
+
+.profile-cancel-btn{ 
+    border: none; 
+    color: red; 
+    font-weight: 500; 
+    padding: 13px 50px; 
+    background-color: white; 
+    font-size: clamp(15px, 1vw, 15px); 
+    border-radius: 50px; 
+    cursor: pointer; 
+    border: 1px solid red; 
+    transition: all 0.3s; 
+} 
+
+.profile-cancel-btn:hover { 
+    background-color: red; 
+    color: white; 
+    border: 1px solid white; 
+} 
+
+
+/* start of the innear popup for change password*/ 
+
+.password-confirm-overlay{ 
+    position: fixed;  
+    top: 0;  
+    left: 0;  
+    width: 100%;  
+    height: 100%;  
+    background: rgba(0,0,0,0.5);  
+    display: flex;  
+    justify-content: center;  
+    align-items: center;  
+    z-index: 2000;  
+} 
+
+.password-confirm-popup{ 
+    position: relative;  
+    background: #fff;  
+    padding: 30px 20px;  
+    border-radius: 12px;  
+    width: 400px;  
+    max-width: 90%;  
+    text-align: center;  
+    box-shadow: 0 8px 25px rgba(0,0,0,0.5);  
+    display: flex;  
+    flex-direction: column; 
+} 
+
+.password-confirm-popup h2 { 
+    margin-top: 30px; 
+} 
+
+.close-password-confirm-popup{ 
+    position: absolute;  
+    top: 15px;  
+    right: 20px;  
+    height: 25px;  
+    width: 25px;  
+    border: 1px solid red;  
+    border-radius: 50%;  
+    color: red;  
+    font-size: 18px;  
+    font-weight: bold;  
+    display: flex;  
+    align-items: center;  
+    justify-content: center;  
+    cursor: pointer;  
+    transition: all 0.2s ease;  
+    background-color: white; 
+} 
+
+.close-password-confirm-popup:hover{ 
+    background-color: red;  
+    color: white; 
+} 
+
+.confirm-password-input{ 
+    margin-top: 15px;  
+    margin-bottom: 10px; 
+} 
+
+.password-confirm-popup-container{ 
+    padding: 10px;  
+    display: flex;  
+    justify-content: center;  
+} 
+
+.confirm-password-input input{ 
+    border-radius: 6px;  
+    padding: 10px;  
+    width: 80%;  
+    border: 1px solid #ccc;  
+} 
+
+.save-password-btn{ 
+    border: none;  
+    color: #0068d2;  
+    white-space: nowrap;  
+    font-weight: 500;  
+    padding: 13px 32px;  
+    background-color: white;  
+    font-size: clamp(15px, 1vw, 15px);  
+    border-radius: 50px;  
+    cursor: pointer;  
+    border: 1px solid #0068d2;  
+    transition: all 0.3s;  
+} 
+.save-password-btn:hover{ 
+    background-color: #0068d2;  
+    color: white;  
+} 
+/* End of the inner popup for change password*/ 
+
+@keyframes fadeIn { 
+    from { opacity: 0; } 
+    to { opacity: 1; } 
+} 
+
+@keyframes slideUp { 
+    from { 
+        transform: translateY(40px); 
+        opacity: 0; 
+    } 
+    to { 
+        transform: translateY(0); 
+        opacity: 1; 
+    } 
+} 
+
+.error-message{
     display: flex;
     justify-content: center;
-}
-.password-save-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-.profile-password-right h2 {
-    margin-bottom: 20px;
-}
-.profile-passwords-fields{
-    display: flex;
-    justify-content: space-between;
-}
-
-.password-save-btn {
-    border: none;
-    color: #0068d2;
-    white-space: nowrap;
-    font-weight: 500;
-    
-    padding: 13px 32px;
-    background-color: white;
-    font-size: clamp(15px, 1vw, 15px);
-    border-radius: 50px;
-    cursor: pointer;
-    border: 1px solid #0068d2;
-    transition: all 0.3s;
-}
-
-.password-save-btn:hover {
-    background-color: #0068d2;
-    color: white;
-    border: 1px solid white;
-}
-
-.profile-bottom{
-    display: flex;
-    justify-content: center;
-}
-
-.profile-cancel-btn{
-    border: none;
-    color: red;
-    font-weight: 500;
-    padding: 13px 50px;
-    background-color: white;
-    font-size: clamp(15px, 1vw, 15px);
-    border-radius: 50px;
-    cursor: pointer;
-    border: 1px solid red;
-    transition: all 0.3s;
-}
-
-.profile-cancel-btn:hover {
-    background-color: red;
-    color: white;
-    border: 1px solid white;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-@keyframes slideUp {
-    from {
-        transform: translateY(40px);
-        opacity: 0;
-    }
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
 }
