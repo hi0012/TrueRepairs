@@ -2,17 +2,16 @@ require("dotenv").config({ path: "../.env" });
 
 const express = require("express");
 const cors = require("cors");
+const axios = require("axios");
 const mongoose = require("mongoose");
 const connectDB = require("./db.js");
 const UserModel = require("./models/users.js");
+const Lookup = require("./models/lookup.js");
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 const sgMail = require("@sendgrid/mail");
-const Lookup = require("./models/lookup.js");
-
-const externalRoutes = require("./src/routes/external");
-const historyRoutes = require("./src/routes/history");
+const estimateRoutes = require("./src/routes/estimate");
 
 const TEMP_SECRET = process.env.TEMP_SECRET;
 if (process.env.SENDGRID_API_KEY) sgMail.setApiKey(process.env.SENDGRID_API_KEY);
@@ -20,54 +19,15 @@ if (process.env.SENDGRID_API_KEY) sgMail.setApiKey(process.env.SENDGRID_API_KEY)
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use("/api", estimateRoutes);
 
 connectDB();
-// ---- VIN history: list (GET) ----
-// GET /api/history?email=you@example.com
-app.get("/api/history", async (req, res) => {
-  try {
-    const email = (req.query.email || "").trim().toLowerCase();
-    if (!email) return res.status(400).json({ message: "email is required" });
 
-    const items = await Lookup.find({ userEmail: email })
-      .sort({ createdAt: -1 })
-      .limit(20)
-      .lean();
-
-    res.json({ items });
-  } catch (e) {
-    res.status(500).json({ message: "Server error" });
-  }
+const vehdb = axios.create({
+  baseURL: "https://api.vehicledatabases.com",
+  headers: { "x-AuthKey": process.env.VEHICLEDB_AUTH_KEY },
+  timeout: 10000
 });
-
-app.post("/api/history", async (req, res) => {
-  try {
-    const email = (req.body.email || "").trim().toLowerCase();
-    const vin = (req.body.vin || "").trim().toUpperCase();
-    if (!email || !vin) return res.status(400).json({ message: "email and vin are required" });
-
-    // reuse your existing vehdb client
-    const apiResp = await vehdb.get(`/vin-decode/${vin}`);
-    const payload = { vehicledb: apiResp.data };
-
-    await Lookup.create({ userEmail: email, vin, data: payload });
-    res.json(payload);
-  } catch (e) {
-    res.status(e.response?.status || 500).json({ message: e.message || "Lookup failed" });
-  }
-});
-
-
-app.delete("/api/history/:id", async (req, res) => {
-  try {
-    await Lookup.deleteOne({ _id: req.params.id });
-    res.json({ ok: true });
-  } catch {
-    res.status(500).json({ ok: false });
-  }
-});
-
-
 
 app.get("/", (req, res) => res.send("TrueRepairs API"));
 app.get("/api/health", (req, res) => res.json({ ok: true }));
@@ -78,8 +38,48 @@ app.get("/db-health", (req, res) => {
   });
 });
 
-app.use("/api", externalRoutes);
-app.use("/api", historyRoutes);
+app.get("/api/vehicle/:vin", async (req, res) => {
+  try {
+    const r = await vehdb.get(`/vin-decode/${req.params.vin}`);
+    res.json({ vehicledb: r.data });
+  } catch (e) {
+    res.status(e.response?.status || 500).json({ message: e.message || "Lookup failed" });
+  }
+});
+
+app.get("/api/history", async (req, res) => {
+  try {
+    const email = (req.query.email || "").trim().toLowerCase();
+    if (!email) return res.status(400).json({ message: "email is required" });
+    const items = await Lookup.find({ userEmail: email }).sort({ createdAt: -1 }).limit(20).lean();
+    res.json({ items });
+  } catch {
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+app.post("/api/history", async (req, res) => {
+  try {
+    const email = (req.body.email || "").trim().toLowerCase();
+    const vin = (req.body.vin || "").trim().toUpperCase();
+    if (!email || !vin) return res.status(400).json({ message: "email and vin are required" });
+    const apiResp = await vehdb.get(`/vin-decode/${vin}`);
+    const payload = { vehicledb: apiResp.data };
+    await Lookup.create({ userEmail: email, vin, data: payload });
+    res.json(payload);
+  } catch (e) {
+    res.status(e.response?.status || 500).json({ message: e.message || "Lookup failed" });
+  }
+});
+
+app.delete("/api/history/:id", async (req, res) => {
+  try {
+    await Lookup.deleteOne({ _id: req.params.id });
+    res.json({ ok: true });
+  } catch {
+    res.status(500).json({ ok: false });
+  }
+});
 
 app.post("/login", async (req, res) => {
   try {

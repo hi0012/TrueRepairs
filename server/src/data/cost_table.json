@@ -1,0 +1,17 @@
+{
+  "Front Bumper Cover": {
+    "replace":  { "parts_avg": 350, "labor_hours": 2.7, "paint_materials": 120 },
+    "refinish": { "parts_avg": 0,   "labor_hours": 1.2, "paint_materials": 90  }
+  },
+  "Rear Bumper Cover": {
+    "replace":  { "parts_avg": 330, "labor_hours": 2.4, "paint_materials": 110 },
+    "refinish": { "parts_avg": 0,   "labor_hours": 1.1, "paint_materials": 80  }
+  },
+  "Fender (Front Left)": {
+    "replace":  { "parts_avg": 220, "labor_hours": 1.8, "paint_materials": 100 },
+    "refinish": { "parts_avg": 0,   "labor_hours": 1.0, "paint_materials": 80  }
+  },
+  "Headlamp (Left)": {
+    "replace":  { "parts_avg": 280, "labor_hours": 0.8, "paint_materials": 0   }
+  }
+}
