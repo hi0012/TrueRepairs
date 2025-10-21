@@ -57,21 +57,24 @@ const Profile = ({ open, onClose }) => {
     const handleProfileSave = async () => {
         try {
             const res = await axios.post("http://localhost:5000/update-profile", {
-            email: currentEmail,
+            currentEmail,    // the old one, to find the user
+            newEmail,        // the new one (can be the same if unchanged)
             firstName,
             lastName,
-            });
+        });
 
-            setMessage(res.data.message);
+        setMessage(res.data.message);
 
-            const updatedUser = {
+        // Update localStorage
+        const updatedUser = {
             ...JSON.parse(localStorage.getItem("user")),
+            email: res.data.user.email,
             firstName,
-            lastName
-            };
-            localStorage.setItem("user", JSON.stringify(updatedUser));
+            lastName,
+        };
+        localStorage.setItem("user", JSON.stringify(updatedUser));
 
-            setTimeout(() => setMessage(""), 3000);
+        setTimeout(() => setMessage(""), 3000);
         } catch (err) {
             console.error(err);
             setMessage("Error updating profile");
@@ -111,7 +114,7 @@ const Profile = ({ open, onClose }) => {
             <div className='profile-popup'>
                 <div className='profile-header'>
                     <h1>User Profile</h1>
-                    <p>Manage your acount profile by updating your email or password.</p>
+                    <p>Manage your account profile by updating your email or password.</p>
                 </div>
                 <div className='profile-container'>
                     <div className='profile-edit-left'>
@@ -128,7 +131,7 @@ const Profile = ({ open, onClose }) => {
                         </div>
                         <div className='profile-username'>
                             <label htmlFor="">Username</label>
-                            <input type="text" placeholder='Username (Optional)' value={userName} onChange={(e) => setUserName(e.target.value)} />
+                            <input type="text" placeholder='Username (Optional)' />
                         </div>
                         <div className='profile-email-container'>
                             <hr className='hr-divider'/>

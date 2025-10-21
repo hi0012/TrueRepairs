@@ -530,17 +530,30 @@ app.post("/send-support", async (req, res) => {
 
 app.post("/update-profile", async (req, res) => {
   try {
-    const { email, firstName, lastName } = req.body;
+    const { currentEmail, newEmail, firstName, lastName } = req.body;
 
-    const user = await UserModel.findOneAndUpdate(
-      { email },
-      { firstName, lastName },
-      { new: true }
-    );
-
+    // find user by their current email
+    const user = await UserModel.findOne({ email: currentEmail });
     if (!user) {
       return res.status(404).json({ success: false, message: "User not found" });
     }
+
+    // If the user entered a new email and it's different from the current one
+    if (newEmail && newEmail !== currentEmail) {
+      const emailExists = await UserModel.findOne({ email: newEmail });
+      if (emailExists) {
+        return res
+          .status(409)
+          .json({ success: false, message: "Email already in use" });
+      }
+      user.email = newEmail; // update to new email
+    }
+
+    // Update name fields
+    if (firstName) user.firstName = firstName;
+    if (lastName) user.lastName = lastName;
+
+    await user.save();
 
     res.json({
       success: true,
@@ -548,11 +561,11 @@ app.post("/update-profile", async (req, res) => {
       user: {
         email: user.email,
         firstName: user.firstName,
-        lastName: user.lastName
-      }
+        lastName: user.lastName,
+      },
     });
   } catch (err) {
-    console.error(err);
+    console.error("Error in /update-profile:", err);
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
