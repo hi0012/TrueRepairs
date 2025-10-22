@@ -15,6 +15,7 @@ const Profile = ({ open, onClose }) => {
     const [message, setMessage] = useState("");
     const [displayPopupEmail, setDisplayPopupEmail] = useState(false);
     const [displayPopupPassword, setDisplayPopupPassword] = useState(false);
+    const [emailPassword, setEmailPassword] = useState(""); 
 
     const storedUser = JSON.parse(localStorage.getItem("user"));
     const email = storedUser?.email || localStorage.getItem("userEmail");
@@ -26,6 +27,37 @@ const Profile = ({ open, onClose }) => {
             setDisplayPopupEmail(true);
         } else {
             emailRef.current.reportValidity();
+        }
+    };
+
+    // updating email
+    const handleProfileSave = async (e) => {
+        e.preventDefault();
+        try {
+            const res = await axios.post("http://localhost:5000/update-profile", {
+                currentEmail,
+                newEmail,
+            });
+
+            setMessage(res.data.message || "Email updated successfully");
+
+            // Update localStorage with new email
+            const updatedUser = {
+                ...JSON.parse(localStorage.getItem("user")),
+                email: res.data.user.email,
+            };
+            localStorage.setItem("user", JSON.stringify(updatedUser));
+
+            // Reflect new email in the UI
+            setCurrentEmail(res.data.user.email);
+            setNewEmail("");
+            setDisplayPopupEmail(false);
+
+            setTimeout(() => setMessage(""), 3000);
+        } catch (err) {
+            console.error("Error updating email:", err);
+            setMessage(err.response?.data?.message || "Error updating email");
+            setTimeout(() => setMessage(""), 3000);
         }
     };
 
@@ -99,34 +131,41 @@ const Profile = ({ open, onClose }) => {
             <div className='profile-popup'>
                 <div className='profile-header'>
                     <h1>User Profile</h1>
-                    <p>Manage your acount profile by updating your email or password.</p>
+                    <p>Manage your account profile by updating your email or password.</p>
                 </div>
                 <div className='profile-container'>
                     <div className='profile-edit-left'>
                         <h2>Update Email</h2>
                         <form className='email-form' ref={emailRef} onSubmit={emailHandleSubmit} noValidate>
                             <div>
-                                <label htmlFor="">Current Email</label>
-                                <input className='current-email' type="email" value={currentEmail} readOnly name="" id="" />
+                                <label>Current Email</label>
+                                <input className='current-email' type="email" value={currentEmail} readOnly />
                             </div>
                             <div className='profile-new-email'>
-                                <label htmlFor="">New email</label>
-                                <input required type="email" placeholder='Enter new email' value={newEmail} onChange={(e) => setNewEmail(e.target.value)} />
+                                <label>New Email</label>
+                                <input
+                                    required
+                                    type="email"
+                                    placeholder='Enter new email'
+                                    value={newEmail}
+                                    onChange={(e) => setNewEmail(e.target.value)}
+                                />
                             </div>
                             <div className='profile-save-new-email'>
                                 <button className='save-email-btn' type='submit'>Save Changes</button>
                             </div>
                         </form>
                     </div>
+
                     <div className='profile-password-right'>
                         <h2>Update Password</h2>
                         <form className='password-form' onSubmit={handleSubmit}>
                             <div>
-                                <label htmlFor="">New Password</label>
-                                <input type="password" placeholder='Enter in new password' value={newPassword} onChange={(e) => { setNewPassword(e.target.value); setClickPassword(true); }} required />
+                                <label>New Password</label>
+                                <input type="password" placeholder='Enter new password' value={newPassword} onChange={(e) => { setNewPassword(e.target.value); setClickPassword(true); }} required />
                             </div>
                             <div>
-                                <label htmlFor="">Confirm new password</label>
+                                <label>Confirm new password</label>
                                 <input type="password" placeholder='Confirm new password' value={confirmNewPassword} onChange={(e) => setConfirmNewPassword(e.target.value)} required />
                             </div>
                             <div className='error-message'>
@@ -163,22 +202,33 @@ const Profile = ({ open, onClose }) => {
                     <button className='profile-cancel-btn' onClick={onClose}>Cancel</button>
                 </div>
             </div>
+
             {displayPopupEmail && (
                 <div className='email-confirm-overlay'>
                     <div className='email-confirm-popup'>
                         <span onClick={() => setDisplayPopupEmail(false)} className="close-email-confirm-popup">×</span>
                         <h2>Confirm Password to Update Email</h2>
-                        <form action="">
+                        <form onSubmit={handleProfileSave}>
                             <div className='email-confirm-password-input'>
-                                <input required type="password" placeholder='Enter Password' />
+                                <input
+                                    required
+                                    type="password"
+                                    placeholder='Enter Password'
+                                    value={emailPassword}
+                                    onChange={(e) => setEmailPassword(e.target.value)}
+                                />
                             </div>
                             <div className='email-confirm-popup-container'>
-                                <button className='confirm-save-email-btn'>Confirm</button>
+                                <button type="submit" className='confirm-save-email-btn'>
+                                    Confirm
+                                </button>
                             </div>
                         </form>
+                        {message && <p className="email-message">{message}</p>}
                     </div>
                 </div>
             )}
+
             {displayPopupPassword && (
                 <div className='password-confirm-overlay'>
                     <div className='password-confirm-popup'>
@@ -196,8 +246,8 @@ const Profile = ({ open, onClose }) => {
                     </div>
                 </div>
             )}
-        </div>
-        )
+        </div>)
     )
 }
-export default Profile 
+
+export default Profile

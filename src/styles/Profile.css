@@ -332,8 +332,6 @@
 } 
 
 
-/* start of the innear popup for change password*/ 
-
 .password-confirm-overlay{ 
     position: fixed;  
     top: 0;  
@@ -399,7 +397,7 @@
     justify-content: center;  
 } 
 
-.confirm-password-input input{ 
+.confirm-password-input input{
     border-radius: 6px;  
     padding: 10px;  
     width: 80%;  
@@ -423,7 +421,6 @@
     background-color: #0068d2;  
     color: white;  
 } 
-/* End of the inner popup for change password*/ 
 
 @keyframes fadeIn { 
     from { opacity: 0; } 
