@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import '../styles/Profile.css'
 import { FaCheckCircle } from "react-icons/fa";
 import { RiErrorWarningLine } from "react-icons/ri";
 import axios from "axios";
+
 
 const Profile = ({ open, onClose }) => {
     const [currentEmail, setCurrentEmail] = useState("");
@@ -12,9 +13,53 @@ const Profile = ({ open, onClose }) => {
     const [currentPassword, setCurrentPassword] = useState("");
     const [clickPassword, setClickPassword] = useState(false);
     const [message, setMessage] = useState("");
+    const [displayPopupEmail, setDisplayPopupEmail] = useState(false);
+    const [displayPopupPassword, setDisplayPopupPassword] = useState(false);
+    const [emailPassword, setEmailPassword] = useState(""); 
 
     const storedUser = JSON.parse(localStorage.getItem("user"));
     const email = storedUser?.email || localStorage.getItem("userEmail");
+    const emailRef = useRef(null);
+
+    const emailHandleSubmit = (e) => {
+        e.preventDefault();
+        if (emailRef.current.checkValidity()) {
+            setDisplayPopupEmail(true);
+        } else {
+            emailRef.current.reportValidity();
+        }
+    };
+
+    // updating email
+    const handleProfileSave = async (e) => {
+        e.preventDefault();
+        try {
+            const res = await axios.post("http://localhost:5000/update-profile", {
+                currentEmail,
+                newEmail,
+            });
+
+            setMessage(res.data.message || "Email updated successfully");
+
+            // Update localStorage with new email
+            const updatedUser = {
+                ...JSON.parse(localStorage.getItem("user")),
+                email: res.data.user.email,
+            };
+            localStorage.setItem("user", JSON.stringify(updatedUser));
+
+            // Reflect new email in the UI
+            setCurrentEmail(res.data.user.email);
+            setNewEmail("");
+            setDisplayPopupEmail(false);
+
+            setTimeout(() => setMessage(""), 3000);
+        } catch (err) {
+            console.error("Error updating email:", err);
+            setMessage(err.response?.data?.message || "Error updating email");
+            setTimeout(() => setMessage(""), 3000);
+        }
+    };
 
     const passwordReq = {
         length: newPassword.length >= 8,
@@ -56,7 +101,6 @@ const Profile = ({ open, onClose }) => {
             setMessage("Passwords do not match.");
             return;
         }
-
         try {
             const res = await axios.post("http://localhost:5000/update-password", {
                 currentPassword,
@@ -65,7 +109,14 @@ const Profile = ({ open, onClose }) => {
             });
 
             setMessage(res.data.message || "Password reset successful!");
-            setTimeout(() => setMessage(""), 3000);
+            
+            setTimeout(() => {
+                setDisplayPopupPassword(false);
+                setMessage("");
+                setNewPassword("");
+                setConfirmNewPassword("");
+                setClickPassword(false)
+            }, 2000);
         } catch (err) {
             console.error("Error:", err);
             setMessage(
@@ -80,59 +131,42 @@ const Profile = ({ open, onClose }) => {
             <div className='profile-popup'>
                 <div className='profile-header'>
                     <h1>User Profile</h1>
-                    <p>Manage your acount profile by updating your email or password.</p>
+                    <p>Manage your account profile by updating your email or password.</p>
                 </div>
                 <div className='profile-container'>
                     <div className='profile-edit-left'>
-                        <h2>Edit Profile</h2>
-                        <div className='profile-name'>
-                            <div className='profile-first-name'>
-                                <label htmlFor="">First Name</label>
-                                <input type="text" placeholder='First Name (Optional)' />
-                            </div>
-                            <div className='profile-last-name'>
-                                <label htmlFor="">Last Name</label>
-                                <input type="text" placeholder='Last Name (Optional)' />
-                            </div>
-                        </div>
-                        <div className='profile-username'>
-                            <label htmlFor="">Username</label>
-                            <input type="text" placeholder='Username (Optional)' />
-                        </div>
-                        <div className='profile-email-container'>
-                            <hr className='hr-divider'/>
-                            <div className='profile-current-email'>
-                                <label htmlFor="">Current email</label>
-                                <input type="email" value={currentEmail} readOnly></input>
+                        <h2>Update Email</h2>
+                        <form className='email-form' ref={emailRef} onSubmit={emailHandleSubmit} noValidate>
+                            <div>
+                                <label>Current Email</label>
+                                <input className='current-email' type="email" value={currentEmail} readOnly />
                             </div>
                             <div className='profile-new-email'>
-                                <label htmlFor="">New email</label>
-                                <input type="email" placeholder='Enter new email' value={newEmail} onChange={(e) => setNewEmail(e.target.value)} />
+                                <label>New Email</label>
+                                <input
+                                    required
+                                    type="email"
+                                    placeholder='Enter new email'
+                                    value={newEmail}
+                                    onChange={(e) => setNewEmail(e.target.value)}
+                                />
                             </div>
-                        </div>
-                        <div className='edit-save-container'>
-                            <button className='email-save-btn'>Save Changes</button>
-                        </div>
+                            <div className='profile-save-new-email'>
+                                <button className='save-email-btn' type='submit'>Save Changes</button>
+                            </div>
+                        </form>
                     </div>
-
 
                     <div className='profile-password-right'>
                         <h2>Update Password</h2>
-                        <form onSubmit={handleSubmit}>
+                        <form className='password-form' onSubmit={handleSubmit}>
                             <div>
-                                <label htmlFor="">Current password</label>
-                                <input type="password" placeholder='Enter in current password' value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} required/>
+                                <label>New Password</label>
+                                <input type="password" placeholder='Enter new password' value={newPassword} onChange={(e) => { setNewPassword(e.target.value); setClickPassword(true); }} required />
                             </div>
-                            <div className='profile-passwords-fields'>
-                                <div className='password-new-password-container'>
-                                    <label htmlFor="">New password</label>
-                                    <input type="password" placeholder='Enter in new password' value={newPassword} onChange={(e) => { setNewPassword(e.target.value); setClickPassword(true); }} required/>
-                                </div>
-                                <div className='password-confirm-password-container'>
-                                    <label htmlFor="">Confirm new password</label>
-                                    <input type="password" placeholder='Confirm new password' value={confirmNewPassword} onChange={(e) => setConfirmNewPassword(e.target.value)} required/>
-                                </div>
-
+                            <div>
+                                <label>Confirm new password</label>
+                                <input type="password" placeholder='Confirm new password' value={confirmNewPassword} onChange={(e) => setConfirmNewPassword(e.target.value)} required />
                             </div>
                             <div className='error-message'>
                                 {(clickPassword || confirmNewPassword.length > 0) && (
@@ -159,19 +193,60 @@ const Profile = ({ open, onClose }) => {
                                 )}
                             </div>
                             <div className='password-save-container'>
-                                <button type='submit' disabled={!passwordReqChecker || !passwordEqual} className='password-save-btn'>Save Changes</button>
+                                <button type='button' onClick={() => setDisplayPopupPassword(true)} disabled={!passwordReqChecker || !passwordEqual} className='password-save-btn'>Save Changes</button>
                             </div>
                         </form>
-                        {message && (<p className={`reset-message ${message === "Password updated successfully!"? "correct": "incorrect"}`}>{message}</p>)}
                     </div>
                 </div>
                 <div className='profile-bottom'>
                     <button className='profile-cancel-btn' onClick={onClose}>Cancel</button>
                 </div>
             </div>
-        </div>
-        )
 
+            {displayPopupEmail && (
+                <div className='email-confirm-overlay'>
+                    <div className='email-confirm-popup'>
+                        <span onClick={() => setDisplayPopupEmail(false)} className="close-email-confirm-popup">×</span>
+                        <h2>Confirm Password to Update Email</h2>
+                        <form onSubmit={handleProfileSave}>
+                            <div className='email-confirm-password-input'>
+                                <input
+                                    required
+                                    type="password"
+                                    placeholder='Enter Password'
+                                    value={emailPassword}
+                                    onChange={(e) => setEmailPassword(e.target.value)}
+                                />
+                            </div>
+                            <div className='email-confirm-popup-container'>
+                                <button type="submit" className='confirm-save-email-btn'>
+                                    Confirm
+                                </button>
+                            </div>
+                        </form>
+                        {message && <p className="email-message">{message}</p>}
+                    </div>
+                </div>
+            )}
+
+            {displayPopupPassword && (
+                <div className='password-confirm-overlay'>
+                    <div className='password-confirm-popup'>
+                        <span onClick={() => setDisplayPopupPassword(false)} className="close-password-confirm-popup">×</span>
+                        <h2>Confirm Current Password</h2>
+                        <form onSubmit={handleSubmit} action="">
+                            <div className='confirm-password-input'>
+                                <input required type="password" placeholder='Enter in current password' value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} />
+                            </div>
+                            {message && (<p className={`reset-message ${message === "Password updated successfully!" ? "correct" : "incorrect"}`}>{message}</p>)}
+                            <div className='password-confirm-popup-container'>
+                                <button type='submit' className='save-password-btn'>Confirm</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+        </div>)
     )
 }
 

@@ -12,7 +12,7 @@ const Header = () => {
             </div>
             <div className='header-right'>
                <h2>Get <span className='test'>accurate</span> car repair cost estimates in seconds.</h2>
-                <p>At TrueRepairs, we use advanced AI and trusted automotive databases to give you instant repair cost estimates. Simply upload a photo of your car or enter its details, and we’ll analyze the damage, identify the parts, and provide a fair cost range. Create a free account to save your reports, track past repairs, and take control of your car maintenance.</p>
+                <p>At TrueRepairs, we use advanced AI and trusted automotive databases to give you instant repair cost estimates. Simply upload a photo of your car or enter its details, and we'll analyze the damage, identify the parts, and provide a fair cost range. Create a free account to save your reports, track past repairs, and take control of your car maintenance.</p>
             </div>
         </div>
         <RegisterPopup open={registerOpen} onClose={() => setRegisterOpen(false)} />

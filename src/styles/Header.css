@@ -95,10 +95,3 @@
     color: white;
     border: 1px solid white;
 }
-
-@media (max-width: 768px) {
-    .header-right p {
-        display: none;
-    }
-}
-

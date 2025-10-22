@@ -5,10 +5,12 @@ import TinyLogo from '../assets/logo.png'
 import SigninPopup from './SigninPopup'
 import RegisterPopup from './RegisterPopup'
 import { useLocation, Link, useNavigate } from 'react-router-dom'
+import { Menu, X } from 'lucide-react';
 
 const Navbar = ({ setSignInActive }) => {
   const [signinOpen, setSigninOpen] = useState(false)
   const [registerOpen, setRegisterOpen] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false);
   const location = useLocation()
 
   const onDashboard = location.pathname.startsWith("/dashboard")
@@ -35,39 +37,46 @@ const Navbar = ({ setSignInActive }) => {
   }, [location.pathname])
 
   return (
-    <div className="navbar">
-      <Link to="/">
-        <img className="nav-logo" src={TinyLogo} alt="TrueRepairs Logo" style={{ cursor: "pointer" }}/>
-        <img className="nav-logo" src={logo} alt="TrueRepairs Logo" style={{ cursor: "pointer" }}/>
+    <nav className="navbar">
+      {/* Logo */}
+      <Link to="/" className="nav-logo-container">
+        <img className="nav-logo small" src={TinyLogo} alt="Tiny TrueRepairs Logo" />
+        <img className="nav-logo large" src={logo} alt="TrueRepairs Logo" />
       </Link>
 
-      <ul className="nav-list">
-        <li><a href="/#features">Features</a></li>
-        <li><a href="/#aboutus">About Us</a></li>
-        <li><a href="/#contactus">Contact Us</a></li>
+      {/* Hamburger */}
+      <div className="nav-toggle" onClick={() => setMenuOpen(!menuOpen)}>
+        {menuOpen ? <X size={28} /> : <Menu size={28} />}
+      </div>
+
+      {/* Nav Links */}
+      <ul className={`nav-list ${menuOpen ? 'active' : ''}`}>
+        <li><a href="/#features" onClick={() => setMenuOpen(false)}>Features</a></li>
+        <li><a href="/#aboutus" onClick={() => setMenuOpen(false)}>About Us</a></li>
+        <li><a href="/#contactus" onClick={() => setMenuOpen(false)}>Contact Us</a></li>
       </ul>
 
-      <div className="nav-right">
+      {/* Right-side buttons */}
+      <div className={`nav-right ${menuOpen ? 'active' : ''}`}>
         {onDashboard ? (
-          // Show profile icon on dashboard only
           <button className="logout-btn" onClick={handleLogout}>Logout</button>
         ) : !user ? (
-          // Otherwise show auth buttons
           <>
             <button onClick={() => setSignInActive(true)}>Sign In</button>
             <button onClick={() => setRegisterOpen(true)}>Register</button>
           </>
         ) : (
           <>
-            <button onClick={()=>navigate("/dashboard")}>Dashboard</button>
-            <button className='homepage-logout-btn' onClick={handleLogout}>Logout</button>
+            <button onClick={() => navigate("/dashboard")}>Dashboard</button>
+            <button className="homepage-logout-btn" onClick={handleLogout}>Logout</button>
           </>
         )}
       </div>
 
+      {/* Popups*/}
       <SigninPopup open={signinOpen} onClose={() => setSigninOpen(false)} />
       <RegisterPopup open={registerOpen} onClose={() => setRegisterOpen(false)} />
-    </div>
+    </nav>
   )
 }
 

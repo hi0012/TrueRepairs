@@ -4,7 +4,7 @@ const LookupSchema = new mongoose.Schema(
   {
     userEmail: { type: String, required: true, index: true },
     vin: { type: String, required: true, index: true },
-    data: { type: mongoose.Schema.Types.Mixed }
+    data: { type: mongoose.Schema.Types.Mixed }, // snapshot of the API response
   },
   { timestamps: true }
 );
