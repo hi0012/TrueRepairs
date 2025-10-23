@@ -1,8 +1,14 @@
-require("dotenv").config({ path: "../.env" });
+// Load env
+const path = require("path");
+require("dotenv").config({ path: path.resolve(__dirname, "../.env") });
 
+// Core deps
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
+const { spawn } = require("child_process");
+
+// App deps
 const connectDB = require("./db.js");
 const UserModel = require("./models/users.js");
 const bcrypt = require("bcryptjs");
@@ -13,235 +19,180 @@ const Lookup = require("./models/lookup.js");
 const vehdb = require("./src/services/vehdb");
 const Vehicle = require("./models/Vehicle.js");
 const { getCarSpecs, vinDecode } = require("./src/services/ninjaApi");
-//const externalRoutes = require("./src/routes/external.js");
 const { scrapeRockAuto } = require("./src/services/rockauto");
+const reportRoutes = require("./src/routes/reportRoutes.js");
+
+// Env
 const TEMP_SECRET = process.env.TEMP_SECRET;
 if (process.env.SENDGRID_API_KEY) sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
+// App
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-connectDB();
+// Root + reports first
+app.get("/", (req, res) => res.json({ ok: true, message: "TrueRepairs API" }));
+app.use("/api/reports", reportRoutes);
 
+// RockAuto categories
+app.post("/api/rockauto/categories", (req, res) => {
+  const { make, year, model, engine } = req.body;
+  const scriptPath = path.join(__dirname, "src", "services", "rockautoCategories.py");
+  const py = spawn("python", [scriptPath, make, year, model, engine]);
+
+  let data = "";
+  py.stdout.on("data", (chunk) => (data += chunk.toString()));
+  py.stderr.on("data", (chunk) => console.error("PyErr:", chunk.toString()));
+  py.on("close", () => {
+    try { res.json(JSON.parse(data)); }
+    catch { res.status(500).json({ error: "Failed to parse Python output" }); }
+  });
+});
+
+// RockAuto subcategories
+app.post("/api/rockauto/subcategories", (req, res) => {
+  const { make, year, model, engine, category } = req.body;
+  const scriptPath = path.join(__dirname, "src", "services", "rockautoSubcategories.py");
+  const py = spawn("python", [scriptPath, make, year, model, engine, category]);
+
+  let data = "";
+  py.stdout.on("data", (chunk) => (data += chunk.toString()));
+  py.stderr.on("data", (chunk) => console.error("PyErr:", chunk.toString()));
+  py.on("close", () => {
+    try { res.json(JSON.parse(data)); }
+    catch { res.status(500).json({ error: "Failed to parse Python output" }); }
+  });
+});
+
+// RockAuto scrape
 app.post("/api/scrape-rockauto", async (req, res) => {
   try {
     const { make, year, model, engine, category, subcategory } = req.body;
+
     if (!make || !year || !model || !engine || !category || !subcategory) {
-      return res.status(400).json({ message: "Missing required fields" });
+      return res.status(400).json({ success: false, message: "Missing required fields" });
     }
 
-    console.log(`Scraping RockAuto for ${year} ${make} ${model} (${engine}) - ${category}/${subcategory}`);
+    const scriptPath = path.join(__dirname, "src", "services", "rockautoscrape.py");
 
-    const parts = await scrapeRockAuto({
-      make,
-      year,
-      model,
-      engine,
-      category,
-      subcategory,
+    // Helpful trace to your Node console:
+    console.log("[SCRAPE] payload:", { make, year, model, engine, category, subcategory });
+    const py = spawn("python", [scriptPath, make, year, model, engine, category, subcategory], {
+      env: process.env,
     });
 
-    res.json({ success: true, parts });
-  } catch (err) {
-    console.error("Scraper error:", err);
-    res.status(500).json({ success: false, error: err.toString() });
-  }
-})
+    let out = "";
+    let err = "";
 
+    py.stdout.on("data", (chunk) => (out += chunk.toString()));
+    py.stderr.on("data", (chunk) => (err += chunk.toString()));
+    py.on("close", (code) => {
+      // Python prints ONLY JSON to stdout; all logs go to stderr
+      try {
+        const parts = out ? JSON.parse(out) : {};
+        return res.json({
+          success: true,
+          parts,     // grouped dict from Python
+          debug: err // Python logs so you can see matches/clicks/timeouts
+        });
+      } catch (e) {
+        console.error("[SCRAPE] JSON parse error:", e, "RAW:", out);
+        return res.status(500).json({
+          success: false,
+          error: "Failed to parse Python output",
+          raw: out,
+          debug: err,
+        });
+      }
+    });
+  } catch (err) {
+    console.error("[SCRAPE] route error:", err);
+    res.status(500).json({ success: false, error: err.message || String(err) });
+  }
+});
+
+// Car details
 app.get("/api/cardetails/makes", async (req, res) => {
   try {
     const { year } = req.query;
-    if (!year) return res.status(400).json({ message: "Year required" })
+    if (!year) return res.status(400).json({ message: "Year required" });
 
-    let allData = [];
-    let offset = 0;
+    let allData = [], offset = 0;
     const limit = 50;
-    let hasMore = true;
-
-    while (hasMore) {
+    while (true) {
       const data = await getCarSpecs({ year, limit, offset });
       if (!data.length) break;
-
       allData = allData.concat(data);
       offset += limit;
-      hasMore = data.length === limit;
+      if (data.length < limit) break;
     }
-    const cap = (str = "") =>
-      str
-        .toLowerCase()
-        .split(" ")
-        .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
-        .join(" ");
-
-    const uniqueMakes = [
-      ...new Set(allData.map((c) => cap(c.make)))
-    ].sort();
-
-    console.log(`Found ${uniqueMakes.length} makes`);
+    const cap = (str = "") => str.toLowerCase().split(" ").map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(" ");
+    const uniqueMakes = [...new Set(allData.map(c => cap(c.make)))].sort();
     res.json(uniqueMakes);
-  } catch (err) {
-    res.status(500).json({ message: "Failed to load makes" })
+  } catch {
+    res.status(500).json({ message: "Failed to load makes" });
   }
-})
-
+});
 
 app.get("/api/cardetails/models", async (req, res) => {
   try {
     const { year, make } = req.query;
-    if (!year || !make)
-      return res.status(400).json({ message: "Year and make required" })
-    let allData = [];
-    let offset = 0;
-    const limit = 50;
-    let hasMore = true;
+    if (!year || !make) return res.status(400).json({ message: "Year and make required" });
 
-    while (hasMore) {
+    let allData = [], offset = 0;
+    const limit = 50;
+    while (true) {
       const data = await getCarSpecs({ year, make, limit, offset });
       if (!data.length) break;
       allData = allData.concat(data);
       offset += limit;
-      hasMore = data.length === limit;
+      if (data.length < limit) break;
     }
-
-    // Capitalize helper
     const cap = (str = "") =>
-      str
-        .toLowerCase()
-        .split(/([\s-]+)/)
-        .map((part) =>
-          /^[a-z]/.test(part)
-            ? part.charAt(0).toUpperCase() + part.slice(1)
-            : part
-        )
-        .join("");
-
-    // Apply to each model and remove duplicates
-    const uniqueModels = [...new Set(allData.map((c) => cap(c.model)))].sort();
-
+      str.toLowerCase().split(/([\s-]+)/).map((part) =>
+        /^[a-z]/.test(part) ? part.charAt(0).toUpperCase() + part.slice(1) : part
+      ).join("");
+    const uniqueModels = [...new Set(allData.map(c => cap(c.model)))].sort();
     res.json(uniqueModels);
   } catch (err) {
     console.error("Error in /models:", err.message);
     res.status(500).json({ message: "Failed to load models" });
   }
-})
-
-
-app.post("/api/manual-vehicle", async (req, res) => {
-  try {
-    const { year, make, model, trim, email } = req.body;
-
-    if (!year || !make || !model || !email) {
-      return res.status(400).json({ message: "Year, make, model, and email required" })
-    }
-
-    // Fetch specs from API Ninja
-    const specs = await getCarSpecs({ year, make, model })
-    const carData = specs?.[0];
-
-    if (!carData) {
-      return res.status(404).json({ message: "Vehicle specs not found." })
-    }
-
-    // Capitalize helper
-    const cap = (str = "") =>
-      str
-        .toLowerCase()
-        .split(" ")
-        .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
-        .join(" ");
-
-    const yearStr = String(year);
-    const makeFormatted = cap(make);
-    const modelFormatted = cap(model);
-    const trimFormatted = trim && trim.trim() !== "" ? cap(trim) : "";
-
-    // Engine & drivetrain info
-    const engine = carData.displacement
-      ? `${carData.displacement}L ${carData.cylinders || ""}-Cyl`.trim()
-      : "Unknown";
-
-    let fuel = carData.fuel_type ? cap(carData.fuel_type) : "Unknown";
-    if (fuel.toLowerCase() === "gas") fuel = "Gasoline";
-
-    const drivetrain = carData.drive ? carData.drive.toUpperCase() : "FWD";
-    const transmission = carData.transmission?.toUpperCase() || "AUTO";
-
-    // Build nickname
-    const nickname = `${yearStr} ${makeFormatted} ${modelFormatted}${
-      trimFormatted ? ` ${trimFormatted}` : ""
-    }`.trim();
-
-    // Construct final vehicle entry
-    const newVehicle = new Vehicle({
-      email,
-      nickname,
-      year: yearStr,
-      make: makeFormatted,
-      model: modelFormatted,
-      trim: trimFormatted,
-      engine,
-      fuel,
-      drivetrain,
-      transmission,
-      mpg_city: carData.city_mpg || "Unknown",
-      mpg_highway: carData.highway_mpg || "Unknown",
-      class: carData.class || "Unknown",
-    });
-
-    await newVehicle.save();
-
-    res.json({
-      message: "Manual vehicle added successfully!",
-      vehicle: {
-        ...newVehicle.toObject(),
-        data: {
-          engine: { engine_size: engine },
-          fuel: { fuel_type: fuel },
-          drivetrain: { drive_type: drivetrain },
-        },
-      },
-    });
-  } catch (err) {
-    console.error("Error adding manual vehicle:", err);
-    res.status(500).json({ message: "Failed to add manual vehicle." });
-  }
-})
+});
 
 app.get("/api/cardetails/details", async (req, res) => {
   try {
     const { year, make, model } = req.query;
-    if (!year || !make || !model)
-      return res.status(400).json({ message: "Missing params" });
-
+    if (!year || !make || !model) return res.status(400).json({ message: "Missing params" });
     const data = await getCarSpecs({ year, make, model });
     res.json(data);
-  } catch (err) {
+  } catch {
     res.status(500).json({ message: "Failed to load details" });
   }
-})
+});
 
+// Vehicles CRUD
 app.get("/api/vehicles", async (req, res) => {
   try {
     const { email } = req.query;
     if (!email) return res.status(400).json({ message: "Email is required" });
-
     const vehicles = await Vehicle.find({ email });
     res.json({ items: vehicles });
-  } catch (err) {
+  } catch {
     res.status(500).json({ message: "Server error" });
   }
-})
+});
 
 app.post("/api/vehicles", async (req, res) => {
   try {
     const newVehicle = new Vehicle(req.body);
     await newVehicle.save();
     res.json(newVehicle);
-  } catch (err) {
+  } catch {
     res.status(500).json({ message: "Error saving vehicle" });
   }
-})
+});
 
 app.delete("/api/vehicles/:id", async (req, res) => {
   try {
@@ -250,18 +201,14 @@ app.delete("/api/vehicles/:id", async (req, res) => {
   } catch {
     res.status(500).json({ message: "Failed to delete" });
   }
-})
+});
 
+// VIN decode + history
 app.post("/api/vehicleinfo", async (req, res) => {
   try {
     const { vin, email } = req.body;
-    if (!vin || !email) {
-      return res.status(400).json({ message: "VIN and email required" });
-    }
+    if (!vin || !email) return res.status(400).json({ message: "VIN and email required" });
 
-    let payload = null;
-
-    // Helper functions
     function formatFuel(fuel) {
       if (!fuel) return "Unknown";
       const f = fuel.toLowerCase();
@@ -270,7 +217,6 @@ app.post("/api/vehicleinfo", async (req, res) => {
       if (f === "electric") return "Electric";
       return fuel.charAt(0).toUpperCase() + fuel.slice(1);
     }
-
     function formatDrivetrain(drive) {
       if (!drive) return "Unknown";
       const d = drive.toLowerCase();
@@ -281,147 +227,92 @@ app.post("/api/vehicleinfo", async (req, res) => {
       return drive.toUpperCase();
     }
 
+    let payload;
     try {
-      // Try VehicleDatabase first
       const apiResp = await vehdb.vinDecode(vin);
       payload = { source: "VehicleDatabase", data: apiResp.data };
-      console.log("VehicleDatabase VIN success");
-    } catch (vehdbErr) {
-      console.warn("VehicleDatabase failed, trying NinjaAPI...");
+    } catch {
+      const ninjaResp = await vinDecode(vin);
+      payload = { source: "NinjaAPI", data: ninjaResp };
 
-      try {
-        // Fallback to NinjaAPI
-        const ninjaResp = await vinDecode(vin);
-        payload = { source: "NinjaAPI", data: ninjaResp };
-        console.log("Ninja VIN success (raw):", ninjaResp);
-
-        // Attempt enrichment for missing specs
-        if (ninjaResp.manufacturer && ninjaResp.model && ninjaResp.year) {
-          const specsList = await getCarSpecs({
-            make: ninjaResp.manufacturer,
-            model: ninjaResp.model,
-            year: ninjaResp.year,
-          });
-
-          if (specsList && specsList.length > 0) {
-            const specs = specsList[0];
-            payload.data = {
-              ...ninjaResp,
-              engine: specs.displacement
-                ? `${specs.displacement}L ${specs.cylinders || ""}-Cyl`.trim()
-                : "Unknown",
-              fuel_type: specs.fuel_type || "Unknown",
-              drive: specs.drive || "Unknown",
-              transmission: specs.transmission || "Unknown",
-              city_mpg: specs.city_mpg || "Unknown",
-              highway_mpg: specs.highway_mpg || "Unknown",
-            };
-            console.log("Enriched Ninja data:", payload.data);
-          }
+      if (ninjaResp.manufacturer && ninjaResp.model && ninjaResp.year) {
+        const specsList = await getCarSpecs({
+          make: ninjaResp.manufacturer, model: ninjaResp.model, year: ninjaResp.year
+        });
+        const specs = specsList?.[0];
+        if (specs) {
+          payload.data = {
+            ...ninjaResp,
+            engine: specs.displacement ? `${specs.displacement}L ${specs.cylinders || ""}-Cyl`.trim() : "Unknown",
+            fuel_type: specs.fuel_type || "Unknown",
+            drive: specs.drive || "Unknown",
+            transmission: specs.transmission || "Unknown",
+            city_mpg: specs.city_mpg || "Unknown",
+            highway_mpg: specs.highway_mpg || "Unknown",
+          };
         }
-      } catch (ninjaErr) {
-        console.error(
-          "Both VIN lookups failed:",
-          ninjaErr.response?.data || ninjaErr.message
-        );
-        return res.status(500).json({ message: "VIN lookup failed" });
       }
     }
 
     const v = payload.data || {};
-
-    // Normalize fields before saving
     const make = v.make || v.manufacturer || v.brand || "Unknown";
     const model = v.model || "Unknown";
     const year = v.year || "Unknown";
     const trim = v.trim || "Unknown";
-
-    const engine =
-      v.engine || v.engine_size
-        ? String(v.engine || v.engine_size).replace(/\b([a-z])/g, (c) =>
-            c.toUpperCase()
-          )
-        : "Unknown";
-
+    const engine = (v.engine || v.engine_size)
+      ? String(v.engine || v.engine_size).replace(/\b([a-z])/g, (c) => c.toUpperCase())
+      : "Unknown";
     const fuel = formatFuel(v.fuel_type);
     const drivetrain = formatDrivetrain(v.drive || v.drivetrain);
     const transmission = v.transmission || "Unknown";
     const mpg_city = v.city_mpg || "Unknown";
     const mpg_highway = v.highway_mpg || "Unknown";
     const vehicleClass = v.class || "Unknown";
-
     const nickname = `${year} ${make} ${model}`.trim() || "Unnamed Vehicle";
 
-    // Save to Vehicle collection
     const newVehicle = new Vehicle({
-      email,
-      vin,
-      nickname,
-      year,
-      make,
-      model,
-      trim,
-      engine,
-      fuel,
-      drivetrain,
-      transmission,
-      mpg_city,
-      mpg_highway,
-      class: vehicleClass,
-      data: v,
+      email, vin, nickname, year, make, model, trim, engine, fuel,
+      drivetrain, transmission, mpg_city, mpg_highway, class: vehicleClass, data: v,
     });
     await newVehicle.save();
-
-    // Save to Lookup history
     await Lookup.create({ userEmail: email, vin, data: payload });
 
-    return res.json({
-      message: `${nickname} added successfully!`,
-      source: payload.source,
-      vehicle: newVehicle,
-    });
+    res.json({ message: `${nickname} added successfully!`, source: payload.source, vehicle: newVehicle });
   } catch (err) {
     console.error("Unexpected VIN lookup error:", err);
-    return res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Server error" });
   }
-})
+});
 
+// Lookup history
 app.get("/api/history", async (req, res) => {
   try {
     const email = (req.query.email || "").trim().toLowerCase();
     if (!email) return res.status(400).json({ message: "email is required" });
 
     const items = await Lookup.find({ userEmail: email })
-      .sort({ createdAt: -1 })
-      .limit(20)
-      .lean();
+      .sort({ createdAt: -1 }).limit(20).lean();
 
     res.json({ items });
-  } catch (e) {
+  } catch {
     res.status(500).json({ message: "Server error" });
   }
-})
+});
 
 app.post("/api/history", async (req, res) => {
   try {
     const email = (req.body.email || "").trim().toLowerCase();
     const vin = (req.body.vin || "").trim().toUpperCase();
-    if (!email || !vin)
-      return res
-        .status(400)
-        .json({ message: "email and vin are required" });
+    if (!email || !vin) return res.status(400).json({ message: "email and vin are required" });
 
     const apiResp = await vehdb.vinDecode(vin);
     const payload = { vehicledb: apiResp.data };
-
     await Lookup.create({ userEmail: email, vin, data: payload });
     res.json(payload);
   } catch (e) {
-    res
-      .status(e.response?.status || 500)
-      .json({ message: e.message || "Lookup failed" });
+    res.status(e.response?.status || 500).json({ message: e.message || "Lookup failed" });
   }
-})
+});
 
 app.delete("/api/history/:id", async (req, res) => {
   try {
@@ -432,136 +323,92 @@ app.delete("/api/history/:id", async (req, res) => {
   }
 });
 
-app.get("/", (req, res) => res.send("TrueRepairs API"));
+// Health
 app.get("/api/health", (req, res) => res.json({ ok: true }));
 app.get("/db-health", (req, res) => {
   res.json({
     connected: mongoose.connection.readyState === 1,
     state: mongoose.connection.readyState,
   });
-})
+});
 
+// Auth
 app.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
     const user = await UserModel.findOne({ email });
-    if (!user) {
-      return res.json("User does not exist. Please try again.");
-    }
+    if (!user) return res.json("User does not exist. Please try again.");
 
     const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) return res.json("The password is incorrect. Please try again.");
 
-    if (!isMatch) {
-      return res.json("The password is incorrect. Please try again.");
-    }
-
-    res.json({
-      success: true,
-      user: { id: user._id, email: user.email },
-    });
-  } catch (err) {
+    res.json({ success: true, user: { id: user._id, email: user.email } });
+  } catch {
     res.status(500).json({ message: "Server error" });
   }
-})
+});
 
-app.post('/register', async (req, res) => {
+app.post("/register", async (req, res) => {
   try {
-    const { email, password } = req.body
-    // check if email already exists
+    const { email, password } = req.body;
     const existingUser = await UserModel.findOne({ email });
-      if (existingUser) {
-        return res.json({
-          success: false,
-          message: "This email is already associated with an account."
-        });
-      }
-        
-      const token = jwt.sign(
-        { email, password },
-        TEMP_SECRET,
-        { expiresIn: "15m" }
-      );
-      const resetURL = `${process.env.CLIENT_URL2}/verify/${token}`;
+    if (existingUser) {
+      return res.json({ success: false, message: "This email is already associated with an account." });
+    }
 
-      //const verificationLink = `http://localhost:3000/verify/${token}`;
-      //console.log("Verification link:", verificationLink);
+    const token = jwt.sign({ email, password }, TEMP_SECRET, { expiresIn: "15m" });
+    const resetURL = `${process.env.CLIENT_URL2}/verify/${token}`;
 
-      const msg = {
-        to: email,
-        from: { email: process.env.FROM_EMAIL, name: "TrueRepairs Support" },
-        subject: "Verify Your Account.",
-        text: `Verify your account using the link below (valid 1 hour): ${resetURL}`,
-        html: `<p>Verify your account using the link below (valid 1 hour):</p><p><a href="${resetURL}">Verify Account</a></p>`,
-      };
+    const msg = {
+      to: email,
+      from: { email: process.env.FROM_EMAIL, name: "TrueRepairs Support" },
+      subject: "Verify Your Account.",
+      text: `Verify your account using the link below (valid 1 hour): ${resetURL}`,
+      html: `<p>Verify your account using the link below (valid 1 hour):</p><p><a href="${resetURL}">Verify Account</a></p>`,
+    };
 
-      try {
-        await sgMail.send(msg);
-        return res.json({ 
-          success: true,
-          message: "Verification email sent! Please check your inbox."
-        });
-      } catch (err) {
-        console.error("SendGrid error:", err);
-        return res.status(500).send({ ok: false });
-      }
-      } catch (err) {
-        console.error(err);
-        res.status(500).json({
-          success: false,
-          message: "Server error"
-    });
+    try {
+      await sgMail.send(msg);
+      return res.json({ success: true, message: "Verification email sent! Please check your inbox." });
+    } catch (err) {
+      console.error("SendGrid error:", err);
+      return res.status(500).send({ ok: false });
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: "Server error" });
   }
-})
+});
 
 app.get("/verify/:token", async (req, res) => {
   try {
     const { token } = req.params;
     const decoded = jwt.verify(token, TEMP_SECRET);
 
-    // Check if user already exists
     const existingUser = await UserModel.findOne({ email: decoded.email });
-    if (existingUser) {
-      return res.redirect(`${process.env.CLIENT_URL}/?verified=exists`);
-    }
+    if (existingUser) return res.redirect(`${process.env.CLIENT_URL}/?verified=exists`);
 
-    const newUser = await UserModel.create({
-      email: decoded.email,
-      password: decoded.password,
-    });
-
+    const newUser = await UserModel.create({ email: decoded.email, password: decoded.password });
     console.log("Verified & created:", newUser.email);
     res.redirect(`${process.env.CLIENT_URL}/?verified=true`);
   } catch (err) {
     console.error("Verification error:", err);
     res.redirect(`${process.env.CLIENT_URL}/?verified=false`);
   }
-})
+});
 
 app.post("/forgot-password", async (req, res) => {
   try {
     const { email } = req.body;
-    const user = await UserModel.findOne({ email })
+    const user = await UserModel.findOne({ email });
+    if (!user) return res.status(400).json({ message: "No account with that email found." });
 
-    if (!user) {
-      return res.status(400).json({ message: "No account with that email found." })
-    }
-
-    // Generate token
-    const token = crypto.randomBytes(20).toString("hex")
-
-    // Save token + expiry
+    const token = crypto.randomBytes(20).toString("hex");
     user.resetPasswordToken = token;
-    user.resetPasswordExpires = Date.now() + 3600000 // 1 hr
+    user.resetPasswordExpires = Date.now() + 3600000; // 1 hr
     await user.save();
 
-    // Reset link points to your frontend
     const resetURL = `${process.env.CLIENT_URL}/reset-password/${token}`;
-
-    // For now, log instead of emailing
-    //console.log("Password reset link:", resetURL)
-
-    //res.json({ message: "Password reset link generated. Check console for link." })
-
     const msg = {
       to: email,
       from: { email: process.env.FROM_EMAIL, name: "TrueRepairs Support" },
@@ -577,14 +424,12 @@ app.post("/forgot-password", async (req, res) => {
       console.error("SendGrid error:", err);
       return res.status(500).send({ ok: false });
     }
-
   } catch (err) {
-    console.error(err)
-    res.status(500).json({ message: "Server error" })
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
   }
-})
+});
 
-// Reset password route
 app.post("/reset-password/:token", async (req, res) => {
   try {
     const { token } = req.params;
@@ -594,75 +439,75 @@ app.post("/reset-password/:token", async (req, res) => {
       resetPasswordToken: token,
       resetPasswordExpires: { $gt: Date.now() }
     });
+    if (!user) return res.status(400).json({ message: "Invalid or expired token." });
 
-    if (!user) {
-      return res.status(400).json({ message: "Invalid or expired token." });
-    }
-
-    user.password = password;
-
+    user.password = password; 
     user.resetPasswordToken = undefined;
     user.resetPasswordExpires = undefined;
-
     await user.save();
 
-    res.json({ message: "Password reset successful!" })
+    res.json({ message: "Password reset successful!" });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Server error" })
+    res.status(500).json({ message: "Server error" });
   }
-})
-
+});
 
 app.post("/update-password", async (req, res) => {
   try {
     const { currentPassword, newPassword, email } = req.body;
-
     const user = await UserModel.findOne({ email });
-    if (!user) {
-      return res.status(404).json({ message: "User not found." });
-    }
+    if (!user) return res.status(404).json({ message: "User not found." });
 
-    // Verify current password
     const isMatch = await bcrypt.compare(currentPassword, user.password);
-    if (!isMatch) {
-      return res.status(400).json({ message: "Current password is incorrect." });
-    }
+    if (!isMatch) return res.status(400).json({ message: "Current password is incorrect." });
 
-    user.password = newPassword;
-
+    user.password = newPassword; 
     await user.save();
 
-    //console.log("Password updated successfully for:", email);
     return res.json({ message: "Password updated successfully!" });
-  } catch (err) {
-    //console.error("ERROR:", err);
+  } catch {
     return res.status(500).json({ message: "Server error" });
   }
-})
+});
 
 app.post("/send-support", async (req, res) => {
   try {
     const { name, email, feedback } = req.body;
-
     const msg = {
       to: "truerepairs.noreply@gmail.com",
-      from: {
-        email: "truerepairs.noreply@gmail.com",
-        name: "TrueRepairs Support",
-      },
+      from: { email: "truerepairs.noreply@gmail.com", name: "TrueRepairs Support" },
       subject: "New Support Message from Contact Form",
       text: `From: ${name || "Anonymous"} (${email})\n\n${feedback}`,
-    }
-
+    };
     await sgMail.send(msg);
     res.status(200).json({ success: true });
   } catch (error) {
     console.error("SendGrid error:", error);
     res.status(500).json({ success: false });
   }
-})
+});
 
-app.listen(5000, ()=> {
-  console.log("App is running")
-})
+// API 404 catch-all
+app.use("/api", (req, res) => {
+  return res.status(404).json({ message: "Not Found", path: req.originalUrl });
+});
+
+// Error handler
+app.use((err, req, res, next) => {
+  console.error("[ERROR]", err);
+  res.status(500).json({ message: err.message || "Server error" });
+});
+
+// Start only after DB connects
+(async () => {
+  try {
+    await connectDB();
+    app.listen(5000, () => {
+      console.log("App is running on http://localhost:5000");
+    });
+  } catch (e) {
+    console.error("Mongo connection failed:", e.message);
+    process.exit(1);
+  }
+})();
