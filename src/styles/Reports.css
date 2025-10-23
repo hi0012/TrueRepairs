@@ -13,53 +13,55 @@
   animation: fadeIn 0.3s ease-in-out;
 }
 
+/* === Popup layout === */
 .reportpopup {
   background: #fff;
   width: 95%;
   max-width: 1600px;
   height: 90%;
   border-radius: 12px;
-  padding: 30px 40px 20px;
+  padding: 30px 40px 40px;
   display: flex;
   flex-direction: column;
+  justify-content: flex-start;
   box-shadow: 0 6px 25px rgba(0, 0, 0, 0.5);
   z-index: 1000;
-  overflow: hidden;
+  overflow-y: auto; /* ✅ entire popup scrolls */
+  -webkit-overflow-scrolling: touch;
   animation: slideUp 0.4s ease-in-out;
 }
 
+/* === Header === */
 .reportheader {
   text-align: center;
   margin-bottom: 15px;
 }
-
 .reportheader h1 {
   font-size: 32px;
   font-weight: 800;
   margin-bottom: 6px;
 }
-
 .reportheader p {
   font-size: 16px;
   color: #555;
 }
 
+/* === Layout columns === */
 .reportcolumns {
   flex: 1;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 24px;
-  overflow: hidden;
-  min-height: 0;
+  margin-bottom: 30px; /* space before Cancel */
 }
 
 .reportleft,
 .reportright {
   display: flex;
   flex-direction: column;
-  height: 100%;
 }
 
+/* === Left side (generator) === */
 .reportbox {
   background: #fafafa;
   border: 1px solid #ddd;
@@ -67,77 +69,12 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
-.reportvehiclesbox {
-  flex: 1;
-  padding: 20px;
-  overflow-y: auto;
-  min-height: 250px;
-  max-height: 340px;
-}
-
-.reportlist {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.reportitem {
-  border-bottom: 1px solid #ddd;
-  padding: 14px 0;
-}
-
-.reportitemheader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.reportitem strong {
-  font-size: 17px;
-}
-
-.reportitem p {
-  font-size: 15px;
-  color: #444;
-  margin: 0;
-}
-
-.reportactions {
-  display: flex;
-  gap: 8px;
-}
-
-.reportviewbtn {
-  background: #0068d2;
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  padding: 6px 12px;
-  cursor: pointer;
-  font-weight: 500;
-  transition: all 0.2s ease;
-}
-.reportviewbtn:hover { background: #004ea3; }
-
-.reportdropdown {
-  background: #f7f7f7;
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  margin-top: 10px;
-  padding: 12px;
-  animation: fadeIn 0.3s ease-in-out;
-}
-.reportdropdown p {
-  margin: 4px 0;
-  font-size: 14px;
-}
-
 .reportgeneratebox {
   flex: 1;
   padding: 30px;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-start;
 }
 
 .reportgeneratebox h2 {
@@ -146,6 +83,7 @@
   margin-bottom: 10px;
 }
 
+/* === Vehicle details === */
 .reportselected {
   background: #f8fafc;
   border: 1px solid #cfd8e3;
@@ -154,25 +92,23 @@
   margin-bottom: 15px;
   text-align: center;
 }
-
 .reportplaceholder {
   color: #888;
   font-style: italic;
 }
 
+/* === Form fields === */
 .reportselectors {
   display: flex;
   flex-direction: column;
   gap: 12px;
   margin-top: 10px;
 }
-
 .reportselectfield label {
   font-weight: 600;
   display: block;
   margin-bottom: 4px;
 }
-
 .reportselectfield select {
   width: 100%;
   padding: 8px;
@@ -180,7 +116,69 @@
   border: 1px solid #ccc;
   font-size: 15px;
 }
+.reportselectfield select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
 
+/* === Add part === */
+.reportpartadd {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.reportaddbtn {
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+.reportaddbtn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+/* === Scrollable list === */
+.scrollbox {
+  max-height: 180px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-top: 10px;
+  background: #fafafa;
+}
+.scrollbox ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.scrollbox li {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+  border-bottom: 1px solid #eee;
+}
+.scrollbox li:last-child {
+  border-bottom: none;
+}
+.scrollbox button {
+  background: transparent;
+  border: none;
+  color: #c00;
+  cursor: pointer;
+}
+.scrollbox::-webkit-scrollbar {
+  width: 6px;
+}
+.scrollbox::-webkit-scrollbar-thumb {
+  background-color: #ccc;
+  border-radius: 3px;
+}
+
+/* === Generate button === */
 .reportgeneratebtn {
   align-self: center;
   background: #0068d2;
@@ -194,15 +192,17 @@
   transition: all 0.3s;
   margin-top: 14px;
 }
-.reportgeneratebtn:hover { background: #004ea3; }
+.reportgeneratebtn:hover {
+  background: #004ea3;
+}
 
+/* === Right side (reports) === */
 .reportright {
   background: #fafafa;
   border: 1px solid #ddd;
   border-radius: 12px;
   padding: 25px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  overflow-y: auto;
 }
 .reportright h2 {
   text-align: center;
@@ -215,120 +215,12 @@
   margin-top: 20px;
 }
 
-.reportbottom {
-  display: flex;
-  justify-content: center;
-  margin-top: 15px;
-}
-.reportcancelbtn {
-  border: none;
-  color: red;
-  font-weight: 500;
-  padding: 13px 50px;
-  background-color: white;
-  font-size: clamp(15px, 1vw, 15px);
-  border-radius: 50px;
-  cursor: pointer;
-  border: 1px solid red;
-  transition: all 0.3s;
-}
-.reportcancelbtn:hover {
-  background-color: red;
-  color: white;
-  border: 1px solid white;
-}
-
-.reportselectfield select:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.reportpartadd {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
-
-.reportaddbtn {
-  background: #007bff;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  padding: 6px 12px;
-  cursor: pointer;
-}
-
-.reportaddbtn:disabled {
-  background: #ccc;
-  cursor: not-allowed;
-}
-
-.scrollbox {
-  max-height: 180px;
-  overflow-y: auto;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 8px 12px;
-  margin-top: 10px;
-  background: #fafafa;
-}
-
-.scrollbox ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.scrollbox li {
-  display: flex;
-  justify-content: space-between;
-  padding: 4px 0;
-  border-bottom: 1px solid #eee;
-}
-
-.scrollbox li:last-child {
-  border-bottom: none;
-}
-
-.scrollbox button {
-  background: transparent;
-  border: none;
-  color: #c00;
-  cursor: pointer;
-}
-
-.scrollbox::-webkit-scrollbar {
-  width: 6px;
-}
-
-.scrollbox::-webkit-scrollbar-thumb {
-  background-color: #ccc;
-  border-radius: 3px;
-}
-
-.progress-bar-container {
-  width: 100%;
-  height: 10px;
-  background-color: #e1e1e1;
-  border-radius: 6px;
-  margin-top: 10px;
-  overflow: hidden;
-}
-
-.progress-bar-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #007bff, #00b4ff);
-  width: 0;
-  transition: width 0.3s ease-in-out;
-}
-
-/* === Reports list (VehicleInfo-style) === */
+/* === Reports list === */
 .RepList {
   list-style: none;
   padding: 0;
   margin: 0;
 }
-
 .RepItem {
   display: flex;
   flex-direction: column;
@@ -336,7 +228,6 @@
   border-bottom: 1px solid #ddd;
   padding: 16px 0;
 }
-
 .RepItemHeader {
   display: flex;
   align-items: center;
@@ -345,25 +236,21 @@
   gap: 10px;
   flex-wrap: wrap;
 }
-
 .RepItemHeader strong {
   display: block;
   font-size: 17px;
   margin-bottom: 4px;
 }
-
 .RepItemHeader p {
   margin: 0;
   font-size: 15px;
   color: #444;
 }
-
 .RepActions {
   display: flex;
   gap: 8px;
   align-items: center;
 }
-
 .RepViewBtn {
   border: none;
   background: #0068d2;
@@ -374,9 +261,9 @@
   font-weight: 500;
   transition: 0.2s;
 }
-.RepViewBtn:hover { background: #004ea3; }
-
-/* Download = blue (center button) */
+.RepViewBtn:hover {
+  background: #004ea3;
+}
 .RepDownloadBtn {
   border: 1px solid #0068d2;
   background: white;
@@ -387,9 +274,10 @@
   font-weight: 500;
   transition: 0.2s;
 }
-.RepDownloadBtn:hover { background: #0068d2; color: white; }
-
-/* Delete = red */
+.RepDownloadBtn:hover {
+  background: #0068d2;
+  color: white;
+}
 .RepDeleteBtn {
   border: none;
   background: #f55;
@@ -400,8 +288,9 @@
   font-weight: 500;
   transition: 0.2s;
 }
-.RepDeleteBtn:hover { background: #d22; }
-
+.RepDeleteBtn:hover {
+  background: #d22;
+}
 .RepDropdown {
   background: #f7f7f7;
   border: 1px solid #ddd;
@@ -412,7 +301,7 @@
   box-sizing: border-box;
 }
 
-/* make the parts table look nice in the dropdown */
+/* === Table === */
 .RepDropdown .reporttable {
   width: 100%;
   border-collapse: collapse;
@@ -424,39 +313,114 @@
   padding: 6px 8px;
   border-bottom: 1px solid #e6e6e6;
 }
-.quantity-controls {
+
+/* === Progress bar === */
+.progress-bar-container {
+  width: 100%;
+  height: 10px;
+  background-color: #e1e1e1;
+  border-radius: 6px;
+  margin-top: 10px;
+  overflow: hidden;
+}
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #007bff, #00b4ff);
+  width: 0;
+  transition: width 0.3s ease-in-out;
+}
+
+/* === Cancel button (bottom) === */
+.reportbottom {
   display: flex;
-  align-items: center;
-  gap: 8px;
+  justify-content: center;
+  margin-top: 20px;
+  padding-bottom: 10px;
+}
+.reportcancelbtn {
+  border: 1.5px solid red;
+  color: red;
+  font-weight: 600;
+  background: white;
+  border-radius: 50px;
+  padding: 12px 60px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.reportcancelbtn:hover {
+  background: red;
+  color: white;
+  border-color: white;
 }
 
-.quantity-controls input {
-  width: 50px;
-  padding: 2px 5px;
-  text-align: center;
-}
-
-
-.reportvehiclesbox::-webkit-scrollbar,
-.reportright::-webkit-scrollbar { width: 8px; }
-.reportvehiclesbox::-webkit-scrollbar-thumb,
-.reportright::-webkit-scrollbar-thumb {
-  background: #ccc;
-  border-radius: 4px;
-}
-.reportvehiclesbox::-webkit-scrollbar-thumb:hover,
-.reportright::-webkit-scrollbar-thumb:hover { background: #888; }
-
+/* === Animations === */
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
 }
 @keyframes slideUp {
-  from { transform: translateY(40px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  from {
+    transform: translateY(40px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
+/* === Responsive layout === */
 @media (max-width: 900px) {
-  .reportcolumns { grid-template-columns: 1fr; }
-  .reportright { min-height: 300px; }
+  .reportoverlay {
+    align-items: flex-start;
+    padding: 20px 0;
+  }
+
+  .reportpopup {
+    height: auto;
+    max-height: 95vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .reportcolumns {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+  }
+
+  .reportleft,
+  .reportright {
+    width: 100%;
+    height: auto;
+  }
+
+  .reportbottom {
+    margin-top: 30px;
+    padding-bottom: 30px;
+  }
+
+  .reportcancelbtn {
+    width: 80%;
+    max-width: 300px;
+  }
+}
+
+@media (max-width: 700px) {
+  .reportdropdown {
+    width: 100%;
+    max-width: none;
+  }
+
+  .reportitemheader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .reportactions {
+    width: 100%;
+    justify-content: flex-start;
+  }
 }
