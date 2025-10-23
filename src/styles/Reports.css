@@ -424,6 +424,17 @@
   padding: 6px 8px;
   border-bottom: 1px solid #e6e6e6;
 }
+.quantity-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.quantity-controls input {
+  width: 50px;
+  padding: 2px 5px;
+  text-align: center;
+}
 
 
 .reportvehiclesbox::-webkit-scrollbar,
