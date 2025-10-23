@@ -177,38 +177,92 @@ app.get("/api/cardetails/models", async (req, res) => {
   }
 });
 
+app.post("/api/manual-vehicle", async (req, res) => {
+  try {
+    const { year, make, model, trim, email } = req.body;
+    if (!year || !make || !model || !email)
+      return res.status(400).json({ message: "Year, make, model, and email required" });
+
+    const specs = await getCarSpecs({ year, make, model });
+    const carData = specs?.[0];
+    if (!carData) return res.status(404).json({ message: "Vehicle specs not found." });
+
+    const cap = (s = "") => s.toLowerCase().split(" ").map(w => w[0].toUpperCase() + w.slice(1)).join(" ");
+    const yearStr = String(year);
+    const makeFormatted = cap(make);
+    const modelFormatted = cap(model);
+    const trimFormatted = trim ? cap(trim) : "";
+    const engine = carData.displacement ? `${carData.displacement}L ${carData.cylinders || ""}-Cyl`.trim() : "Unknown";
+    const fuel = cap(carData.fuel_type || "Unknown");
+    const drivetrain = (carData.drive || "FWD").toUpperCase();
+    const transmission = (carData.transmission || "AUTO").toUpperCase();
+    const nickname = `${yearStr} ${makeFormatted} ${modelFormatted}${trimFormatted ? " " + trimFormatted : ""}`;
+
+    const newVehicle = new Vehicle({
+      email,
+      nickname,
+      year: yearStr,
+      make: makeFormatted,
+      model: modelFormatted,
+      trim: trimFormatted,
+      engine,
+      fuel,
+      drivetrain,
+      transmission,
+      mpg_city: carData.city_mpg || "Unknown",
+      mpg_highway: carData.highway_mpg || "Unknown",
+      class: carData.class || "Unknown",
+    });
+
+    await newVehicle.save();
+
+    res.json({
+      message: "Manual vehicle added successfully!",
+      vehicle: newVehicle,
+    });
+  } catch (err) {
+    console.error("Error adding manual vehicle:", err);
+    res.status(500).json({ message: "Failed to add manual vehicle." });
+  }
+});
+
+
 app.get("/api/cardetails/details", async (req, res) => {
   try {
     const { year, make, model } = req.query;
-    if (!year || !make || !model) return res.status(400).json({ message: "Missing params" });
+    if (!year || !make || !model)
+      return res.status(400).json({ message: "Missing params" });
+
     const data = await getCarSpecs({ year, make, model });
     res.json(data);
-  } catch {
+  } catch (err) {
     res.status(500).json({ message: "Failed to load details" });
   }
-});
+})
 
 // Vehicles CRUD
 app.get("/api/vehicles", async (req, res) => {
   try {
     const { email } = req.query;
     if (!email) return res.status(400).json({ message: "Email is required" });
+
     const vehicles = await Vehicle.find({ email });
     res.json({ items: vehicles });
-  } catch {
+  } catch (err) {
     res.status(500).json({ message: "Server error" });
   }
-});
+})
+
 
 app.post("/api/vehicles", async (req, res) => {
   try {
     const newVehicle = new Vehicle(req.body);
     await newVehicle.save();
     res.json(newVehicle);
-  } catch {
+  } catch (err) {
     res.status(500).json({ message: "Error saving vehicle" });
   }
-});
+})
 
 app.delete("/api/vehicles/:id", async (req, res) => {
   try {
@@ -525,6 +579,42 @@ app.post("/reset-password/:token", async (req, res) => {
   }
 });
 
+app.post("/update-password", async (req, res) => {
+  try {
+    const { currentPassword, newPassword, email } = req.body;
+    const user = await UserModel.findOne({ email });
+    if (!user) return res.status(404).json({ message: "User not found." });
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) return res.status(400).json({ message: "Current password is incorrect." });
+
+    user.password = newPassword; 
+    await user.save();
+
+    return res.json({ message: "Password updated successfully!" });
+  } catch {
+    return res.status(500).json({ message: "Server error" });
+  }
+});
+
+app.post("/send-support", async (req, res) => {
+  try {
+    const { name, email, feedback } = req.body;
+    const msg = {
+      to: "truerepairs.noreply@gmail.com",
+      from: { email: "truerepairs.noreply@gmail.com", name: "TrueRepairs Support" },
+      subject: "New Support Message from Contact Form",
+      text: `From: ${name || "Anonymous"} (${email})\n\n${feedback}`,
+    };
+    await sgMail.send(msg);
+    res.status(200).json({ success: true });
+  } catch (error) {
+    console.error("SendGrid error:", error);
+    res.status(500).json({ success: false });
+  }
+});
+
+
 app.post("/update-profile", async (req, res) => {
   try {
     const { currentEmail, newEmail } = req.body;
@@ -575,45 +665,55 @@ app.post("/update-profile", async (req, res) => {
 });
 
 
-app.post("/update-password", async (req, res) => {
+app.post("/deactivate-account", async (req, res) => {
   try {
-    const { currentPassword, newPassword, email } = req.body;
+    const { email, password } = req.body;
+
     const user = await UserModel.findOne({ email });
-    if (!user) return res.status(404).json({ message: "User not found." });
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
 
-    const isMatch = await bcrypt.compare(currentPassword, user.password);
-    if (!isMatch) return res.status(400).json({ message: "Current password is incorrect." });
+    const validPassword = await bcrypt.compare(password, user.password);
+    if (!validPassword) {
+      return res.status(401).json({ success: false, message: "Invalid password" });
+    }
 
-    user.password = newPassword; 
+    user.isActive = false;
     await user.save();
 
-    return res.json({ message: "Password updated successfully!" });
-  } catch {
-    return res.status(500).json({ message: "Server error" });
+    res.json({ success: true, message: "Account deactivated successfully" });
+  } catch (err) {
+    console.error("Deactivate account error:", err);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 });
 
-app.post("/send-support", async (req, res) => {
+
+app.post("/delete-account", async (req, res) => {
+  const { email, password } = req.body;
+
   try {
-    const { name, email, feedback } = req.body;
-    const msg = {
-      to: "truerepairs.noreply@gmail.com",
-      from: { email: "truerepairs.noreply@gmail.com", name: "TrueRepairs Support" },
-      subject: "New Support Message from Contact Form",
-      text: `From: ${name || "Anonymous"} (${email})\n\n${feedback}`,
-    };
-    await sgMail.send(msg);
-    res.status(200).json({ success: true });
-  } catch (error) {
-    console.error("SendGrid error:", error);
-    res.status(500).json({ success: false });
+    const user = await UserModel.findOne({ email });
+    if (!user) return res.status(404).json({ success: false, message: "User not found." });
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) return res.status(401).json({ success: false, message: "Incorrect password." });
+
+    await Promise.all([
+      UserModel.deleteOne({ email }),
+      //Order.deleteMany({ userEmail: email }),
+      //Review.deleteMany({ userEmail: email })
+    ]);
+
+    return res.json({ success: true, message: "Account deleted successfully." });
+  } catch (err) {
+    console.error("Delete account error:", err);
+    return res.status(500).json({ success: false, message: "Server error." });
   }
 });
 
-// API 404 catch-all
-app.use("/api", (req, res) => {
-  return res.status(404).json({ message: "Not Found", path: req.originalUrl });
-});
+
 
 // Error handler
 app.use((err, req, res, next) => {
@@ -633,3 +733,8 @@ app.use((err, req, res, next) => {
     process.exit(1);
   }
 })();
+
+// API 404 catch-all
+app.use("/api", (req, res) => {
+  return res.status(404).json({ message: "Not Found", path: req.originalUrl });
+});
