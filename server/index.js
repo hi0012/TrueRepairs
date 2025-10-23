@@ -22,7 +22,7 @@ const { getCarSpecs, vinDecode } = require("./src/services/ninjaApi");
 const { scrapeRockAuto } = require("./src/services/rockauto");
 const reportRoutes = require("./src/routes/reportRoutes.js");
 // const externalRoutes = require("./src/routes/external.js");
-const estimateRoutes = require("./src/routes/estimate"); // <-- ADDED
+//const estimateRoutes = require("./src/routes/estimate"); // <-- ADDED
 
 // Env
 const TEMP_SECRET = process.env.TEMP_SECRET;
@@ -32,7 +32,7 @@ if (process.env.SENDGRID_API_KEY) sgMail.setApiKey(process.env.SENDGRID_API_KEY)
 const app = express();
 app.use(cors());
 app.use(express.json());
-app.use("/api", estimateRoutes); // <-- ADDED
+//app.use("/api", estimateRoutes); // <-- ADDED
 
 // Root + reports first
 app.get("/", (req, res) => res.json({ ok: true, message: "TrueRepairs API" }));
@@ -223,82 +223,138 @@ app.delete("/api/vehicles/:id", async (req, res) => {
 app.post("/api/vehicleinfo", async (req, res) => {
   try {
     const { vin, email } = req.body;
-    if (!vin || !email) return res.status(400).json({ message: "VIN and email required" });
+    if (!vin || !email) {
+      return res.status(400).json({ message: "VIN and email required" });
+    }
 
-    function formatFuel(fuel) {
+    // helpers
+    const capWords = (str = "") =>
+      String(str)
+        .toLowerCase()
+        .split(/([\s-]+)/)
+        .map((p) => (/^[a-z]/.test(p) ? p[0].toUpperCase() + p.slice(1) : p))
+        .join("");
+
+    const formatFuel = (fuel) => {
       if (!fuel) return "Unknown";
-      const f = fuel.toLowerCase();
+      const f = String(fuel).toLowerCase();
       if (f === "gas") return "Gasoline";
       if (f === "diesel") return "Diesel";
       if (f === "electric") return "Electric";
       return fuel.charAt(0).toUpperCase() + fuel.slice(1);
-    }
-    function formatDrivetrain(drive) {
+    };
+
+    const formatDrivetrain = (drive) => {
       if (!drive) return "Unknown";
-      const d = drive.toLowerCase();
+      const d = String(drive).toLowerCase();
       if (d === "awd") return "AWD";
       if (d === "fwd") return "FWD";
       if (d === "rwd") return "RWD";
       if (d === "4wd") return "4WD";
-      return drive.toUpperCase();
-    }
+      return String(drive).toUpperCase();
+    };
 
-    let payload;
-    try {
-      const apiResp = await vehdb.vinDecode(vin);
-      payload = { source: "VehicleDatabase", data: apiResp.data };
-    } catch {
-      const ninjaResp = await vinDecode(vin);
-      payload = { source: "NinjaAPI", data: ninjaResp };
+    // 1) Decode with Ninja (PRIMARY)
+    const ninjaResp = await vinDecode(vin);
+    let payload = { source: "NinjaAPI", data: ninjaResp || {} };
+    let v = payload.data || {};
 
-      if (ninjaResp.manufacturer && ninjaResp.model && ninjaResp.year) {
+    // Extract best-guess keys
+    let makeBase  = v.make || v.manufacturer || v.brand;
+    let modelBase = v.model || v.model_name || v.series;
+    let yearBase  = v.year || v.model_year;
+
+    // 2) Enrich using Ninja car specs if anything key is missing
+    const missingKey =
+      (!v.engine && !v.engine_size) ||
+      !v.fuel_type ||
+      !(v.drive || v.drivetrain) ||
+      !v.transmission ||
+      !v.city_mpg ||
+      !v.highway_mpg;
+
+    if (makeBase && modelBase && yearBase && missingKey) {
+      try {
         const specsList = await getCarSpecs({
-          make: ninjaResp.manufacturer, model: ninjaResp.model, year: ninjaResp.year
+          make: makeBase,
+          model: modelBase,
+          year: yearBase,
         });
-        const specs = specsList?.[0];
-        if (specs) {
-          payload.data = {
-            ...ninjaResp,
-            engine: specs.displacement ? `${specs.displacement}L ${specs.cylinders || ""}-Cyl`.trim() : "Unknown",
-            fuel_type: specs.fuel_type || "Unknown",
-            drive: specs.drive || "Unknown",
-            transmission: specs.transmission || "Unknown",
-            city_mpg: specs.city_mpg || "Unknown",
-            highway_mpg: specs.highway_mpg || "Unknown",
+        if (specsList && specsList.length) {
+          const s = specsList[0];
+          const enrichedEngine = s.displacement
+            ? `${s.displacement}L ${s.cylinders || ""}-Cyl`.trim()
+            : (v.engine || v.engine_size || "Unknown");
+
+          v = {
+            ...v,
+            engine: enrichedEngine,
+            fuel_type: v.fuel_type || s.fuel_type || "Unknown",
+            drive: v.drive || v.drivetrain || s.drive || "Unknown",
+            transmission: v.transmission || s.transmission || "Unknown",
+            city_mpg: v.city_mpg || s.city_mpg || "Unknown",
+            highway_mpg: v.highway_mpg || s.highway_mpg || "Unknown",
           };
+          payload.data = v;
         }
+      } catch (enrichErr) {
+        console.warn("Enrichment skipped:", enrichErr.message);
       }
     }
 
-    const v = payload.data || {};
-    const make = v.make || v.manufacturer || v.brand || "Unknown";
-    const model = v.model || "Unknown";
-    const year = v.year || "Unknown";
-    const trim = v.trim || "Unknown";
-    const engine = (v.engine || v.engine_size)
-      ? String(v.engine || v.engine_size).replace(/\b([a-z])/g, (c) => c.toUpperCase())
-      : "Unknown";
-    const fuel = formatFuel(v.fuel_type);
-    const drivetrain = formatDrivetrain(v.drive || v.drivetrain);
-    const transmission = v.transmission || "Unknown";
-    const mpg_city = v.city_mpg || "Unknown";
-    const mpg_highway = v.highway_mpg || "Unknown";
-    const vehicleClass = v.class || "Unknown";
-    const nickname = `${year} ${make} ${model}`.trim() || "Unnamed Vehicle";
+    // 3) Normalize for save
+    const make  = capWords(v.make || v.manufacturer || v.brand || "Unknown");
+    const model = capWords(v.model || v.model_name || v.series || "Unknown");
+    const year  = String(v.year || v.model_year || "Unknown");
+    const trim  = capWords(v.trim || "");
 
+    const engine =
+      (v.engine || v.engine_size)
+        ? String(v.engine || v.engine_size).replace(/\b([a-z])/g, (c) => c.toUpperCase())
+        : "Unknown";
+
+    const fuel         = formatFuel(v.fuel_type);
+    const drivetrain   = formatDrivetrain(v.drive || v.drivetrain);
+    const transmission = v.transmission || "Unknown";
+    const mpg_city     = v.city_mpg || "Unknown";
+    const mpg_highway  = v.highway_mpg || "Unknown";
+    const vehicleClass = v.class || "Unknown";
+    const nickname     = `${year} ${make} ${model}`.trim() || "Unnamed Vehicle";
+
+    // 4) Persist
     const newVehicle = new Vehicle({
-      email, vin, nickname, year, make, model, trim, engine, fuel,
-      drivetrain, transmission, mpg_city, mpg_highway, class: vehicleClass, data: v,
+      email,
+      vin,
+      nickname,
+      year,
+      make,
+      model,
+      trim,
+      engine,
+      fuel,
+      drivetrain,
+      transmission,
+      mpg_city,
+      mpg_highway,
+      class: vehicleClass,
+      data: v,
     });
     await newVehicle.save();
+
+    // history
     await Lookup.create({ userEmail: email, vin, data: payload });
 
-    res.json({ message: `${nickname} added successfully!`, source: payload.source, vehicle: newVehicle });
+    return res.json({
+      message: `${nickname} added successfully!`,
+      source: payload.source,
+      vehicle: newVehicle,
+    });
   } catch (err) {
     console.error("Unexpected VIN lookup error:", err);
-    res.status(500).json({ message: "Server error" });
+    return res.status(500).json({ message: "Server error" });
   }
 });
+
 
 // Lookup history
 app.get("/api/history", async (req, res) => {
@@ -468,6 +524,56 @@ app.post("/reset-password/:token", async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
+
+app.post("/update-profile", async (req, res) => {
+  try {
+    const { currentEmail, newEmail } = req.body;
+
+    // Validate input
+    if (!currentEmail || !newEmail) {
+      return res.status(400).json({
+        success: false,
+        message: "Both currentEmail and newEmail are required",
+      });
+    }
+
+    // Find user by current email
+    const user = await UserModel.findOne({ email: currentEmail });
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // Check if new email already exists
+    const emailExists = await UserModel.findOne({ email: newEmail });
+    if (emailExists) {
+      return res.status(409).json({
+        success: false,
+        message: "Email already in use",
+      });
+    }
+
+    // Update user email
+    user.email = newEmail;
+    await user.save();
+
+    res.json({
+      success: true,
+      message: "Email updated successfully",
+      user: { email: user.email },
+    });
+
+  } catch (err) {
+    console.error("Error in /update-profile:", err);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+});
+
 
 app.post("/update-password", async (req, res) => {
   try {
