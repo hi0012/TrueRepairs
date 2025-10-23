@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import '../styles/Home.css';
+
 import Header from '../components/Header';
 import Features from '../components/Features';
 import AboutUs from '../components/AboutUs'
@@ -21,6 +22,7 @@ const Home = () => {
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const verified = params.get('verified');
+    const deleted = params.get('deleted');
 
     if (verified === 'true') {
       setMessage('Your account has been verified!');
@@ -28,9 +30,11 @@ const Home = () => {
       setMessage('Verification failed or expired.');
     } else if (verified === 'exists') {
       setMessage('Account already verified.');
+    } else if (deleted === 'true') {
+      setMessage('Your account has been successfully deleted.');
     }
 
-    if (verified) {
+    if (verified || deleted) {
       setTimeout(() => setMessage(''), 4000);
     }
   }, [location]);

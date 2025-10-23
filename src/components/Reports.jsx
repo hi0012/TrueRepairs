@@ -4,6 +4,8 @@ import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 
 const API = "http://localhost:5000";
+
+// turn "$1,234.56" or "Out of Stock" into a number
 const priceToNumber = (v) => {
   if (!v) return 0;
   const s = String(v);
@@ -33,12 +35,13 @@ export default function Reports({ open, onClose }) {
   const [message, setMessage] = useState("");
 
   const [reports, setReports] = useState([]);
-  const requestVersion = useRef(0);
+  const [expanded, setExpanded] = useState(null); // which report is open
 
+  const requestVersion = useRef(0);
   const [progress, setProgress] = useState(0);
   const [totalParts, setTotalParts] = useState(0);
 
-  // Load user's vehicles
+  // Vehicles
   useEffect(() => {
     if (!userEmail) return;
     (async () => {
@@ -54,7 +57,7 @@ export default function Reports({ open, onClose }) {
     })();
   }, [userEmail]);
 
-  // Load saved reports
+  // Reports
   useEffect(() => {
     if (!userEmail) return;
     (async () => {
@@ -70,7 +73,7 @@ export default function Reports({ open, onClose }) {
     })();
   }, [userEmail]);
 
-  // Vehicle change
+  // Select vehicle
   async function handleVehicleChange(e) {
     const vehicleId = e.target.value;
     const v = vehicles.find((veh) => veh._id === vehicleId);
@@ -123,7 +126,7 @@ export default function Reports({ open, onClose }) {
     }
   }
 
-  // Subcategory
+  // Category → Subcategory
   async function handleCategoryChange(e) {
     const newCategory = e.target.value;
     setSelectedCategory(newCategory);
@@ -164,7 +167,7 @@ export default function Reports({ open, onClose }) {
     }
   }
 
-  // Add Part
+  // Add/Remove part
   function handleAddPart() {
     if (!selectedCategory || !selectedPart) return;
     const exists = partsList.some(
@@ -178,13 +181,11 @@ export default function Reports({ open, onClose }) {
     setSelectedPart("");
     setMessage(`Added ${selectedPart} (${selectedCategory}) to list.`);
   }
-
-  // Remove Part
   function handleRemovePart(index) {
     setPartsList(partsList.filter((_, i) => i !== index));
   }
 
-  // Generate Report
+  // Generate report
   async function handleGenerate() {
     if (!selectedVehicle) {
       setMessage("Please select a vehicle.");
@@ -220,9 +221,17 @@ export default function Reports({ open, onClose }) {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
-        const data = await res.json();
 
-        // Data shape
+        const raw = await res.text();
+        let data;
+        try {
+          data = JSON.parse(raw);
+        } catch {
+          setProgress(i + 1);
+          partSummaries.push({ name: item.part, low: 0, high: 0, avg: 0 });
+          continue;
+        }
+
         const rows = Array.isArray(data.parts)
           ? data.parts
           : Object.values(data.parts || {}).flat();
@@ -241,7 +250,7 @@ export default function Reports({ open, onClose }) {
           overallPrices.push(...nums);
         }
       } catch (err) {
-        console.error("Scrape error:", err);
+        console.error("[REPORT] scrape error:", err);
         partSummaries.push({ name: item.part, low: 0, high: 0, avg: 0 });
       }
 
@@ -250,7 +259,7 @@ export default function Reports({ open, onClose }) {
 
     if (overallPrices.length === 0) {
       setLoadingReports(false);
-      setMessage("No prices found for selected parts (nothing saved). Try a different part.");
+      setMessage("No prices found for selected parts (nothing saved).");
       return;
     }
 
@@ -263,41 +272,41 @@ export default function Reports({ open, onClose }) {
     const title = `${selectedVehicle.year} ${selectedVehicle.make} ${selectedVehicle.model} (${partsList.length} parts)`;
 
     try {
+      const saveBody = {
+        title,
+        userEmail,
+        vehicle: {
+          year: selectedVehicle.year,
+          make: selectedVehicle.make,
+          model: selectedVehicle.model,
+          engine: selectedVehicle.engine,
+        },
+        parts: partSummaries,
+        summary,
+      };
+
       await fetch(`${API}/api/reports`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title,
-          userEmail,
-          vehicle: {
-            year: selectedVehicle.year,
-            make: selectedVehicle.make,
-            model: selectedVehicle.model,
-            engine: selectedVehicle.engine,
-          },
-          parts: partSummaries, // <- this is what the table reads
-          summary,
-        }),
+        body: JSON.stringify(saveBody),
       });
 
-      // refresh
-      const r = await fetch(
-        `${API}/api/reports?email=${encodeURIComponent(userEmail)}`
-      );
+      // refresh list
+      const r = await fetch(`${API}/api/reports?email=${encodeURIComponent(userEmail)}`);
       const j = await r.json();
       setReports(j.items || j.reports || []);
 
       setMessage("Report saved!");
       setPartsList([]);
     } catch (e) {
-      console.error("Save report error:", e);
+      console.error("[REPORT] save report error:", e);
       setMessage("Report generated, but failed to save.");
     } finally {
       setLoadingReports(false);
     }
   }
 
-  // Download PDF
+  // Download PDF of an expanded report
   async function downloadPDF(reportId) {
     const element = document.getElementById(`report-${reportId}`);
     if (!element) return;
@@ -307,9 +316,22 @@ export default function Reports({ open, onClose }) {
     pdf.addImage(imgData, "PNG", 20, 20, 560, 0);
     pdf.save(`TrueRepairs_Report_${reportId}.pdf`);
   }
+  function handleDownload(r) {
+    // ensure it's expanded so the PDF includes details
+    setExpanded(r._id);
+    setTimeout(() => downloadPDF(r._id), 120);
+  }
 
-  const canGenerate =
-    !!selectedVehicle && partsList.length > 0 && !loadingReports;
+  async function handleDeleteReport(id) {
+    try {
+      await fetch(`${API}/api/reports/${id}`, { method: "DELETE" });
+      setReports((prev) => prev.filter((x) => x._id !== id));
+    } catch (e) {
+      console.error("Delete report failed:", e);
+    }
+  }
+
+  const canGenerate = !!selectedVehicle && partsList.length > 0 && !loadingReports;
   const disabledReason = !selectedVehicle
     ? "Select a vehicle"
     : partsList.length === 0
@@ -325,7 +347,7 @@ export default function Reports({ open, onClose }) {
         </div>
 
         <div className="reportcolumns">
-          {/* LEFT */}
+          {/* LEFT: generator */}
           <div className="reportleft">
             <div className="reportbox reportgeneratebox">
               <h2>Generate Report</h2>
@@ -458,54 +480,90 @@ export default function Reports({ open, onClose }) {
             </div>
           </div>
 
-          {/* RIGHT: Reports */}
+          {/* RIGHT: list like VehicleInfo */}
           <div className="reportright">
             <h2>Reports</h2>
             {reports.length === 0 ? (
               <p className="reportempty">No reports generated yet.</p>
             ) : (
-              <div className="reportlistbox">
-                {reports.map((r) => (
-                  <div key={r._id} id={`report-${r._id}`} className="reportcard">
-                    <h3>
-                      {r.vehicle.year} {r.vehicle.make} {r.vehicle.model}
-                    </h3>
-                    <p>
-                      <strong>Date:</strong>{" "}
-                      {new Date(r.createdAt).toLocaleString()}
-                    </p>
+              <ul className="RepList">
+                {reports.map((r, i) => {
+                  const title = `${r.vehicle?.year || ""} ${r.vehicle?.make || ""} ${r.vehicle?.model || ""}`.trim();
+                  const open = expanded === (r._id || i);
+                  return (
+                    <li key={r._id || i} className="RepItem">
+                      <div className="RepItemHeader">
+                        <div>
+                          <strong>{title || r.title}</strong>
+                          <p>Date: {new Date(r.createdAt).toLocaleString()}</p>
+                        </div>
+                        <div className="RepActions">
+                          <button
+                            className="RepViewBtn"
+                            onClick={() =>
+                              setExpanded(open ? null : (r._id || i))
+                            }
+                          >
+                            {open ? "Hide" : "View"}
+                          </button>
+                          <button
+                            className="RepDownloadBtn"
+                            onClick={() => handleDownload(r)}
+                          >
+                            Download
+                          </button>
+                          <button
+                            className="RepDeleteBtn"
+                            onClick={() => handleDeleteReport(r._id)}
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
 
-                    <table className="reporttable">
-                      <thead>
-                        <tr>
-                          <th>Part</th>
-                          <th>Low ($)</th>
-                          <th>High ($)</th>
-                          <th>Average ($)</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {(r.parts || []).map((p, i) => (
-                          <tr key={i}>
-                            <td>{p.name || "Unknown"}</td>
-                            <td>{(p.low ?? 0).toFixed(2)}</td>
-                            <td>{(p.high ?? 0).toFixed(2)}</td>
-                            <td>{(p.avg ?? 0).toFixed(2)}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                      {open && (
+                        <div id={`report-${r._id}`} className="RepDropdown">
+                          <table className="reporttable">
+                            <thead>
+                              <tr>
+                                <th>Part</th>
+                                <th>Low ($)</th>
+                                <th>High ($)</th>
+                                <th>Average ($)</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {(r.parts || []).map((p, idx) => (
+                                <tr key={idx}>
+                                  <td>{p.name || "Unknown"}</td>
+                                  <td>{Number(p.low ?? 0).toFixed(2)}</td>
+                                  <td>{Number(p.high ?? 0).toFixed(2)}</td>
+                                  <td>{Number(p.avg ?? 0).toFixed(2)}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
 
-                    <div className="reportsummary">
-                      <p><strong>Total Low:</strong> ${Number(r.summary?.totalLow || 0).toFixed(2)}</p>
-                      <p><strong>Total High:</strong> ${Number(r.summary?.totalHigh || 0).toFixed(2)}</p>
-                      <p><strong>Average:</strong> ${Number(r.summary?.totalAvg || 0).toFixed(2)}</p>
-                    </div>
-
-                    <button onClick={() => downloadPDF(r._id)}>Download PDF</button>
-                  </div>
-                ))}
-              </div>
+                          <div className="reportsummary">
+                            <p>
+                              <strong>Total Low:</strong>{" "}
+                              ${Number(r.summary?.totalLow || 0).toFixed(2)}
+                            </p>
+                            <p>
+                              <strong>Total High:</strong>{" "}
+                              ${Number(r.summary?.totalHigh || 0).toFixed(2)}
+                            </p>
+                            <p>
+                              <strong>Average:</strong>{" "}
+                              ${Number(r.summary?.totalAvg || 0).toFixed(2)}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
             )}
           </div>
         </div>
@@ -513,9 +571,7 @@ export default function Reports({ open, onClose }) {
         {message && <p className="reportmessage">{message}</p>}
 
         <div className="reportbottom">
-          <button className="reportcancelbtn" onClick={onClose}>
-            Close
-          </button>
+          <button className="reportcancelbtn" onClick={onClose}>Close</button>
         </div>
       </div>
     </div>

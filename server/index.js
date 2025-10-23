@@ -21,6 +21,8 @@ const Vehicle = require("./models/Vehicle.js");
 const { getCarSpecs, vinDecode } = require("./src/services/ninjaApi");
 const { scrapeRockAuto } = require("./src/services/rockauto");
 const reportRoutes = require("./src/routes/reportRoutes.js");
+// const externalRoutes = require("./src/routes/external.js");
+const estimateRoutes = require("./src/routes/estimate"); // <-- ADDED
 
 // Env
 const TEMP_SECRET = process.env.TEMP_SECRET;
@@ -30,6 +32,7 @@ if (process.env.SENDGRID_API_KEY) sgMail.setApiKey(process.env.SENDGRID_API_KEY)
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use("/api", estimateRoutes); // <-- ADDED
 
 // Root + reports first
 app.get("/", (req, res) => res.json({ ok: true, message: "TrueRepairs API" }));
@@ -66,51 +69,64 @@ app.post("/api/rockauto/subcategories", (req, res) => {
 });
 
 // RockAuto scrape
-app.post("/api/scrape-rockauto", async (req, res) => {
-  try {
-    const { make, year, model, engine, category, subcategory } = req.body;
-
-    if (!make || !year || !model || !engine || !category || !subcategory) {
-      return res.status(400).json({ success: false, message: "Missing required fields" });
-    }
-
-    const scriptPath = path.join(__dirname, "src", "services", "rockautoscrape.py");
-
-    // Helpful trace to your Node console:
-    console.log("[SCRAPE] payload:", { make, year, model, engine, category, subcategory });
-    const py = spawn("python", [scriptPath, make, year, model, engine, category, subcategory], {
-      env: process.env,
-    });
-
-    let out = "";
-    let err = "";
-
-    py.stdout.on("data", (chunk) => (out += chunk.toString()));
-    py.stderr.on("data", (chunk) => (err += chunk.toString()));
-    py.on("close", (code) => {
-      // Python prints ONLY JSON to stdout; all logs go to stderr
-      try {
-        const parts = out ? JSON.parse(out) : {};
-        return res.json({
-          success: true,
-          parts,     // grouped dict from Python
-          debug: err // Python logs so you can see matches/clicks/timeouts
-        });
-      } catch (e) {
-        console.error("[SCRAPE] JSON parse error:", e, "RAW:", out);
-        return res.status(500).json({
-          success: false,
-          error: "Failed to parse Python output",
-          raw: out,
-          debug: err,
-        });
-      }
-    });
-  } catch (err) {
-    console.error("[SCRAPE] route error:", err);
-    res.status(500).json({ success: false, error: err.message || String(err) });
+app.post("/api/scrape-rockauto", (req, res) => {
+  const { make, year, model, engine, category, subcategory } = req.body;
+  if (!make || !year || !model || !engine || !category || !subcategory) {
+    return res.status(400).json({ success: false, message: "Missing required fields" });
   }
+
+  const scriptPath = path.join(__dirname, "src", "services", "rockautoscrape.py");
+  const pyExe = process.env.PYTHON || (process.platform === "win32" ? "python" : "python3");
+
+  console.log("[SCRAPE] payload:", { make, year, model, engine, category, subcategory });
+
+  const py = spawn(
+    pyExe,
+    [scriptPath, String(make), String(year), String(model), String(engine), String(category), String(subcategory)],
+    { env: process.env }
+  );
+
+  let out = "";
+  let err = "";
+
+  // Safety timeout (kill after 90s)
+  const killTimer = setTimeout(() => {
+    console.warn("[SCRAPE] timed out, killing python");
+    try { py.kill(); } catch {}
+  }, 90_000);
+
+  py.stdout.on("data", (c) => (out += c.toString()));
+  py.stderr.on("data", (c) => (err += c.toString()));
+
+  py.on("close", (code) => {
+    clearTimeout(killTimer);
+    try {
+      const parsed = out ? JSON.parse(out) : {};
+      return res.json({
+        success: true,
+        code,        // python exit code
+        parts: parsed,
+        debug: err,  // stderr logs from Python
+      });
+    } catch (e) {
+      console.error("[SCRAPE] parse error:", e);
+      return res.status(500).json({
+        success: false,
+        code,
+        error: "Failed to parse Python output",
+        raw: out,
+        debug: err,
+      });
+    }
+  });
+
+  py.on("error", (e) => {
+    clearTimeout(killTimer);
+    console.error("[SCRAPE] spawn error:", e);
+    res.status(500).json({ success: false, error: e.message, debug: err });
+  });
 });
+
 
 // Car details
 app.get("/api/cardetails/makes", async (req, res) => {

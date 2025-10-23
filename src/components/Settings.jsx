@@ -1,11 +1,18 @@
 import React, { useEffect, useState } from 'react'
 import '../styles/Settings.css'
+import axios from "axios";
 
 const Settings = ({ open, onClose }) => {
     const [displayDeletePopup, setDisplayDeletePopup] = useState(false);
     const [displayDeactivatePopup, setDisplayDeactivatePopup] = useState(false);
     const [loginTime, setLoginTime] = useState(null);
     const [locateCity, setLocateCity] = useState("");
+    const [deactivatePassword, setDeactivatePassword] = useState("");
+    const [deletePassword, setDeletePassword] = useState("");
+    const [message, setMessage] = useState("");
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+    const email = storedUser?.email
+
     useEffect(() => {
         const retrievedTime = localStorage.getItem("loginTime");
         if (retrievedTime) {
@@ -18,6 +25,55 @@ const Settings = ({ open, onClose }) => {
                 setLocateCity(location.city);
             })
     }, []);
+
+    const handleDeactivateAccount = async () => {
+        try {
+        const res = await axios.post("http://localhost:5000/deactivate-account", {
+            email: email,
+            password: deactivatePassword
+        });
+
+        if (res.data.success) {
+            setMessage("Account deactivated successfully.");
+            // Optionally clear local storage
+            localStorage.clear();
+            setTimeout(() => window.location.reload(), 2000);
+        } else {
+            setMessage(`${res.data.message}`);
+        }
+        } catch (err) {
+        console.error(err);
+        setMessage("Error deactivating account.");
+        }
+    };
+
+    const handleDeleteAccount = async () => {
+        try {
+            const res = await axios.post("http://localhost:5000/delete-account", {
+            email: email,
+            password: deletePassword
+            });
+
+            if (res.data.success) {
+            // Show a quick local confirmation (optional)
+            setMessage("Account deleted successfully.");
+
+            // Clear all stored user data
+            localStorage.clear();
+
+            // Redirect to homepage with "deleted=true" param
+            setTimeout(() => {
+                window.location.href = "/?deleted=true";
+            }, 1500);
+            } else {
+            setMessage(res.data.message);
+            }
+        } catch (err) {
+            console.error(err);
+            setMessage("Error deleting account.");
+        }
+    };
+
     return (
         open && (
             <div className='settings-overlay'>
@@ -79,10 +135,10 @@ const Settings = ({ open, onClose }) => {
                             <span onClick={() => setDisplayDeletePopup(false)} className="close-confirm-password-popup">×</span>
                             <h2>Confirm Password to delete account</h2>
                             <div className='delete-password-input'>
-                                <input type="password" placeholder='Enter Password' />
+                                <input type="password" placeholder='Enter Password' value={deletePassword} onChange={(e) => setDeletePassword(e.target.value)} />
                             </div>
                             <div className='delete-popup-btns'>
-                                <button className='delete-account'>Delete account</button>
+                                <button onClick={handleDeleteAccount} className='delete-account'>Delete account</button>
                             </div>
                         </div>
                     </div>
@@ -93,10 +149,10 @@ const Settings = ({ open, onClose }) => {
                             <span onClick={() => setDisplayDeactivatePopup(false)} className="close-confirm-password-popup">×</span>
                             <h2>Confirm Password to deactivate account</h2>
                             <div className='deactivate-password-input'>
-                                <input type="password" placeholder='Enter Password' />
+                                <input type="password" placeholder='Enter Password' value={deactivatePassword} onChange={(e) => setDeactivatePassword(e.target.value)} />
                             </div>
                             <div className='deactivate-popup-btns'>
-                                <button className='deactivate-account'>Delete account</button>
+                                <button onClick={handleDeactivateAccount} className='deactivate-account'>Deactivate account</button>
                             </div>
                         </div>
                     </div>
