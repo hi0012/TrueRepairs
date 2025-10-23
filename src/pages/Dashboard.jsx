@@ -5,7 +5,7 @@ import Profile from "../components/Profile";
 import Settings from "../components/Settings";
 import Support from "../components/Support";
 import VehicleInfo from "../components/VehicleInfo";
-
+import AIModal from "../components/AIScanModal";
 const Dashboard = () => {
   const [displayPopup, setDisplayPopup] = useState(null);
   const user = JSON.parse(localStorage.getItem("user"));
@@ -27,7 +27,7 @@ const Dashboard = () => {
         <div className="box-grid">
           <div className="dashboard-box" onClick={() => popupOpen("vehicle")}>Vehicle Info</div>
           <div className="dashboard-box" onClick={() => popupOpen("profile")}>Profile</div>
-          <Link to="" className="dashboard-box">AI Scan</Link>
+          <div className="dashboard-box" onClick={() => popupOpen("aimodal")}>AI Detection</div>
           <Link to="" className="dashboard-box">Reports</Link>
           <div className="dashboard-box" onClick={()=>popupOpen("support")}>Support</div>
           <div className="dashboard-box" onClick={()=> popupOpen("settings")}>Settings</div>
@@ -37,6 +37,7 @@ const Dashboard = () => {
       <Settings open={displayPopup === "settings"} onClose={popupClose} />
       <Support open={displayPopup === "support"} onClose={popupClose}/>
       <VehicleInfo open={displayPopup === "vehicle"} onClose={popupClose} />
+      <AIModal open={displayPopup === "aimodal"} onClose={popupClose} />
     </div>
   );
 };
