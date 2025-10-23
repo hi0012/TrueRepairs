@@ -50,16 +50,23 @@ const Settings = ({ open, onClose }) => {
     const handleDeleteAccount = async () => {
         try {
             const res = await axios.post("http://localhost:5000/delete-account", {
-                email: email,
-                password: deletePassword
+            email: email,
+            password: deletePassword
             });
 
             if (res.data.success) {
-                setMessage("Account deleted successfully.");
-                localStorage.clear();
-                setTimeout(() => window.location.reload(), 2000);
+            // Show a quick local confirmation (optional)
+            setMessage("Account deleted successfully.");
+
+            // Clear all stored user data
+            localStorage.clear();
+
+            // Redirect to homepage with "deleted=true" param
+            setTimeout(() => {
+                window.location.href = "/?deleted=true";
+            }, 1500);
             } else {
-                setMessage(res.data.message);
+            setMessage(res.data.message);
             }
         } catch (err) {
             console.error(err);

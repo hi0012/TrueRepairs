@@ -43,6 +43,7 @@ const Dashboard = () => {
       <Settings open={displayPopup === "settings"} onClose={popupClose} />
       <Support open={displayPopup === "support"} onClose={popupClose}/>
       <VehicleInfo open={displayPopup === "vehicle"} onClose={popupClose} />
+      <AIModal open={displayPopup === "aimodal"} onClose={popupClose} />
     </div>
   );
 };

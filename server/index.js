@@ -13,7 +13,8 @@ const Lookup = require("./models/lookup.js");
 const vehdb = require("./src/services/vehdb");
 const Vehicle = require("./models/Vehicle.js");
 const { getCarSpecs, vinDecode } = require("./src/services/ninjaApi");
-//const externalRoutes = require("./src/routes/external.js");
+// const externalRoutes = require("./src/routes/external.js");
+const estimateRoutes = require("./src/routes/estimate"); // <-- ADDED
 
 const TEMP_SECRET = process.env.TEMP_SECRET;
 if (process.env.SENDGRID_API_KEY) sgMail.setApiKey(process.env.SENDGRID_API_KEY);
@@ -21,6 +22,7 @@ if (process.env.SENDGRID_API_KEY) sgMail.setApiKey(process.env.SENDGRID_API_KEY)
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use("/api", estimateRoutes); // <-- ADDED
 
 connectDB();
 
@@ -292,6 +294,17 @@ app.delete("/api/history/:id", async (req, res) => {
   }
 });
 
+// ---------- ADDED: simple passthrough VIN endpoint ----------
+app.get("/api/vehicle/:vin", async (req, res) => {
+  try {
+    const r = await vehdb.vinDecode(req.params.vin);
+    res.json({ vehicledb: r.data });
+  } catch (e) {
+    res.status(e.response?.status || 500).json({ message: e.message || "Lookup failed" });
+  }
+});
+// ------------------------------------------------------------
+
 app.get("/", (req, res) => res.send("TrueRepairs API"));
 app.get("/api/health", (req, res) => res.json({ ok: true }));
 app.get("/db-health", (req, res) => {
@@ -347,9 +360,6 @@ app.post('/register', async (req, res) => {
         { expiresIn: "15m" }
       );
       const resetURL = `${process.env.CLIENT_URL2}/verify/${token}`;
-
-      //const verificationLink = `http://localhost:3000/verify/${token}`;
-      //console.log("Verification link:", verificationLink);
 
       const msg = {
         to: email,
@@ -419,13 +429,7 @@ app.post("/forgot-password", async (req, res) => {
     user.resetPasswordExpires = Date.now() + 3600000 // 1 hr
     await user.save();
 
-    // Reset link points to your frontend
     const resetURL = `${process.env.CLIENT_URL}/reset-password/${token}`;
-
-    // For now, log instead of emailing
-    //console.log("Password reset link:", resetURL)
-
-    //res.json({ message: "Password reset link generated. Check console for link." })
 
     const msg = {
       to: email,
@@ -498,10 +502,8 @@ app.post("/update-password", async (req, res) => {
 
     await user.save();
 
-    //console.log("Password updated successfully for:", email);
     return res.json({ message: "Password updated successfully!" });
   } catch (err) {
-    //console.error("ERROR:", err);
     return res.status(500).json({ message: "Server error" });
   }
 })
