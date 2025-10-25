@@ -8,7 +8,6 @@ import AboutUs from '../components/AboutUs'
 import ContactUs from '../components/ContactUs'
 import ReturnToTopButton from '../components/ReturnToTopButton'
 
-
 const Home = () => {
   const location = useLocation();
   const [message, setMessage] = useState('');

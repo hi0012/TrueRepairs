@@ -92,7 +92,7 @@
 .support-cancel-btn{  
     color: red;     
     font-weight: 500;   
-    padding: 13px 32px;   
+    padding: 13px 50px;   
     background-color: white;   
     font-size: clamp(15px, 1vw, 15px);   
     border-radius: 50px;   

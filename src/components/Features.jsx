@@ -13,7 +13,6 @@ export default function Features({ userEmail }) {
     <>
       <div className="features" id="features">
         <h1>Features</h1>
-
         <div className="ai-feature-container">
           <div className="ai-feature-left">
             <img src={AiImage} alt="" />

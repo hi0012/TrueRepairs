@@ -37,10 +37,9 @@
     color: #0068d2;
     white-space: nowrap;
     font-weight: 500;
-    
+    font-size: 18px;
     padding: 13px 32px;
     background-color: white;
-    font-size: clamp(15px, 1vw, 15px);
     border-radius: 50px;
     cursor: pointer;
     border: 1px solid #0068d2;
@@ -84,10 +83,11 @@
 
 .header-right p {
     color: whitesmoke;
-    font-size: clamp(12px, 1vw, 20px);
+    font-size: clamp(25px, 1vw, 30px);
     line-height: 1.6;
     letter-spacing: 0.5px;
     margin-top: 0.5rem;
+    text-align: center;
 }
 
 .header-left button:hover {

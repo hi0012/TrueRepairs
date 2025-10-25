@@ -9,6 +9,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
 import ResetPassword from "./pages/ResetPassword";
+import HrDivider from "./components/HrDivider";
 
 const App = () => {
   const [signInActive, setSignInActive] = useState(false);
@@ -33,8 +34,8 @@ const App = () => {
             }
           />
         </Routes>
+        <HrDivider/>
       </div>
-
       <Footer />
     </div>
   );
