@@ -83,7 +83,12 @@
     padding: 5px;
      
 }
-  
+.support-showcase h1 {
+    font-size: clamp(24px, 2.5vw, 32px);
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  text-align: center;
+}
 .support-bottom{  
   display: flex;  
   justify-content: center;  
@@ -92,7 +97,7 @@
 .support-cancel-btn{  
     color: red;     
     font-weight: 500;   
-    padding: 13px 32px;   
+    padding: 13px 50px;   
     background-color: white;   
     font-size: clamp(15px, 1vw, 15px);   
     border-radius: 50px;   

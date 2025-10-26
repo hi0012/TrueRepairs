@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import '../styles/SigninPopup.css';
 import { useNavigate } from "react-router-dom";
 import axios from 'axios';
+import HrDivider from './HrDivider';
 
 const SigninPopup = ({open, onClose}) => {
 
@@ -95,6 +96,7 @@ const SigninPopup = ({open, onClose}) => {
             <button type='button' className='close-btn' onClick={onClose}>Cancel</button>
           </div>
           <div className='fp-container'>
+            <HrDivider/>
             <p className='fp-agreement'>
               <a href='#' className='fp-link' onClick={(e) => {
                 e.preventDefault();

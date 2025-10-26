@@ -4,7 +4,9 @@
     align-items: center;  
     margin-top: 100px; 
 } 
- 
+ .features h1 {
+    font-size: 35px;
+ }
 .ai-feature-container {  
     display: flex; 
     justify-content: space-between; 
@@ -36,7 +38,7 @@
 .ai-feature-content p {
     font-style: italic;
     font-weight: 600;
-    font-size: 20px;
+    font-size: 25px;
     color: #0068d2;
 }  
 
@@ -101,7 +103,7 @@
 .estimate-feature-content p {
     font-style: italic;
     font-weight: 600;
-    font-size: 20px;
+    font-size: 25px;
     color: #0068d2;
 }
 .report-feature-container { 
@@ -145,6 +147,6 @@
 .report-feature-content p {
     font-style: italic;
     font-weight: 600;
-    font-size: 20px;
+    font-size: 25px;
     color: #0068d2;
 }

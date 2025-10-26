@@ -1,10 +1,11 @@
 .contactus{ 
-    margin-bottom: 50px;
+    margin-bottom: 5px;
     margin-top: 100px;
 } 
 .contactus h1 { 
     margin-bottom: 10px; 
     text-align: center;
+    font-size: 35px;
 } 
 
 .contactus-container { 
@@ -43,7 +44,7 @@
 } 
 
 .contact-us-btn { 
-    font-size: 15px; 
+    font-size: 18px; 
     border-radius: 50px; 
     background-color: white; 
     color: #0068d2; 

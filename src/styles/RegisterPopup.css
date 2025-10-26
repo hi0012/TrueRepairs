@@ -47,6 +47,7 @@
 .forms-btns {
     display: flex;
     justify-content: space-between;
+    margin: 20px 0px;
 }
 
 .register-form button[type="submit"] {

@@ -215,9 +215,8 @@
 .settings-cancel-btn{  
     border: none;  
     color: red;  
-    white-space: nowrap;  
     font-weight: 500;  
-    padding: 13px 32px;  
+    padding: 13px 50px;  
     background-color: white;  
     font-size: clamp(15px, 1vw, 15px);  
     border-radius: 50px;  
@@ -338,7 +337,7 @@
     border: 1px solid red; 
     transition: all 0.3s; 
 } 
-.delete-account::after{ 
+.delete-account:hover{ 
     background-color: red; 
     color: white; 
 } 

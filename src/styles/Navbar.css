@@ -24,7 +24,7 @@
     list-style: none;
     gap: 80px;
     color: #49557e;
-    font-size: 16px;
+    font-size: 20px;
     transition: all 0.3s ease;
 }
 
@@ -44,7 +44,7 @@
 
 .navbar button {
     background: transparent;
-    font-size: 15px;
+    font-size: 18px;
     color: #0068d2;
     border: 1px solid #0068d2;
     padding: 10px 30px;
@@ -63,7 +63,7 @@
 /* Red logout button */
 .navbar .homepage-logout-btn {
     background: transparent;
-    font-size: 15px;
+    font-size: 18px;
     color: red;
     border: 1px solid red;
     padding: 10px 30px;

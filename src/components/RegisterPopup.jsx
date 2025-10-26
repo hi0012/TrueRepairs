@@ -4,6 +4,7 @@ import { useState } from 'react';
 import axios from 'axios'
 import { RiErrorWarningLine } from 'react-icons/ri';
 import { FaCheckCircle } from 'react-icons/fa';
+import HrDivider from './HrDivider';
 
 const RegisterPopup = ({open, onClose}) => {
 
@@ -111,6 +112,7 @@ const RegisterPopup = ({open, onClose}) => {
                   <button type='submit' disabled={!passwordReqChecker || !passwordEqual}>Create Account</button>
                   <button type='close' onClick={onClose}>Cancel</button>
                 </div>
+                <HrDivider/>
                 <div className='tos-container'>
                   <p className='tos-agreement'>By creating this account, you agree to our <a href='#' className='tos-link' onClick={(e) => {
                     e.preventDefault();

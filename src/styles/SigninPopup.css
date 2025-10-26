@@ -23,7 +23,9 @@
     position: relative;
     z-index: 10000;
 }
-
+.signin-form h3 {
+    text-align: center;
+}
 .signin-form input {
     padding: 10px 15px;
     border-radius: 10px;
@@ -136,4 +138,11 @@
     text-align: center;
     font-size: 14px;
     color: red;
+}
+.forgot-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
 }
