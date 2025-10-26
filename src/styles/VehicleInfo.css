@@ -1,4 +1,4 @@
-.vi-overlay {
+.VehInfoOverlay {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -13,7 +13,7 @@
   animation: fadeIn 0.3s ease-in-out;
 }
 
-.vi-popup {
+.VehInfoPopup {
   background: #fff;
   width: 95%;
   height: 90%;
@@ -28,31 +28,31 @@
   animation: slideUp 0.4s ease-in-out;
 }
 
-.vi-header {
+.VehInfoHeader {
   text-align: center;
   margin-bottom: 20px;
 }
 
-.vi-header h1 {
+.VehInfoHeader h1 {
   font-size: 32px;
   margin-bottom: 10px;
   font-weight: 800;
 }
 
-.vi-header p {
+.VehInfoHeader p {
   font-size: 18px;
   font-weight: 500;
   color: #555;
 }
 
-.vi-columns {
+.VehInfoColumns {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 24px;
   margin-top: 10px;
 }
 
-.vi-left{
+.VehInfoLeft {
   border: 1px solid #ddd;
   border-radius: 10px;
   padding: 20px;
@@ -62,7 +62,7 @@
   max-height: 550px;
 }
 
-.vi-right {
+.VehInfoRight {
   border: 1px solid #ddd;
   border-radius: 10px;
   padding: 20px;
@@ -71,43 +71,43 @@
   flex-direction: column;
   max-height: 550px;
   overflow-y: auto;
-  overflow-x: hidden;  
+  overflow-x: hidden;
 }
 
-.vi-right::-webkit-scrollbar {
+.VehInfoRight::-webkit-scrollbar {
   width: 8px;
 }
 
-.vi-right::-webkit-scrollbar-thumb {
+.VehInfoRight::-webkit-scrollbar-thumb {
   background: #ccc;
   border-radius: 4px;
 }
 
-.vi-right::-webkit-scrollbar-thumb:hover {
+.VehInfoRight::-webkit-scrollbar-thumb:hover {
   background: #888;
 }
 
-.vi-left h2,
-.vi-right h2 {
+.VehInfoLeft h2,
+.VehInfoRight h2 {
   margin-bottom: 15px;
   font-size: 22px;
   font-weight: 700;
   color: #222;
 }
 
-.vi-vin-section label {
+.VehInfoVinSection label {
   font-weight: 600;
   display: block;
   margin-bottom: 6px;
 }
 
-.vi-row {
+.VehInfoRow {
   display: flex;
   gap: 8px;
   margin-bottom: 12px;
 }
 
-.vi-input {
+.VehInfoInput {
   flex: 1;
   padding: 10px 12px;
   font-size: 16px;
@@ -115,7 +115,7 @@
   border-radius: 8px;
 }
 
-.vi-btn {
+.VehInfoBtn {
   padding: 10px 16px;
   font-size: 16px;
   border-radius: 8px;
@@ -127,12 +127,12 @@
   font-weight: 500;
 }
 
-.vi-btn:hover {
+.VehInfoBtn:hover {
   background: #0068d2;
   color: white;
 }
 
-.vi-divider {
+.VehInfoDivider {
   text-align: center;
   margin: 20px 0;
   font-weight: 600;
@@ -140,8 +140,8 @@
   position: relative;
 }
 
-.vi-divider::before,
-.vi-divider::after {
+.VehInfoDivider::before,
+.VehInfoDivider::after {
   content: "";
   position: absolute;
   top: 50%;
@@ -150,52 +150,52 @@
   background: #ccc;
 }
 
-.vi-divider::before {
+.VehInfoDivider::before {
   left: 0;
 }
 
-.vi-divider::after {
+.VehInfoDivider::after {
   right: 0;
 }
 
-.vi-manual label {
+.VehInfoManual label {
   font-weight: 600;
   margin-top: 8px;
   display: block;
 }
 
-.vi-manual .vi-input {
+.VehInfoManual .VehInfoInput {
   width: 100%;
   margin-bottom: 8px;
 }
 
-.vi-list {
+.VehInfoList {
   list-style: none;
   padding: 0;
   margin: 0;
 }
 
-.vi-item {
+.VehInfoItem {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   border-bottom: 1px solid #ddd;
-  padding: 16px 0
+  padding: 16px 0;
 }
 
-.vi-item strong {
+.VehInfoItem strong {
   display: block;
   font-size: 17px;
   margin-bottom: 4px;
 }
 
-.vi-item p {
+.VehInfoItem p {
   margin: 0;
   font-size: 15px;
   color: #444;
 }
 
-.vi-delete-btn {
+.VehInfoDeleteBtn {
   border: none;
   background: #f55;
   color: #fff;
@@ -206,30 +206,30 @@
   transition: 0.2s;
 }
 
-.vi-delete-btn:hover {
+.VehInfoDeleteBtn:hover {
   background: #d22;
 }
 
-.vi-empty {
+.VehInfoEmpty {
   color: #777;
   font-style: italic;
   margin-top: 10px;
 }
 
-.vi-message {
+.VehInfoMessage {
   text-align: center;
   margin-top: 15px;
   color: #0068d2;
   font-weight: 600;
 }
 
-.vi-bottom {
+.VehInfoBottom {
   display: flex;
   justify-content: center;
   margin-top: 30px;
 }
 
-.vi-cancel-btn {
+.VehInfoCancelBtn {
   border: none;
   color: red;
   font-weight: 500;
@@ -242,13 +242,13 @@
   transition: all 0.3s;
 }
 
-.vi-cancel-btn:hover {
+.VehInfoCancelBtn:hover {
   background-color: red;
   color: white;
   border: 1px solid white;
 }
 
-.vi-item-header {
+.VehInfoItemHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -257,13 +257,13 @@
   flex-wrap: wrap;
 }
 
-.vi-actions {
+.VehInfoActions {
   display: flex;
   gap: 8px;
   align-items: center;
 }
 
-.vi-view-btn {
+.VehInfoViewBtn {
   border: none;
   background: #0068d2;
   color: white;
@@ -274,11 +274,11 @@
   transition: all 0.3s ease;
 }
 
-.vi-view-btn:hover {
+.VehInfoViewBtn:hover {
   background: #004ea3;
 }
 
-.vi-dropdown {
+.VehInfoDropdown {
   background: #f7f7f7;
   border: 1px solid #ddd;
   border-radius: 12px;
@@ -291,13 +291,13 @@
   animation: fadeIn 0.3s ease-in-out;
 }
 
-.vi-dropdown p {
+.VehInfoDropdown p {
   margin: 4px 0;
   color: #333;
   font-size: 15px;
 }
 
-.vi-dropdown strong {
+.VehInfoDropdown strong {
   font-weight: 600;
   color: #111;
 }
@@ -319,28 +319,28 @@
 }
 
 @media (max-width: 900px) {
-  .vi-columns {
+  .VehInfoColumns {
     grid-template-columns: 1fr;
   }
-  .vi-left,
-  .vi-right {
+  .VehInfoLeft,
+  .VehInfoRight {
     width: 100%;
   }
 }
 
 @media (max-width: 700px) {
-  .vi-dropdown {
+  .VehInfoDropdown {
     width: 100%;
     max-width: none;
   }
 
-  .vi-item-header {
+  .VehInfoItemHeader {
     flex-direction: column;
     align-items: flex-start;
     gap: 6px;
   }
 
-  .vi-actions {
+  .VehInfoActions {
     width: 100%;
     justify-content: flex-start;
   }

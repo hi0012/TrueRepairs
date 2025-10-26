@@ -5,6 +5,7 @@ import Profile from "../components/Profile";
 import Settings from "../components/Settings";
 import Support from "../components/Support";
 import VehicleInfo from "../components/VehicleInfo";
+import Report from "../components/Reports";
 import AIModal from "../components/AIScanModal";
 import { IoCarSportOutline } from 'react-icons/io5';
 import { FaRegUserCircle } from 'react-icons/fa';
@@ -35,7 +36,7 @@ const Dashboard = () => {
           <div className="dashboard-box" onClick={() => popupOpen("vehicle")}><IoCarSportOutline className="icon"/> My Vehicles</div>
           <div className="dashboard-box" onClick={() => popupOpen("profile")}><FaRegUserCircle className="icon"/>User Profile</div>
           <div className="dashboard-box" onClick={() => popupOpen("aimodal")}><LuScanSearch className="icon"/>Smart Report</div>
-          <Link to="" className="dashboard-box"><LiaClipboardListSolid className="icon"/>Manual Report</Link>
+          <div className="dashboard-box" onClick={() => popupOpen("report")}><LiaClipboardListSolid className="icon"/>Manual Report</div>
           <div className="dashboard-box" onClick={()=>popupOpen("support")}><LiaHandsHelpingSolid className="icon"/>Support</div>
           <div className="dashboard-box" onClick={()=> popupOpen("settings")}><MdOutlineAdminPanelSettings className="icon"/>Settings</div>
         </div>
@@ -44,6 +45,7 @@ const Dashboard = () => {
       <Settings open={displayPopup === "settings"} onClose={popupClose} />
       <Support open={displayPopup === "support"} onClose={popupClose}/>
       <VehicleInfo open={displayPopup === "vehicle"} onClose={popupClose} />
+      <Report open={displayPopup === "report"} onClose={popupClose} />
       <AIModal open={displayPopup === "aimodal"} onClose={popupClose} />
     </div>
   );
