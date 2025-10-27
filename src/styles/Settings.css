@@ -16,6 +16,7 @@
     background: #fff;  
     width: 95%;  
     height: 90%;  
+    max-height: 90vh;
     border-radius: 12px;  
     padding: 50px;  
     display: flex;  
@@ -417,6 +418,9 @@
     } 
 } 
 @media (max-width: 900px) { 
+    .settings-popup{
+        gap: 50px;
+    }
     .settings-container { 
         flex-direction: column; 
         height: auto; 
