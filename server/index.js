@@ -476,10 +476,22 @@ app.post("/login", async (req, res) => {
 
 app.post("/register", async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, passwordConfirm } = req.body;
     const existingUser = await UserModel.findOne({ email });
+    if(!email) {
+      return res.status(400).json({success: false, message: "Email is required"})
+    }
+    if(!password) {
+      return res.status(400).json({success: false, message: "Password is required"})
+    }
+    if(!passwordConfirm) {
+      return res.status(400).json({success: false, message: "Confirm password is required"})
+    }
+    if(password !== passwordConfirm) {
+      return res.status(400).json({success: false, message: "Password and confirm password do not match."})
+    }
     if (existingUser) {
-      return res.json({ success: false, message: "This email is already associated with an account." });
+      return res.status(400).json({ success: false, message: "This email is already associated with an account." });
     }
 
     const token = jwt.sign({ email, password }, TEMP_SECRET, { expiresIn: "15m" });
