@@ -618,6 +618,12 @@ app.post("/update-password", async (req, res) => {
 app.post("/send-support", async (req, res) => {
   try {
     const { name, email, feedback } = req.body;
+    if(!email) {
+      return res.status(400).json({success: false, message: "Email is required"})
+    }
+    if(!feedback) {
+      return res.status(400).json({success: false, message: "Feedback is required"})
+    }
     const msg = {
       to: "truerepairs.noreply@gmail.com",
       from: { email: "truerepairs.noreply@gmail.com", name: "TrueRepairs Support" },

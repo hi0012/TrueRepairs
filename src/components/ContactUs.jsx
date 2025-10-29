@@ -16,11 +16,11 @@ const ContactUs = () => {
         };
 
         try {
-        const res = await axios.post("http://localhost:5000/send-support", formData);
+        const res = await axios.post("http://localhost:5000/send-support", formData, {validateStatus: ()=> true});
         if (res.status === 200) {
-            setMessage("Support message sent!");
+            setMessage(res.data.message||"Support message sent!");
         } else {
-            setMessage("Failed to send message. Try again later.");
+            setMessage(res.data.message||"Failed to send message. Try again later.");
         }
         } catch (err) {
         console.error(err);
