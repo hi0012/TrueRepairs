@@ -491,7 +491,7 @@ app.post("/register", async (req, res) => {
       return res.status(400).json({success: false, message: "Password and confirm password do not match."})
     }
     if (existingUser) {
-      return res.json({ success: false, message: "This email is already associated with an account." });
+      return res.status(400).json({ success: false, message: "This email is already associated with an account." });
     }
 
     const token = jwt.sign({ email, password }, TEMP_SECRET, { expiresIn: "15m" });
