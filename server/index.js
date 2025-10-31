@@ -23,6 +23,8 @@ const { scrapeRockAuto } = require("./src/services/rockauto");
 const reportRoutes = require("./src/routes/reportRoutes.js");
 // const externalRoutes = require("./src/routes/external.js");
 //const estimateRoutes = require("./src/routes/estimate"); // <-- ADDED
+const fs = require("fs");
+const toyotaData = JSON.parse(fs.readFileSync(path.join(__dirname, "src", "data", "toyotaENGTRIM.json"), "utf-8"));
 
 // Env
 const TEMP_SECRET = process.env.TEMP_SECRET;
@@ -128,90 +130,105 @@ app.post("/api/scrape-rockauto", (req, res) => {
 });
 
 
-// Car details
-app.get("/api/cardetails/makes", async (req, res) => {
-  try {
-    const { year } = req.query;
-    if (!year) return res.status(400).json({ message: "Year required" });
-
-    let allData = [], offset = 0;
-    const limit = 50;
-    while (true) {
-      const data = await getCarSpecs({ year, limit, offset });
-      if (!data.length) break;
-      allData = allData.concat(data);
-      offset += limit;
-      if (data.length < limit) break;
-    }
-    const cap = (str = "") => str.toLowerCase().split(" ").map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(" ");
-    const uniqueMakes = [...new Set(allData.map(c => cap(c.make)))].sort();
-    res.json(uniqueMakes);
-  } catch {
-    res.status(500).json({ message: "Failed to load makes" });
-  }
+// Return all Toyota years
+app.get("/api/years", (req, res) => {
+  const years = toyotaData.map((item) => item.year);
+  res.json(years);
 });
 
-app.get("/api/cardetails/models", async (req, res) => {
-  try {
-    const { year, make } = req.query;
-    if (!year || !make) return res.status(400).json({ message: "Year and make required" });
+// Return makes
+app.get("/api/makes", (req, res) => {
+  res.json(["Toyota"]);
+});
 
-    let allData = [], offset = 0;
-    const limit = 50;
-    while (true) {
-      const data = await getCarSpecs({ year, make, limit, offset });
-      if (!data.length) break;
-      allData = allData.concat(data);
-      offset += limit;
-      if (data.length < limit) break;
-    }
-    const cap = (str = "") =>
-      str.toLowerCase().split(/([\s-]+)/).map((part) =>
-        /^[a-z]/.test(part) ? part.charAt(0).toUpperCase() + part.slice(1) : part
-      ).join("");
-    const uniqueModels = [...new Set(allData.map(c => cap(c.model)))].sort();
-    res.json(uniqueModels);
-  } catch (err) {
-    console.error("Error in /models:", err.message);
-    res.status(500).json({ message: "Failed to load models" });
-  }
+// Return all models for a given year
+app.get("/api/models/:year", (req, res) => {
+  const { year } = req.params;
+  const yearData = toyotaData.find((y) => y.year === parseInt(year));
+  if (!yearData) return res.json([]);
+  const models = yearData.models.map((m) => m.model);
+  res.json(models);
+});
+
+// engines or drivetrain info
+app.get("/api/engines/:year/:model", (req, res) => {
+  const { year, model } = req.params;
+  const yearData = toyotaData.find((y) => y.year === parseInt(year));
+  const modelData = yearData?.models.find(
+    (m) => m.model.toLowerCase() === model.toLowerCase()
+  );
+  if (!modelData) return res.json([]);
+  const engines = modelData.engines.map((e) => e.engine);
+  res.json(engines);
+});
+
+app.get("/api/trims/:year/:model/:engine", (req, res) => {
+  const { year, model, engine } = req.params;
+  const yearData = toyotaData.find(y => y.year == year);
+  if (!yearData) return res.json([]);
+
+  const modelData = yearData.models.find(m => m.model === model);
+  if (!modelData) return res.json([]);
+
+  const engineData = modelData.engines.find(e => e.engine === engine);
+  if (!engineData) return res.json([]);
+
+  res.json(engineData.trims || []);
 });
 
 app.post("/api/manual-vehicle", async (req, res) => {
   try {
-    const { year, make, model, trim, email } = req.body;
-    if (!year || !make || !model || !email)
-      return res.status(400).json({ message: "Year, make, model, and email required" });
+    const { year, make, model, engine, trim, email } = req.body;
+    if (!year || !make || !model || !engine || !trim || !email)
+      return res.status(400).json({
+        message: "Year, make, model, engine, trim, and email are required",
+      });
 
-    const specs = await getCarSpecs({ year, make, model });
-    const carData = specs?.[0];
-    if (!carData) return res.status(404).json({ message: "Vehicle specs not found." });
+    // Formatters
+    const cap = (s = "") => s.split(" ").map(w => w === w.toUpperCase() ? w : w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(" ");
 
-    const cap = (s = "") => s.toLowerCase().split(" ").map(w => w[0].toUpperCase() + w.slice(1)).join(" ");
     const yearStr = String(year);
     const makeFormatted = cap(make);
     const modelFormatted = cap(model);
-    const trimFormatted = trim ? cap(trim) : "";
-    const engine = carData.displacement ? `${carData.displacement}L ${carData.cylinders || ""}-Cyl`.trim() : "Unknown";
-    const fuel = cap(carData.fuel_type || "Unknown");
-    const drivetrain = (carData.drive || "FWD").toUpperCase();
-    const transmission = (carData.transmission || "AUTO").toUpperCase();
-    const nickname = `${yearStr} ${makeFormatted} ${modelFormatted}${trimFormatted ? " " + trimFormatted : ""}`;
+    const engineFormatted = engine.trim();
+    const trimFormatted = cap(trim);
 
+    let fuel = "Gas";
+    let drivetrain = "FWD";
+
+    const yearData = toyotaData.find((y) => String(y.year) === yearStr);
+    if (yearData) {
+      const modelData = yearData.models.find(
+        (m) => m.model.toLowerCase() === modelFormatted.toLowerCase()
+      );
+      if (modelData) {
+        const engineData = modelData.engines.find(
+          (e) => e.engine.toLowerCase() === engineFormatted.toLowerCase()
+        );
+        if (engineData) {
+          if (engineData.fuel) fuel = engineData.fuel;
+          if (engineData.drivetrain) drivetrain = engineData.drivetrain;
+        }
+      }
+    }
+
+    const nickname = `${yearStr} ${makeFormatted} ${modelFormatted} ${trimFormatted}`.trim();
+
+    // Save to DB
     const newVehicle = new Vehicle({
       email,
       nickname,
       year: yearStr,
       make: makeFormatted,
       model: modelFormatted,
+      engine: engineFormatted,
       trim: trimFormatted,
-      engine,
       fuel,
       drivetrain,
-      transmission,
-      mpg_city: carData.city_mpg || "Unknown",
-      mpg_highway: carData.highway_mpg || "Unknown",
-      class: carData.class || "Unknown",
+      transmission: "AUTO",
+      mpg_city: "Unknown",
+      mpg_highway: "Unknown",
+      class: "Unknown",
     });
 
     await newVehicle.save();
@@ -308,7 +325,7 @@ app.post("/api/vehicleinfo", async (req, res) => {
       return String(drive).toUpperCase();
     };
 
-    // 1) Decode with Ninja (PRIMARY)
+    // Decode with Ninja
     const ninjaResp = await vinDecode(vin);
     let payload = { source: "NinjaAPI", data: ninjaResp || {} };
     let v = payload.data || {};
@@ -318,7 +335,7 @@ app.post("/api/vehicleinfo", async (req, res) => {
     let modelBase = v.model || v.model_name || v.series;
     let yearBase  = v.year || v.model_year;
 
-    // 2) Enrich using Ninja car specs if anything key is missing
+    // Enrich using Ninja car specs if anything key is missing
     const missingKey =
       (!v.engine && !v.engine_size) ||
       !v.fuel_type ||
@@ -356,7 +373,7 @@ app.post("/api/vehicleinfo", async (req, res) => {
       }
     }
 
-    // 3) Normalize for save
+    // Normalize for save
     const make  = capWords(v.make || v.manufacturer || v.brand || "Unknown");
     const model = capWords(v.model || v.model_name || v.series || "Unknown");
     const year  = String(v.year || v.model_year || "Unknown");
@@ -367,15 +384,15 @@ app.post("/api/vehicleinfo", async (req, res) => {
         ? String(v.engine || v.engine_size).replace(/\b([a-z])/g, (c) => c.toUpperCase())
         : "Unknown";
 
-    const fuel         = formatFuel(v.fuel_type);
-    const drivetrain   = formatDrivetrain(v.drive || v.drivetrain);
+    const fuel = formatFuel(v.fuel_type);
+    const drivetrain = formatDrivetrain(v.drive || v.drivetrain);
     const transmission = v.transmission || "Unknown";
-    const mpg_city     = v.city_mpg || "Unknown";
-    const mpg_highway  = v.highway_mpg || "Unknown";
+    const mpg_city = v.city_mpg || "Unknown";
+    const mpg_highway = v.highway_mpg || "Unknown";
     const vehicleClass = v.class || "Unknown";
-    const nickname     = `${year} ${make} ${model}`.trim() || "Unnamed Vehicle";
+    const nickname = `${year} ${make} ${model}`.trim() || "Unnamed Vehicle";
 
-    // 4) Persist
+    // Persist
     const newVehicle = new Vehicle({
       email,
       vin,

@@ -11,17 +11,33 @@ export default function VehicleInfo({ open, onClose }) {
     year: "",
     make: "",
     model: "",
+    engine: "",
+    trim: "",
   });
+
   const [vehicles, setVehicles] = useState([]);
   const [expanded, setExpanded] = useState(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [makes, setMakes] = useState([]);
   const [models, setModels] = useState([]);
+  const [engines, setEngines] = useState([]);
+  const [trims, setTrims] = useState([]);
   const [loadingMakes, setLoadingMakes] = useState(false);
   const [loadingModels, setLoadingModels] = useState(false);
+  const [loadingEngines, setLoadingEngines] = useState(false);
+  const [loadingTrims, setLoadingTrims] = useState(false);
+  const [years, setYears] = useState([]);
 
-  // Fetch vehicles for user
+  // Load years
+  useEffect(() => {
+    fetch("http://localhost:5000/api/years")
+      .then((r) => r.json())
+      .then(setYears)
+      .catch((e) => console.error("Error loading years:", e));
+  }, []);
+
+  // Fetch vehicles
   useEffect(() => {
     if (!open || !userEmail) return;
     (async () => {
@@ -39,21 +55,21 @@ export default function VehicleInfo({ open, onClose }) {
     })();
   }, [open, userEmail]);
 
-  // Fetch Makes when year changes
+  // Fetch makes
   useEffect(() => {
     async function fetchMakes() {
       if (!manual.year) return;
       setLoadingMakes(true);
       try {
-        const res = await fetch(
-          `http://localhost:5000/api/cardetails/makes?year=${manual.year}`
-        );
+        const res = await fetch("http://localhost:5000/api/makes");
         const data = await res.json();
-        setMakes(data);
+        setMakes(data || []);
         setModels([]);
-        setManual({ ...manual, make: "", model: "" });
+        setEngines([]);
+        setManual({ ...manual, make: "", model: "", engine: "" });
       } catch (err) {
         console.error("Error loading makes:", err);
+        setMakes([]);
       } finally {
         setLoadingMakes(false);
       }
@@ -61,19 +77,20 @@ export default function VehicleInfo({ open, onClose }) {
     fetchMakes();
   }, [manual.year]);
 
-  // Fetch Models when make changes
+  // Fetch models
   useEffect(() => {
     async function fetchModels() {
       if (!manual.year || !manual.make) return;
       setLoadingModels(true);
       try {
-        const res = await fetch(
-          `http://localhost:5000/api/cardetails/models?year=${manual.year}&make=${manual.make}`
-        );
+        const res = await fetch(`http://localhost:5000/api/models/${manual.year}`);
         const data = await res.json();
-        setModels(data);
+        setModels(data || []);
+        setEngines([]);
+        setManual({ ...manual, model: "", engine: "" });
       } catch (err) {
         console.error("Error loading models:", err);
+        setModels([]);
       } finally {
         setLoadingModels(false);
       }
@@ -81,6 +98,48 @@ export default function VehicleInfo({ open, onClose }) {
     fetchModels();
   }, [manual.make]);
 
+  // Fetch engines
+  useEffect(() => {
+    async function fetchEngines() {
+      if (!manual.year || !manual.make || !manual.model) return;
+      setLoadingEngines(true);
+      try {
+        const res = await fetch(
+          `http://localhost:5000/api/engines/${manual.year}/${manual.model}`
+        );
+        const data = await res.json();
+        setEngines(data || []);
+      } catch (err) {
+        console.error("Error loading engines:", err);
+        setEngines([]);
+      } finally {
+        setLoadingEngines(false);
+      }
+    }
+    fetchEngines();
+  }, [manual.model]);
+
+  // Fetch TRIM
+  useEffect(() => {
+    async function fetchTrims() {
+      if (!manual.year || !manual.model || !manual.engine) return;
+      setLoadingTrims(true);
+      try {
+        const res = await fetch(
+          `http://localhost:5000/api/trims/${manual.year}/${manual.model}/${encodeURIComponent(manual.engine)}`
+        );
+        const data = await res.json();
+        setTrims(data || []);
+      } catch (err) {
+        console.error("Error loading trims:", err);
+        setTrims([]);
+      } finally {
+        setLoadingTrims(false);
+      }
+    }
+    fetchTrims();
+  }, [manual.engine]);
+  // VIN validation
   const isValidVIN = /^[A-HJ-NPR-Z0-9]{17}$/i.test(vin);
 
   // VIN Lookup
@@ -102,11 +161,8 @@ export default function VehicleInfo({ open, onClose }) {
 
       const j = await res.json();
 
-      if (!res.ok) {
-        throw new Error(j.message || "VIN lookup failed");
-      }
+      if (!res.ok) throw new Error(j.message || "VIN lookup failed");
 
-      // If the backend returns a valid vehicle object
       if (j.vehicle) {
         setVehicles((prev) => [...prev, j.vehicle]);
         setMessage(j.message || "Vehicle added successfully!");
@@ -122,11 +178,10 @@ export default function VehicleInfo({ open, onClose }) {
     }
   }
 
-
   // Manual Add
   async function handleManualAdd() {
-    if (!manual.make || !manual.model) {
-      setMessage("Please select at least Make and Model.");
+    if (!manual.make || !manual.model || !manual.engine || !manual.trim) {
+      setMessage("Please select Make, Model, Engine, and Trim.");
       return;
     }
 
@@ -136,6 +191,8 @@ export default function VehicleInfo({ open, onClose }) {
         year: manual.year,
         make: manual.make,
         model: manual.model,
+        engine: manual.engine,
+        trim: manual.trim,
       };
 
       const res = await fetch("http://localhost:5000/api/manual-vehicle", {
@@ -149,7 +206,7 @@ export default function VehicleInfo({ open, onClose }) {
       if (res.ok) {
         setVehicles((prev) => [...prev, j.vehicle]);
         setMessage("Vehicle added successfully!");
-        setManual({ nickname: "", year: "", make: "", model: "" });
+        setManual({ nickname: "", year: "", make: "", model: "", engine: "", trim: "", });
       } else {
         setMessage(j.message || "Error saving vehicle.");
       }
@@ -178,8 +235,6 @@ export default function VehicleInfo({ open, onClose }) {
   }
 
   if (!open) return null;
-
-  const years = Array.from({ length: 36 }, (_, i) => 1990 + i).reverse();
 
   return (
     <div className="VehInfoOverlay">
@@ -284,7 +339,47 @@ export default function VehicleInfo({ open, onClose }) {
                   </>
                 )}
               </select>
-
+              <label>Engine</label>
+              <select
+                className="VehInfoInput"
+                value={manual.engine}
+                disabled={!manual.model || loadingEngines}
+                onChange={(e) => setManual({ ...manual, engine: e.target.value })}
+              >
+                {loadingEngines ? (
+                  <option>Loading engines...</option>
+                ) : (
+                  <>
+                    <option value="">Select Engine</option>
+                    {engines.map((eng, i) => (
+                      <option key={i} value={eng}>
+                        {eng}
+                      </option>
+                    ))}
+                  </>
+                )}
+              </select>
+              
+              <label>Trim</label>
+              <select
+                className="VehInfoInput"
+                value={manual.trim}
+                disabled={!manual.engine || loadingTrims}
+                onChange={(e) => setManual({ ...manual, trim: e.target.value })}
+              >
+                {loadingTrims ? (
+                  <option>Loading trims...</option>
+                ) : (
+                  <>
+                    <option value="">Select Trim</option>
+                    {trims.map((t, i) => (
+                      <option key={i} value={t}>
+                        {t}
+                      </option>
+                    ))}
+                  </>
+                )}
+              </select>
               <button className="VehInfoBtn" onClick={handleManualAdd}>
                 Add Vehicle
               </button>
@@ -322,21 +417,12 @@ export default function VehicleInfo({ open, onClose }) {
                       </button>
                     </div>
                   </div>
-
                   {expanded === (v._id || i) && (
                     <div className="VehInfoDropdown">
-                      <p>
-                        <strong>Engine:</strong>{" "}
-                        {v.engine || v.data?.engine?.engine_size || "—"}
-                      </p>
-                      <p>
-                        <strong>Fuel:</strong>{" "}
-                        {v.fuel || v.data?.fuel?.fuel_type || "—"}
-                      </p>
-                      <p>
-                        <strong>Drivetrain:</strong>{" "}
-                        {v.drivetrain || v.data?.drivetrain?.drive_type || "—"}
-                      </p>
+                      <p><strong>Engine:</strong> {v.engine || "—"}</p>
+                      <p><strong>Trim:</strong> {v.trim || "—"}</p>
+                      <p><strong>Fuel:</strong> {v.fuel || "—"}</p>
+                      <p><strong>Drivetrain:</strong> {v.drivetrain || "—"}</p>
                     </div>
                   )}
                 </li>
