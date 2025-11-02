@@ -25,15 +25,21 @@
     gap: 80px;
     color: #49557e;
     font-size: 20px;
-    transition: all 0.3s ease;
+    align-items: center;
 }
 
 .navbar li {
     cursor: pointer;
+    border: 1px solid transparent;
+    transition: border-color 0.3s ease, color 0.3s ease;
+    padding: 5px 28px;
 }
 
 .navbar li:hover {
-    color: #0068d2;
+    color:white;
+    
+    background-color: #0068d2;
+    border-radius: 5px;
 }
 
 .nav-right {
@@ -67,7 +73,7 @@
     border-radius: 8px;
     color: white;
     font-weight: bold;
-    font-size: 0.95rem;
+    font-size: 17px;
     cursor: pointer;
     transition: background-color 0.2s ease, transform 0.1s ease;
     position: relative;
@@ -88,7 +94,7 @@
     border-radius: 8px;
     color: white;
     font-weight: bold;
-    font-size: 0.95rem;
+    font-size: 17px;
     cursor: pointer;
     transition: background-color 0.2s ease, transform 0.1s ease;
     position: relative;
@@ -109,7 +115,7 @@
     border-radius: 8px;
     color: white;
     font-weight: bold;
-    font-size: 0.95rem;
+    font-size: 17px;
     cursor: pointer;
     transition: background-color 0.2s ease, transform 0.1s ease;
     position: relative;
