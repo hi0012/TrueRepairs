@@ -17,7 +17,6 @@ const Footer = () => {
         <div className='footer-top-container'>
           <div className='footer-top-left'>
             <img src={footerWhiteLogo} alt="" />
-            <p className='catchphrase'>From identifying damage to making repair decisions, we make the process easy and stress-free.</p>
           </div>
           <div className='footer-top-right'>
             <p><MdLocationPin /> State Hall, 5143 Cass Ave, Detroit, MI 48202</p>

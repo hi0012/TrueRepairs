@@ -18,10 +18,6 @@
     padding-bottom: 15px; 
 }
 
-.footer-top-left p { 
-    color: white; 
-    font-size: 14px; 
-} 
 .footer-container hr { 
     background-color: beige; 
 } 
@@ -35,7 +31,6 @@
 } 
 
 .footer-top-left img { 
-    margin-bottom: 8px; 
     height: 30px; 
 } 
 
@@ -71,20 +66,3 @@
 }
 
 
-.catchphrase { 
-  font-size: 14px; 
-  font-style: italic; 
-  text-align: center; 
-} 
-
-.catchphrase::before { 
-    font-size: 23px; 
-    color: #f2da05; 
-    content: "“ "; 
-} 
-
-.catchphrase::after{ 
-    content: "”"; 
-    font-size: 23px; 
-    color: #f2da05; 
-} 

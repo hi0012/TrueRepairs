@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import '../styles/Navbar.css'
-import logo from '../assets/TrueRepairs.png'
+import logo from '../assets/logoslogan.png'
 import TinyLogo from '../assets/logo.png'
 import SigninPopup from './SigninPopup'
 import RegisterPopup from './RegisterPopup'
