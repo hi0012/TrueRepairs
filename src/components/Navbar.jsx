@@ -67,7 +67,7 @@ const Navbar = ({ setSignInActive }) => {
           </>
         ) : (
           <>
-            <button onClick={() => navigate("/dashboard")}>Dashboard</button>
+            <button className='homepage-dashboard-btn' onClick={() => navigate("/dashboard")}>Dashboard</button>
             <button className="homepage-logout-btn" onClick={handleLogout}>Logout</button>
           </>
         )}

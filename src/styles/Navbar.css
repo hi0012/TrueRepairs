@@ -60,29 +60,9 @@
     border: 1px solid white;
 }
 
-/* Red logout button */
-.navbar .homepage-logout-btn {
-    background: transparent;
-    font-size: 18px;
-    color: red;
-    border: 1px solid red;
-    padding: 10px 30px;
-    border-radius: 50px;
-    cursor: pointer;
-    transition: 0.4s;
-    margin-left: 5px;
-}
-
-.navbar .homepage-logout-btn:hover {
-    background-color: red;
-    color: white;
-    border: 1px solid white;
-}
-
-/* Dashboard logout button */
-.navbar .logout-btn {
-    background-color: #d9534f;
-    border: none;
+.navbar .homepage-dashboard-btn{
+    background-color: #0068d2;
+    border: 1px solid transparent;
     padding: 15px 30px;
     border-radius: 8px;
     color: white;
@@ -90,10 +70,55 @@
     font-size: 0.95rem;
     cursor: pointer;
     transition: background-color 0.2s ease, transform 0.1s ease;
+    position: relative;
+    box-sizing: border-box;
+}
+
+.navbar .homepage-dashboard-btn:hover {
+    background-color: #0068d2;
+    border-color: transparent;
+    transform: translateY(-2px);
+}
+
+/* Red logout button */
+.navbar .homepage-logout-btn {
+    background-color: #d9534f;
+    border: 1px solid transparent;
+    padding: 15px 30px;
+    border-radius: 8px;
+    color: white;
+    font-weight: bold;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    position: relative;
+    box-sizing: border-box;
+}
+
+.navbar .homepage-logout-btn:hover {
+    background-color: #c9302c;
+    border-color: transparent;
+    transform: translateY(-2px);
+}
+
+/* Dashboard logout button */
+.navbar .logout-btn {
+    background-color: #d9534f;
+    border: 1px solid transparent;
+    padding: 15px 30px;
+    border-radius: 8px;
+    color: white;
+    font-weight: bold;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    position: relative;
+    box-sizing: border-box;
 }
 
 .navbar .logout-btn:hover {
     background-color: #c9302c;
+    border-color: transparent;
     transform: translateY(-2px);
 }
 
