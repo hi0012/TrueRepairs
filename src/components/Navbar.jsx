@@ -29,6 +29,7 @@ const Navbar = ({ setSignInActive }) => {
   const handleLogout = () => {
     localStorage.removeItem("user")
     setUser(null);
+    window.dispatchEvent(new Event("userState"));
     navigate("/");
   }
   useEffect(()=> {
