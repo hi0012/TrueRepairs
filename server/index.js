@@ -19,10 +19,9 @@ const Lookup = require("./models/lookup.js");
 const vehdb = require("./src/services/vehdb");
 const Vehicle = require("./models/Vehicle.js");
 const { getCarSpecs, vinDecode } = require("./src/services/ninjaApi");
-const { scrapeRockAuto } = require("./src/services/rockauto");
 const reportRoutes = require("./src/routes/reportRoutes.js");
 // const externalRoutes = require("./src/routes/external.js");
-//const estimateRoutes = require("./src/routes/estimate"); // <-- ADDED
+//const estimateRoutes = require("./src/routes/estimate");
 const fs = require("fs");
 const toyotaData = JSON.parse(fs.readFileSync(path.join(__dirname, "src", "data", "toyotaENGTRIM.json"), "utf-8"));
 
@@ -34,101 +33,11 @@ if (process.env.SENDGRID_API_KEY) sgMail.setApiKey(process.env.SENDGRID_API_KEY)
 const app = express();
 app.use(cors());
 app.use(express.json());
-//app.use("/api", estimateRoutes); // <-- ADDED
+//app.use("/api", estimateRoutes); //
 
 // Root + reports first
 app.get("/", (req, res) => res.json({ ok: true, message: "TrueRepairs API" }));
 app.use("/api/reports", reportRoutes);
-
-// RockAuto categories
-app.post("/api/rockauto/categories", (req, res) => {
-  const { make, year, model, engine } = req.body;
-  const scriptPath = path.join(__dirname, "src", "services", "rockautoCategories.py");
-  const py = spawn("python", [scriptPath, make, year, model, engine]);
-
-  let data = "";
-  py.stdout.on("data", (chunk) => (data += chunk.toString()));
-  py.stderr.on("data", (chunk) => console.error("PyErr:", chunk.toString()));
-  py.on("close", () => {
-    try { res.json(JSON.parse(data)); }
-    catch { res.status(500).json({ error: "Failed to parse Python output" }); }
-  });
-});
-
-// RockAuto subcategories
-app.post("/api/rockauto/subcategories", (req, res) => {
-  const { make, year, model, engine, category } = req.body;
-  const scriptPath = path.join(__dirname, "src", "services", "rockautoSubcategories.py");
-  const py = spawn("python", [scriptPath, make, year, model, engine, category]);
-
-  let data = "";
-  py.stdout.on("data", (chunk) => (data += chunk.toString()));
-  py.stderr.on("data", (chunk) => console.error("PyErr:", chunk.toString()));
-  py.on("close", () => {
-    try { res.json(JSON.parse(data)); }
-    catch { res.status(500).json({ error: "Failed to parse Python output" }); }
-  });
-});
-
-// RockAuto scrape
-app.post("/api/scrape-rockauto", (req, res) => {
-  const { make, year, model, engine, category, subcategory } = req.body;
-  if (!make || !year || !model || !engine || !category || !subcategory) {
-    return res.status(400).json({ success: false, message: "Missing required fields" });
-  }
-
-  const scriptPath = path.join(__dirname, "src", "services", "rockautoscrape.py");
-  const pyExe = process.env.PYTHON || (process.platform === "win32" ? "python" : "python3");
-
-  console.log("[SCRAPE] payload:", { make, year, model, engine, category, subcategory });
-
-  const py = spawn(
-    pyExe,
-    [scriptPath, String(make), String(year), String(model), String(engine), String(category), String(subcategory)],
-    { env: process.env }
-  );
-
-  let out = "";
-  let err = "";
-
-  // Safety timeout (kill after 90s)
-  const killTimer = setTimeout(() => {
-    console.warn("[SCRAPE] timed out, killing python");
-    try { py.kill(); } catch {}
-  }, 90_000);
-
-  py.stdout.on("data", (c) => (out += c.toString()));
-  py.stderr.on("data", (c) => (err += c.toString()));
-
-  py.on("close", (code) => {
-    clearTimeout(killTimer);
-    try {
-      const parsed = out ? JSON.parse(out) : {};
-      return res.json({
-        success: true,
-        code,        // python exit code
-        parts: parsed,
-        debug: err,  // stderr logs from Python
-      });
-    } catch (e) {
-      console.error("[SCRAPE] parse error:", e);
-      return res.status(500).json({
-        success: false,
-        code,
-        error: "Failed to parse Python output",
-        raw: out,
-        debug: err,
-      });
-    }
-  });
-
-  py.on("error", (e) => {
-    clearTimeout(killTimer);
-    console.error("[SCRAPE] spawn error:", e);
-    res.status(500).json({ success: false, error: e.message, debug: err });
-  });
-});
-
 
 // Return all Toyota years
 app.get("/api/years", (req, res) => {
@@ -742,6 +651,11 @@ app.use((err, req, res, next) => {
 (async () => {
   try {
     await connectDB();
+
+    app.use("/api", (req, res) => {
+      return res.status(404).json({ message: "Not Found", path: req.originalUrl });
+    });
+
     app.listen(5000, () => {
       console.log("App is running on http://localhost:5000");
     });
@@ -750,8 +664,3 @@ app.use((err, req, res, next) => {
     process.exit(1);
   }
 })();
-
-// API 404 catch-all
-app.use("/api", (req, res) => {
-  return res.status(404).json({ message: "Not Found", path: req.originalUrl });
-});
