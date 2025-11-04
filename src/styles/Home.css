@@ -28,7 +28,10 @@
   }
 }
 
+
+
 @media (max-width: 1024px) {
+  /*
   .header {
     aspect-ratio: auto;
     background-size: cover;
@@ -60,7 +63,7 @@
   .header-right h2 {
     font-size: 32px;
   }
-
+  */
   /* ABOUT US */
   .aboutus {
     flex-direction: column;
@@ -152,6 +155,7 @@
 }
 
 @media (max-width: 768px) {
+  /*
   .header {
     height: auto;
     padding: 20px;
@@ -160,7 +164,7 @@
   .header-right h2 {
     font-size: 26px;
   }
-
+  */
   .ai-feature-content h2,
   .estimate-feature-content h2,
   .report-feature-content h2 {
@@ -200,6 +204,9 @@
 }
 
 @media (max-width: 480px) {
+ 
+
+  /*
   .header {
     padding: 10px;
   }
@@ -213,6 +220,7 @@
     font-size: 22px;
   }
 
+  */
   .ai-feature-content h2,
   .estimate-feature-content h2,
   .report-feature-content h2 {
@@ -239,9 +247,10 @@
     font-size: 14px;
   }
 }
-
+/*
 @media (max-width: 768px) {
   .header {
     display: none;
   }
 }
+*/
