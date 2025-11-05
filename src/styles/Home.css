@@ -94,6 +94,7 @@
   }
 
   /* FEATURES */
+  /*
   .ai-feature-container,
   .estimate-feature-container,
   .report-feature-container {
@@ -123,7 +124,7 @@
   .report-feature-content p {
     font-size: 16px;
   }
-
+  */
   /* CONTACT US */
   .contactus-container {
     display: flex;
@@ -165,6 +166,7 @@
     font-size: 26px;
   }
   */
+  /*
   .ai-feature-content h2,
   .estimate-feature-content h2,
   .report-feature-content h2 {
@@ -177,7 +179,7 @@
     display: block;
     font-size: 15px;
   }
-
+*/
   .aboutus-parent {
     margin-top: 60px;
   }
@@ -221,6 +223,7 @@
   }
 
   */
+  /*
   .ai-feature-content h2,
   .estimate-feature-content h2,
   .report-feature-content h2 {
@@ -232,6 +235,7 @@
   .report-feature-content p {
     font-size: 14px;
   }
+    */
 
   .contactus-form {
     max-width: 95%;

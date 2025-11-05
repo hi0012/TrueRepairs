@@ -21,7 +21,6 @@ export default function Features({ userEmail }) {
             <div className="ai-feature-content">
               <h2>Damage Detection tool<br /> powered by AI</h2>
               <p>Upload a photo of your car, and our AI will instantly analyze the image to detect damaged parts with pinpoint accuracy</p>
-              <button className="ai-cta" onClick={() => setAiOpen(true)}>AI Scan</button>
             </div>
           </div>
         </div>
@@ -29,7 +28,7 @@ export default function Features({ userEmail }) {
         <div className="estimate-feature-container">
           <div className="estimate-feature-left">
             <div className="estimate-feature-content">
-              <h2>Instant Repair Cost Estimates</h2>
+              <h2>Instant Repair Cost <br className="e-mobile"/>Estimates</h2>
               <p>Get real-time cost estimates for replacement parts and repairs based on your vehicle's make, model, and location.</p>
             </div>
           </div>
@@ -44,7 +43,7 @@ export default function Features({ userEmail }) {
           </div>
           <div className="report-feature-right">
             <div className="report-feature-content">
-              <h2>Easy-to-Use Dashboard</h2>
+              <h2>Easy-to-Use <br className="mobile"/>Dashboard</h2>
               <p>Track your repair reports, upload new images, and manage your vehicle history—all from a clean, user-friendly dashboard.</p>
             </div>
           </div>
