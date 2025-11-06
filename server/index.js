@@ -711,8 +711,10 @@ app.post("/delete-account", async (req, res) => {
 
     await Promise.all([
       UserModel.deleteOne({ email }),
-      //Order.deleteMany({ userEmail: email }),
-      //Review.deleteMany({ userEmail: email })
+      Vehicle.deleteMany({ email }),
+      Lookup.deleteMany({ userEmail: email }),
+      Report.deleteMany({ email }),
+      Estimate.deleteMany({ userEmail: email })
     ]);
 
     return res.json({ success: true, message: "Account deleted successfully." });
