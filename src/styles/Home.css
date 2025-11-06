@@ -127,14 +127,16 @@
   }
   */
   /* CONTACT US */
+  /*
   .contactus-container {
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
   }
-
+*/
   /* Image on top */
+  /*
   .contact-image {
     order: 1;
   }
@@ -146,14 +148,16 @@
     border-radius: 12px;
     object-fit: cover;
   }
-
+*/
   /* Form underneath */
+  /*
   .contactus-form {
     order: 2;
     width: 100%;
     max-width: 90%;
     margin-top: 20px;
   }
+    */
 }
 
 @media (max-width: 768px) {
@@ -186,6 +190,7 @@
     margin-top: 60px;
   }
 */
+/*
   .contactus {
     margin-top: 60px;
   }
@@ -205,6 +210,8 @@
     height: auto;
     padding: 30px;
   }
+    */
+    
 }
 
 @media (max-width: 480px) {
@@ -238,7 +245,7 @@
     font-size: 14px;
   }
     */
-
+  /*
   .contactus-form {
     max-width: 95%;
     padding: 20px;
@@ -252,6 +259,7 @@
   .support-showcase p {
     font-size: 14px;
   }
+    */
 }
 /*
 @media (max-width: 768px) {

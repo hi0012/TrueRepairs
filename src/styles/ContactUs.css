@@ -40,7 +40,7 @@
 } 
 
 .contactus-container p { 
-    font-size: 20px; 
+    font-size: clamp(16px, 1.8vw, 22px);
 } 
 
 .contact-us-btn { 
@@ -158,8 +158,47 @@
   } 
 } 
 
+@media (max-width: 1200px) {
+    .contactus-header p {
+        font-size: clamp(19px, 2.6vw, 23px);
+    }
+    .header-content button {
+        font-size: clamp(18px, 2.6vw, 21px);
+        padding: 10px 20px;
+    }
+}
+
+@media (max-width: 992px) {
+     .contactus-header p {
+        font-size: clamp(18px, 2.4vw, 22px);
+    }
+    .header-content button {
+        font-size: clamp(17px, 2.4vw, 20px);
+        padding: 8px 15px;
+    }
+}
+
 @media (max-width: 768px) {
   .contact-image {
     display: none;
   }
+  .contactus-header p {
+        font-size: clamp(17px, 2.2vw, 21px);
+    }
+    .header-content button {
+        font-size: clamp(16px, 2.2vw, 19px);
+        padding: 5px 10px;
+        margin-bottom: 5px;
+    }
+}
+
+@media (max-width: 480px) {
+    .contactus-header p {
+        font-size: clamp(16px, 2vw, 20px);
+    }
+    .header-content button {
+        font-size: clamp(15px, 2vw, 18px);
+        padding: 5px 10px;
+        margin-bottom: 5px;
+    }
 }
