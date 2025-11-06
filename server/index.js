@@ -21,6 +21,8 @@ const Vehicle = require("./models/Vehicle.js");
 const { getCarSpecs, vinDecode } = require("./src/services/ninjaApi");
 const { scrapeRockAuto } = require("./src/services/rockauto");
 const reportRoutes = require("./src/routes/reportRoutes.js");
+const Estimate = require("./models/estimate");
+const Report = require("./models/Report");
 // const externalRoutes = require("./src/routes/external.js");
 //const estimateRoutes = require("./src/routes/estimate"); // <-- ADDED
 
@@ -645,6 +647,13 @@ app.post("/update-profile", async (req, res) => {
       });
     }
 
+    await Promise.all([
+      Vehicle.updateMany({ email: currentEmail }, { email: newEmail }),
+      Lookup.updateMany({ userEmail: currentEmail }, { userEmail: newEmail }),
+      Report.updateMany({ email: currentEmail }, { email: newEmail }),
+      Estimate.updateMany({ userEmail: currentEmail }, { userEmail: newEmail })
+    ]);
+    
     // Update user email
     user.email = newEmail;
     await user.save();
