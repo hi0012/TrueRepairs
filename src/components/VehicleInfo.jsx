@@ -33,7 +33,11 @@ export default function VehicleInfo({ open, onClose }) {
   useEffect(() => {
     fetch("http://localhost:5000/api/years")
       .then((r) => r.json())
-      .then(setYears)
+      .then((data) => {
+        // sort descending by year
+        const sorted = [...data].sort((a, b) => Number(b) - Number(a));
+        setYears(sorted);
+      })
       .catch((e) => console.error("Error loading years:", e));
   }, []);
 

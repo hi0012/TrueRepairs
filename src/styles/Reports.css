@@ -13,7 +13,7 @@
   animation: fadeIn 0.3s ease-in-out;
 }
 
-/* === Popup layout === */
+/* Popup layout */
 .reportpopup {
   background: #fff;
   width: 95%;
@@ -26,12 +26,12 @@
   justify-content: flex-start;
   box-shadow: 0 6px 25px rgba(0, 0, 0, 0.5);
   z-index: 1000;
-  overflow-y: auto; /* ✅ entire popup scrolls */
+  overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   animation: slideUp 0.4s ease-in-out;
 }
 
-/* === Header === */
+/* Header */
 .reportheader {
   text-align: center;
   margin-bottom: 15px;
@@ -46,13 +46,13 @@
   color: #555;
 }
 
-/* === Layout columns === */
+/* Layout columns */
 .reportcolumns {
   flex: 1;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 24px;
-  margin-bottom: 30px; /* space before Cancel */
+  margin-bottom: 30px;
 }
 
 .reportleft,
@@ -61,7 +61,7 @@
   flex-direction: column;
 }
 
-/* === Left side (generator) === */
+/* Left side */
 .reportbox {
   background: #fafafa;
   border: 1px solid #ddd;
@@ -83,7 +83,7 @@
   margin-bottom: 10px;
 }
 
-/* === Vehicle details === */
+/* Vehicle details */
 .reportselected {
   background: #f8fafc;
   border: 1px solid #cfd8e3;
@@ -97,7 +97,7 @@
   font-style: italic;
 }
 
-/* === Form fields === */
+/* Form fields */
 .reportselectors {
   display: flex;
   flex-direction: column;
@@ -121,7 +121,7 @@
   cursor: not-allowed;
 }
 
-/* === Add part === */
+/* Add part */
 .reportpartadd {
   display: flex;
   gap: 10px;
@@ -140,7 +140,7 @@
   cursor: not-allowed;
 }
 
-/* === Scrollable list === */
+/* Scrollable list */
 .scrollbox {
   max-height: 180px;
   overflow-y: auto;
@@ -178,7 +178,7 @@
   border-radius: 3px;
 }
 
-/* === Generate button === */
+/* Generate button */
 .reportgeneratebtn {
   align-self: center;
   background: #0068d2;
@@ -196,7 +196,7 @@
   background: #004ea3;
 }
 
-/* === Right side (reports) === */
+/* Right side (reports) */
 .reportright {
   background: #fafafa;
   border: 1px solid #ddd;
@@ -215,7 +215,7 @@
   margin-top: 20px;
 }
 
-/* === Reports list === */
+/* Reports list */
 .RepList {
   list-style: none;
   padding: 0;
@@ -301,7 +301,7 @@
   box-sizing: border-box;
 }
 
-/* === Table === */
+/* Table */
 .RepDropdown .reporttable {
   width: 100%;
   border-collapse: collapse;
@@ -314,7 +314,7 @@
   border-bottom: 1px solid #e6e6e6;
 }
 
-/* === Progress bar === */
+/* Progress bar */
 .progress-bar-container {
   width: 100%;
   height: 10px;
@@ -330,7 +330,7 @@
   transition: width 0.3s ease-in-out;
 }
 
-/* === Cancel button (bottom) === */
+/* Cancel button */
 .reportbottom {
   display: flex;
   justify-content: center;
@@ -354,7 +354,15 @@
   border-color: white;
 }
 
-/* === Animations === */
+.RepDropdown.hidden {
+  display: none;
+}
+
+.RepDropdown.visible {
+  display: block;
+}
+
+/* Animations */
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
@@ -370,7 +378,7 @@
   }
 }
 
-/* === Responsive layout === */
+/* Responsive layout */
 @media (max-width: 900px) {
   .reportoverlay {
     align-items: flex-start;

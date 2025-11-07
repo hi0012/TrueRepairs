@@ -3,15 +3,9 @@ import "../styles/Reports.css";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import vehicleData from "../data/toyotaFull.json";
-
+import logo from "/logo.png";
+import brand from "/TrueRepairs.png";
 const API = "http://localhost:5000";
-
-const priceToNumber = (v) => {
-  if (!v) return 0;
-  const s = String(v);
-  if (/out of stock/i.test(s)) return 0;
-  return Number(s.replace(/[^0-9.]/g, "")) || 0;
-};
 
 // Wrapper component
 export default function Reports({ open, onClose }) {
@@ -19,11 +13,10 @@ export default function Reports({ open, onClose }) {
   return <ReportsBody onClose={onClose} />;
 }
 
-// hooks and logic
+// Core logic
 function ReportsBody({ onClose }) {
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const userEmail = user?.email || "";
-
   const [vehicles, setVehicles] = useState([]);
   const [selectedVehicle, setSelectedVehicle] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState("");
@@ -31,25 +24,17 @@ function ReportsBody({ onClose }) {
   const [partsList, setPartsList] = useState([]);
   const [categories, setCategories] = useState([]);
   const [subcategories, setSubcategories] = useState([]);
-  const [loadingCategories, setLoadingCategories] = useState(false);
-  const [loadingSubcategories, setLoadingSubcategories] = useState(false);
   const [message, setMessage] = useState("");
   const [reports, setReports] = useState([]);
   const [expanded, setExpanded] = useState(null);
-
-  // prevent double-submits
   const [generating, setGenerating] = useState(false);
-
-  const requestVersion = useRef(0);
 
   // Load user's vehicles
   useEffect(() => {
     if (!userEmail) return;
     (async () => {
       try {
-        const res = await fetch(
-          `${API}/api/vehicles?email=${encodeURIComponent(userEmail)}`
-        );
+        const res = await fetch(`${API}/api/vehicles?email=${encodeURIComponent(userEmail)}`);
         const data = await res.json();
         setVehicles(data.items || []);
       } catch (e) {
@@ -58,14 +43,12 @@ function ReportsBody({ onClose }) {
     })();
   }, [userEmail]);
 
-  // Load existing reports
+  // Load user's reports
   useEffect(() => {
     if (!userEmail) return;
     (async () => {
       try {
-        const res = await fetch(
-          `${API}/api/reports?email=${encodeURIComponent(userEmail)}`
-        );
+        const res = await fetch(`${API}/api/reports?email=${encodeURIComponent(userEmail)}`);
         const data = await res.json();
         setReports(data.items || data.reports || []);
       } catch (e) {
@@ -74,7 +57,7 @@ function ReportsBody({ onClose }) {
     })();
   }, [userEmail]);
 
-  // Restore any active reports from localStorage
+  // Restore any saved "active" reports from localStorage
   useEffect(() => {
     const savedActive = JSON.parse(localStorage.getItem("activeReports") || "[]");
     if (Array.isArray(savedActive) && savedActive.length > 0) {
@@ -82,6 +65,7 @@ function ReportsBody({ onClose }) {
     }
   }, []);
 
+  // Vehicle select
   async function handleVehicleChange(e) {
     const vehicleId = e.target.value;
     const v = vehicles.find((veh) => veh._id === vehicleId);
@@ -95,8 +79,6 @@ function ReportsBody({ onClose }) {
     setSubcategories([]);
 
     const { year, model, engine } = v;
-
-    // Lookup from local JSON
     const yearEntry = vehicleData.find((y) => y.year === Number(year));
     if (!yearEntry) return setMessage("No data found for that year.");
 
@@ -115,14 +97,15 @@ function ReportsBody({ onClose }) {
     setMessage(`Loaded ${categoryNames.length} categories.`);
   }
 
+  // Categories
   function handleCategoryChange(e) {
     const newCategory = e.target.value;
     setSelectedCategory(newCategory);
     setSelectedPart("");
 
     if (!selectedVehicle || !newCategory) return;
-
     const { year, model, engine } = selectedVehicle;
+
     const yearEntry = vehicleData.find((y) => y.year === Number(year));
     const modelEntry = yearEntry?.models.find(
       (m) => m.model.toUpperCase() === String(model).toUpperCase()
@@ -143,16 +126,14 @@ function ReportsBody({ onClose }) {
     }
   }
 
+  // Add parts
   function handleAddPart() {
     if (!selectedCategory || !selectedPart) return;
 
     const exists = partsList.some(
       (p) => p.category === selectedCategory && p.part === selectedPart
     );
-    if (exists) {
-      setMessage("That part is already in the list.");
-      return;
-    }
+    if (exists) return setMessage("That part is already in the list.");
 
     setPartsList((prev) => [
       ...prev,
@@ -162,19 +143,16 @@ function ReportsBody({ onClose }) {
     setMessage(`Added ${selectedPart} (${selectedCategory}) to list.`);
   }
 
+  // Remove parts
   function handleRemovePart(index) {
     setPartsList((prev) => prev.filter((_, i) => i !== index));
   }
 
+  // Generate report
   async function handleGenerate() {
-    if (!selectedVehicle) {
-      setMessage("Please select a vehicle.");
-      return;
-    }
-    if (partsList.length === 0) {
-      setMessage("Add at least one part before generating.");
-      return;
-    }
+    if (!selectedVehicle) return setMessage("Please select a vehicle.");
+    if (partsList.length === 0)
+      return setMessage("Add at least one part before generating.");
     if (generating) return;
 
     setGenerating(true);
@@ -190,18 +168,21 @@ function ReportsBody({ onClose }) {
       total: partsList.length,
     };
 
+    // add the temporary progress report
     setReports((prev) => [tempReport, ...prev]);
-    setMessage(`Generating report for ${selectedVehicle.make} ${selectedVehicle.model}...`);
+    setMessage(
+      `Generating report for ${selectedVehicle.make} ${selectedVehicle.model}...`
+    );
 
     const partSummaries = [];
     let foundCount = 0;
 
     try {
+      // generate pricing summary
       for (let i = 0; i < partsList.length; i++) {
         const item = partsList[i];
         const qty = Math.max(1, Number(item.quantity) || 1);
 
-        // Query by PARTTYPE only
         const qs = new URLSearchParams({
           year: String(selectedVehicle.year || ""),
           model: String(selectedVehicle.model || ""),
@@ -215,10 +196,9 @@ function ReportsBody({ onClose }) {
           if (res.ok) {
             const data = await res.json();
             const target = String(item.part || "").toUpperCase();
-            // Keep only clearly-related rows
             matches = (data?.parts || []).filter((p) => {
               const leaf = String(p.parttype || "").toUpperCase();
-              const fam  = String(p.category || "").toUpperCase();
+              const fam = String(p.category || "").toUpperCase();
               return (
                 leaf === target ||
                 fam === target ||
@@ -231,140 +211,312 @@ function ReportsBody({ onClose }) {
           console.error("[REPORT] /local fetch failed:", e);
         }
 
+        // aggregate or mark out-of-stock
         if (matches.length > 0) {
-          // Aggregate multiple leaves under the same family
-          const agg = matches.reduce(
-            (acc, m) => {
-              acc.low  += Number(m.low  || 0);
-              acc.high += Number(m.high || 0);
-              acc.avg  += Number(m.avg  || 0);
-              return acc;
-            },
-            { low: 0, high: 0, avg: 0 }
-          );
+          const anyOut = matches.some((m) => m.in_stock === false);
+          if (anyOut) {
+            partSummaries.push({
+              name: `${item.part} (x${qty})`,
+              category: item.category,
+              low: "Out of Stock",
+              high: "Out of Stock",
+              avg: "Out of Stock",
+            });
+          } else {
+            const agg = matches.reduce(
+              (acc, m) => {
+                acc.low += Number(m.low || 0);
+                acc.high += Number(m.high || 0);
+                acc.avg += Number(m.avg || 0);
+                return acc;
+              },
+              { low: 0, high: 0, avg: 0 }
+            );
 
-          partSummaries.push({
-            name: `${item.part} (x${qty})`,
-            category: item.category,
-            low:  Number((agg.low  * qty).toFixed(2)),
-            high: Number((agg.high * qty).toFixed(2)),
-            avg:  Number((agg.avg  * qty).toFixed(2)),
-          });
-          foundCount += 1;
+            partSummaries.push({
+              name: `${item.part} (x${qty})`,
+              category: item.category,
+              low: Number((agg.low * qty).toFixed(2)),
+              high: Number((agg.high * qty).toFixed(2)),
+              avg: Number((agg.avg * qty).toFixed(2)),
+            });
+            foundCount++;
+          }
         } else {
           partSummaries.push({
             name: `${item.part} (x${qty})`,
             category: item.category,
-            low: 0,
-            high: 0,
-            avg: 0,
+            low: "Out of Stock",
+            high: "Out of Stock",
+            avg: "Out of Stock",
           });
         }
 
-        // progress tick
+        // update progress bar live
         setReports((prev) =>
           prev.map((r) =>
-            r._id === tempId ? { ...r, progress: i + 1, total: partsList.length } : r
+            r._id === tempId ? { ...r, progress: i + 1 } : r
           )
         );
       }
 
-      // If nothing found at all, drop the temp and bail.
+      // nothing found? remove the temp report
       if (foundCount === 0) {
         setReports((prev) => prev.filter((r) => r._id !== tempId));
         setMessage("No prices found for selected parts (nothing saved).");
         return;
       }
 
-      // Totals
-      const totalLow  = partSummaries.reduce((a, b) => a + (Number(b.low)  || 0), 0);
-      const totalHigh = partSummaries.reduce((a, b) => a + (Number(b.high) || 0), 0);
-      const totalAvg  = partSummaries.reduce((a, b) => a + (Number(b.avg)  || 0), 0);
+      // === totals ===
+      const totals = partSummaries.reduce(
+        (acc, p) => {
+          if (typeof p.low === "number") acc.low += p.low;
+          if (typeof p.high === "number") acc.high += p.high;
+          if (typeof p.avg === "number") acc.avg += p.avg;
+          return acc;
+        },
+        { low: 0, high: 0, avg: 0 }
+      );
 
       const summary = {
-        totalLow:  Number(totalLow.toFixed(2)),
-        totalHigh: Number(totalHigh.toFixed(2)),
-        totalAvg:  Number(totalAvg.toFixed(2)),
+        totalLow: Number(totals.low.toFixed(2)),
+        totalHigh: Number(totals.high.toFixed(2)),
+        totalAvg: Number(totals.avg.toFixed(2)),
       };
 
-      const title = `${selectedVehicle.year} ${selectedVehicle.make} ${selectedVehicle.model} (${partsList.length} parts)`;
+      // === save to backend ===
+      const saveBody = {
+        title: tempReport.title,
+        userEmail,
+        vehicle: {
+          year: selectedVehicle.year,
+          make: selectedVehicle.make,
+          model: selectedVehicle.model,
+          engine: selectedVehicle.engine,
+        },
+        parts: partSummaries,
+        summary,
+      };
 
-      // Save the report
-      try {
-        const saveBody = {
-          title,
-          userEmail,
-          vehicle: {
-            year: selectedVehicle.year,
-            make: selectedVehicle.make,
-            model: selectedVehicle.model,
-            engine: selectedVehicle.engine,
-          },
+      const response = await fetch(`${API}/api/reports`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(saveBody),
+      });
+
+      if (!response.ok) throw new Error("Failed to save report");
+      const savedReport = await response.json();
+
+      // Force a clean re-render
+      setReports((prev) => {
+        // filter out the temporary one
+        const withoutTemp = prev.filter((r) => r._id !== tempId);
+
+        // build a brand-new finished object
+        const finished = {
+          ...savedReport,
+          title: tempReport.title,
           parts: partSummaries,
           summary,
+          vehicle: selectedVehicle,
+          createdAt: savedReport.createdAt || new Date().toISOString(),
+          isGenerating: false,
+          progress: partsList.length,
+          total: partsList.length,
         };
 
-        await fetch(`${API}/api/reports`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(saveBody),
-        });
+        // prepend to list
+        return [finished, ...withoutTemp];
+      });
 
-        const updatedReports = await fetch(
-          `${API}/api/reports?email=${encodeURIComponent(userEmail)}`
-        );
-        const j = await updatedReports.json();
 
-        setReports((prev) =>
-          prev.map((r) =>
-            r._id === tempId
-              ? (j.items || j.reports || []).find(
-                  (saved) =>
-                    saved.title === title &&
-                    (saved.vehicle?.make || "").toUpperCase() ===
-                      (selectedVehicle.make || "").toUpperCase()
-                ) || r
-              : r
-          )
-        );
-
-        setMessage("Report saved!");
-      } catch (e) {
-        console.error("[REPORT] save report error:", e);
-        setMessage("Report generated, but failed to save.");
-      }
+      setMessage("Report saved!");
+    } catch (e) {
+      console.error("[REPORT] save report error:", e);
+      setMessage("Report generated, but failed to save.");
     } finally {
       setGenerating(false);
+      setPartsList([]);
     }
+
+    // Refresh reports from backend after save
+    const updated = await fetch(`${API}/api/reports?email=${encodeURIComponent(userEmail)}`);
+    const freshData = await updated.json();
+    setReports(freshData.items || freshData.reports || []);
+
   }
 
-
-  async function downloadPDF(reportId) {
-    const element = document.getElementById(`report-${reportId}`);
-    if (!element) return;
-    const canvas = await html2canvas(element);
-    const imgData = canvas.toDataURL("image/png");
-    const pdf = new jsPDF("p", "pt", "a4");
-    pdf.addImage(imgData, "PNG", 20, 20, 560, 0);
-    pdf.save(`TrueRepairs_Report_${reportId}.pdf`);
-  }
-
-  function handleDownload(r) {
+  // Download report
+  async function handleDownload(r) {
+    // Expand the report
     setExpanded(r._id);
-    // Give the DOM a tick to expand before snapshotting
-    setTimeout(() => downloadPDF(r._id), 120);
-  }
 
-  async function handleDeleteReport(id) {
+    // Wait until the report element exists in the DOM
+    let element = null;
+    for (let i = 0; i < 40; i++) {
+      element = document.getElementById(`report-${r._id}`);
+      if (element) break;
+      await new Promise((res) => setTimeout(res, 50));
+    }
+    if (!element) {
+      setMessage("Unable to locate report for download.");
+      return;
+    }
+
     try {
-      await fetch(`${API}/api/reports/${id}`, { method: "DELETE" });
-      setReports((prev) => prev.filter((x) => x._id !== id));
-    } catch (e) {
-      console.error("Delete report failed:", e);
+      // Load the two logo images and wait until both are fully decoded
+      const logoImg = new Image();
+      logoImg.src = logo;
+      const brandImg = new Image();
+      brandImg.src = brand;
+      await Promise.all([logoImg.decode(), brandImg.decode()]);
+
+      // Capture the on-screen report
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        backgroundColor: "#ffffff",
+        useCORS: true,
+      });
+      const imgData = canvas.toDataURL("image/png");
+
+      // Set up jsPDF
+      const pdf = new jsPDF("p", "pt", "a4");
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const margin = 40;
+      const dateStr = new Date().toLocaleString();
+
+      // Header
+      const logoY = 30;
+      pdf.addImage(logoImg, "PNG", margin, logoY, 45, 45);
+      pdf.addImage(brandImg, "PNG", margin + 45, logoY - 20, 100, 100);
+      pdf.setFontSize(11);
+      pdf.text(`Date: ${dateStr}`, pdfWidth - 170, logoY + 20);
+      pdf.setFontSize(18);
+      pdf.setTextColor(0, 0, 0);
+      pdf.text("TrueRepairs Report", margin, 100);
+      pdf.setFontSize(13);
+      pdf.text(`${r.vehicle?.year || ""} ${r.vehicle?.make || ""} ${r.vehicle?.model || ""} (${r.parts?.length || 0} parts)`, margin, 118);
+
+      // Report snapshot
+      const imgProps = pdf.getImageProperties(imgData);
+      const imgHeight = (imgProps.height * (pdfWidth - 2 * margin)) / imgProps.width;
+      pdf.addImage(imgData, "PNG", margin, 135, pdfWidth - 2 * margin, imgHeight);
+
+      // Quick Links
+      pdf.setFontSize(11);
+      pdf.setTextColor(0, 0, 255);
+      let linkY = 135 + imgHeight + 25;
+      pdf.text("Quick Links:", margin, linkY);
+      const { year, make, model, engine } = r.vehicle || {};
+      for (const part of r.parts || []) {
+        const rockLink = `https://www.rockauto.com/en/catalog/${make},${year},${model},${engine}`;
+        linkY += 15;
+        pdf.textWithLink(`• ${part.name}`, margin + 10, linkY, { url: rockLink });
+      }
+
+      // Detailed Breakdown
+      pdf.addPage();
+      pdf.setFontSize(16);
+      pdf.setTextColor(0, 0, 0);
+      pdf.text("Detailed Part Breakdown", margin, 60);
+      let y = 90;
+
+      function findPartDetails(vehicle, category, partName) {
+        const yearEntry = vehicleData.find((y) => y.year === Number(vehicle.year));
+        if (!yearEntry) return [];
+        const modelEntry = yearEntry.models.find(
+          (m) => m.model.toUpperCase() === String(vehicle.model).toUpperCase()
+        );
+        const engineEntry = modelEntry?.engines.find(
+          (en) => en.engine.toUpperCase() === String(vehicle.engine).toUpperCase()
+        );
+        const categoryEntry = engineEntry?.categories.find(
+          (c) => c.category.toUpperCase() === String(category).toUpperCase()
+        );
+        if (!categoryEntry) return [];
+        const matches = categoryEntry?.parttypes?.[partName];
+        return Array.isArray(matches) ? matches : [];
+      }
+
+      pdf.setFontSize(12);
+
+      for (const p of r.parts || []) {
+        if (y > pdfHeight - 150) {
+          pdf.addPage();
+          y = 60;
+        }
+
+        pdf.setFontSize(14);
+        pdf.text(`${p.category} - ${p.name}`, margin, y);
+        y += 10;
+        pdf.setDrawColor(200);
+        pdf.line(margin, y, pdfWidth - margin, y);
+        y += 10;
+
+        const details = findPartDetails(r.vehicle, p.category, p.name.split("(")[0].trim());
+        if (details.length > 0) {
+          for (const item of details) {
+            pdf.setFontSize(11);
+            pdf.setTextColor(50, 50, 50);
+            pdf.text(`Brand: ${item.brand || "N/A"}`, margin, y);
+            y += 14;
+            pdf.text(`Part #: ${item.partnumber || "N/A"}`, margin, y);
+            y += 14;
+            pdf.text(
+              `Description: ${item.description || "N/A"}`,
+              margin,
+              y,
+              { maxWidth: pdfWidth - 2 * margin }
+            );
+            y += 28;
+            pdf.text(`Price: ${item.price ? `$${Number(item.price).toFixed(2)}` : "N/A"}`, margin, y);
+            y += 14;
+            pdf.text(`Availability: ${item.in_stock ? "In Stock" : "Out of Stock"}`, margin, y);
+            y += 22;
+          }
+        } else {
+          pdf.setFontSize(11);
+          pdf.text("No detailed items found for this part.", margin, y);
+          y += 20;
+        }
+      }
+
+      // Footer
+      pdf.setFontSize(10);
+      pdf.setTextColor(0, 0, 0);
+      pdf.text("Generated with TrueRepairs | Estimate data from RockAuto.com", margin, pdfHeight - 40);
+
+      // Save
+      pdf.save(`TrueRepairs_Report_${r.vehicle?.make || ""}_${r.vehicle?.model || ""}.pdf`);
+      setMessage("PDF downloaded successfully.");
+    } catch (err) {
+      console.error("PDF generation failed:", err);
+      setMessage("Failed to generate PDF.");
     }
   }
 
   const canGenerate = !!selectedVehicle && partsList.length > 0 && !generating;
+
+  // Delete a report
+  async function handleDeleteReport(id) {
+    try {
+      // Send delete request to backend
+      const res = await fetch(`${API}/api/reports/${id}`, { method: "DELETE" });
+
+      if (!res.ok) {
+        throw new Error("Failed to delete report");
+      }
+
+      // Remove the deleted report from state
+      setReports((prev) => prev.filter((r) => r._id !== id));
+
+      setMessage("Report deleted successfully.");
+    } catch (e) {
+      console.error("Delete report failed:", e);
+      setMessage("Failed to delete report. Please try again.");
+    }
+  }
 
   return (
     <div className="reportoverlay" onClick={onClose}>
@@ -375,7 +527,7 @@ function ReportsBody({ onClose }) {
         </div>
 
         <div className="reportcolumns">
-          {/* LEFT: generator */}
+          {/* LEFT SIDE */}
           <div className="reportleft">
             <div className="reportbox reportgeneratebox">
               <h2>Generate Report</h2>
@@ -396,20 +548,15 @@ function ReportsBody({ onClose }) {
                 </select>
               </div>
 
-              {/* Vehicle info */}
+              {/* Vehicle Info */}
               <div className="reportselected spaced">
-                {selectedVehicle ? (
-                  <>
+                {selectedVehicle ? (<>
                     <p><strong>Year:</strong> {selectedVehicle.year}</p>
                     <p><strong>Make:</strong> {selectedVehicle.make}</p>
                     <p><strong>Model:</strong> {selectedVehicle.model}</p>
                     <p><strong>Engine:</strong> {selectedVehicle.engine}</p>
-                    <p><strong>Fuel:</strong> {selectedVehicle.fuel || selectedVehicle.data?.fuel?.fuel_type || "-"}</p>
-                    <p><strong>Drivetrain:</strong> {selectedVehicle.drivetrain || selectedVehicle.data?.drivetrain?.drive_type || "-"}</p>
-                  </>
-                ) : (
-                  <p className="reportplaceholder">Select a vehicle above.</p>
-                )}
+                  </>) : (<p className="reportplaceholder">Select a vehicle above.</p>)
+                }
               </div>
 
               {/* Category */}
@@ -418,18 +565,11 @@ function ReportsBody({ onClose }) {
                 <select
                   value={selectedCategory}
                   onChange={handleCategoryChange}
-                  disabled={loadingCategories || !categories.length}
-                >
-                  {loadingCategories ? (
-                    <option>Loading categories...</option>
-                  ) : (
-                    <>
-                      <option value="">Select Area</option>
-                      {categories.map((cat) => (
-                        <option key={cat} value={cat}>{cat}</option>
-                      ))}
-                    </>
-                  )}
+                  disabled={!categories.length}>
+                  <option value="">Select Area</option>
+                  {categories.map((cat) => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
                 </select>
               </div>
 
@@ -440,56 +580,34 @@ function ReportsBody({ onClose }) {
                   <select
                     value={selectedPart}
                     onChange={(e) => setSelectedPart(e.target.value)}
-                    disabled={loadingSubcategories || !subcategories.length}
-                  >
-                    {loadingSubcategories ? (
-                      <option>Loading parts...</option>
-                    ) : (
-                      <>
-                        <option value="">Select Part</option>
-                        {subcategories.map((sub, i) => (
-                          <option key={sub.name + i} value={sub.name}>
-                            {sub.name}
-                          </option>
-                        ))}
-                      </>
-                    )}
+                    disabled={!subcategories.length}>
+                    <option value="">Select Part</option>
+                    {subcategories.map((sub, i) => (
+                      <option key={i} value={sub.name}>{sub.name}</option>
+                    ))}
                   </select>
-                  <button
-                    className="reportaddbtn"
-                    onClick={handleAddPart}
-                    disabled={!selectedPart}
-                  >
-                    Add
-                  </button>
+                  <button className="reportaddbtn" onClick={handleAddPart} disabled={!selectedPart}> Add </button>
                 </div>
               </div>
 
-              {/* Parts list */}
+              {/* Parts List */}
               <div className="reportpartslist scrollbox">
                 <h3>Selected Parts:</h3>
                 {partsList.length === 0 ? (
-                  <p className="reportempty">No parts added yet.</p>
-                ) : (
+                  <p className="reportempty">No parts added yet.</p>) : (
                   <ul>
                     {partsList.map((item, i) => (
                       <li key={`${item.category}-${item.part}-${i}`}>
                         <span>{item.category} - {item.part}</span>
                         <div className="quantity-controls">
                           <label>Qty:</label>
-                          <input
-                            type="number"
-                            min="1"
-                            value={item.quantity}
-                            onChange={(e) => {
-                              const newQty = Math.max(1, parseInt(e.target.value) || 1);
-                              setPartsList((prev) =>
-                                prev.map((p, idx) =>
-                                  idx === i ? { ...p, quantity: newQty } : p
-                                )
-                              );
-                            }}
-                          />
+                          <input type="number" min="1" value={item.quantity} onChange={(e) => {
+
+                            const newQty = Math.max(1, parseInt(e.target.value) || 1);
+                            setPartsList((prev) =>
+                              prev.map((p, idx) => idx === i ? { ...p, quantity: newQty } : p)
+                            );
+                          }}/>
                           <button onClick={() => handleRemovePart(i)}>Remove</button>
                         </div>
                       </li>
@@ -497,89 +615,48 @@ function ReportsBody({ onClose }) {
                   </ul>
                 )}
               </div>
-
-              {/* Generate button */}
-              <button
-                className="reportgeneratebtn"
-                disabled={!canGenerate}
-                title={
-                  !selectedVehicle
-                    ? "Select a vehicle"
-                    : partsList.length === 0
-                    ? "Add at least one part"
-                    : generating
-                    ? "Generating..."
-                    : ""
-                }
-                onClick={handleGenerate}
-              >
-                {generating ? "Generating..." : "Generate Report"}
-              </button>
+              <button className="reportgeneratebtn" disabled={!canGenerate} onClick={handleGenerate}> {generating ? "Generating..." : "Generate Report"} </button>
             </div>
           </div>
 
-          {/* RIGHT: Reports list */}
+          {/* RIGHT SIDE */}
           <div className="reportright">
             <h2>Reports</h2>
-
             {reports.length === 0 ? (
-              <p className="reportempty">No reports generated yet.</p>
-            ) : (
-              <ul className="RepList">
-                {reports.map((r, i) => {
-                  const title = `${r.vehicle?.year || ""} ${r.vehicle?.make || ""} ${r.vehicle?.model || ""}`.trim();
-                  const open = expanded === (r._id || i);
+              <p className="reportempty">No reports generated yet.</p>) : (
+                <ul className="RepList">
+                  {reports.map((r, i) => {
+                    const open = expanded === (r._id || i);
+                    return (
+                      <li
+                        key={r._id || i}
+                        className={`RepItem ${r.isGenerating ? "generating" : ""}`} >
+                          {r.isGenerating ? (<>
+                            <div className="RepItemHeader">
+                              <div>
+                                <strong>{r.title}</strong>
+                                <p>Generating... {r.progress}/{r.total}</p>
+                              </div>
+                            </div>
+                            <div className="progress-bar-container small">
+                              <div className="progress-bar-fill" style={{ width: `${(r.progress / r.total) * 100}%` }}/>
+                            </div></>) : (<>
+                            <div className="RepItemHeader">
+                              <div> 
+                                <strong>{r.title}</strong>
+                                <p>Date: {new Date(r.createdAt).toLocaleString()}</p>
+                              </div>
+                              <div className="RepActions">
+                                <button className="RepViewBtn" onClick={() => setExpanded(open ? null : (r._id || i))} >
+                                  {open ? "Hide" : "View"}
+                                </button>
+                                <button className="RepDownloadBtn" onClick={() => handleDownload(r)}>Download</button>
+                                <button className="RepDeleteBtn" onClick={() => handleDeleteReport(r._id)}>Delete</button>
+                              </div>
+                            </div>
 
-                  return (
-                    <li key={r._id || i} className={`RepItem ${r.isGenerating ? "generating" : ""}`}>
-                      {r.isGenerating ? (
-                        <>
-                          <div className="RepItemHeader">
-                            <div>
-                              <strong>{r.title}</strong>
-                              <p>Generating... {r.progress || 0}/{r.total || "?"}</p>
-                            </div>
-                          </div>
-                          <div className="progress-bar-container small">
-                            <div
-                              className="progress-bar-fill"
-                              style={{
-                                width: `${(r.progress / (r.total || 1)) * 100}%`,
-                              }}
-                            />
-                          </div>
-                        </>
-                      ) : (
-                        <>
-                          <div className="RepItemHeader">
-                            <div>
-                              <strong>{title || r.title}</strong>
-                              <p>Date: {new Date(r.createdAt).toLocaleString()}</p>
-                            </div>
-                            <div className="RepActions">
-                              <button
-                                className="RepViewBtn"
-                                onClick={() => setExpanded(open ? null : (r._id || i))}
-                              >
-                                {open ? "Hide" : "View"}
-                              </button>
-                              <button
-                                className="RepDownloadBtn"
-                                onClick={() => handleDownload(r)}
-                              >
-                                Download
-                              </button>
-                              <button
-                                className="RepDeleteBtn"
-                                onClick={() => handleDeleteReport(r._id)}
-                              >
-                                Delete
-                              </button>
-                            </div>
-                          </div>
-
-                          {open && (
-                            <div id={`report-${r._id}`} className="RepDropdown">
+                            {/* Always render report div, just toggle visibility */}
+                            <div id={`report-${r._id}`} className={`RepDropdown ${open ? "visible" : "hidden"}`} style={{ display: open ? "block" : "none" }}>
                               <table className="reporttable">
                                 <thead>
                                   <tr>
@@ -593,9 +670,21 @@ function ReportsBody({ onClose }) {
                                   {(r.parts || []).map((p, idx) => (
                                     <tr key={idx}>
                                       <td>{p.name || "Unknown"}</td>
-                                      <td>{Number(p.low ?? 0).toFixed(2)}</td>
-                                      <td>{Number(p.high ?? 0).toFixed(2)}</td>
-                                      <td>{Number(p.avg ?? 0).toFixed(2)}</td>
+                                      <td>
+                                        {typeof p.low === "string"
+                                          ? p.low
+                                          : Number(p.low).toFixed(2)}
+                                      </td>
+                                      <td>
+                                        {typeof p.high === "string"
+                                          ? p.high
+                                          : Number(p.high).toFixed(2)}
+                                      </td>
+                                      <td>
+                                        {typeof p.avg === "string"
+                                          ? p.avg
+                                          : Number(p.avg).toFixed(2)}
+                                      </td>
                                     </tr>
                                   ))}
                                 </tbody>
@@ -603,24 +692,23 @@ function ReportsBody({ onClose }) {
 
                               <div className="reportsummary">
                                 <p>
-                                  <strong>Total Low:</strong>{" "}
-                                  ${Number(r.summary?.totalLow || 0).toFixed(2)}
+                                  <strong>Total Low:</strong> $
+                                  {Number(r.summary?.totalLow || 0).toFixed(2)}
                                 </p>
                                 <p>
-                                  <strong>Total High:</strong>{" "}
-                                  ${Number(r.summary?.totalHigh || 0).toFixed(2)}
+                                  <strong>Total High:</strong> $
+                                  {Number(r.summary?.totalHigh || 0).toFixed(2)}
                                 </p>
                                 <p>
-                                  <strong>Average:</strong>{" "}
-                                  ${Number(r.summary?.totalAvg || 0).toFixed(2)}
+                                  <strong>Average:</strong> $
+                                  {Number(r.summary?.totalAvg || 0).toFixed(2)}
                                 </p>
                               </div>
                             </div>
-                          )}
-                        </>
-                      )}
-                    </li>
-                  );
+                          </>
+                        )}
+                      </li>
+                    );
                 })}
               </ul>
             )}
@@ -628,11 +716,8 @@ function ReportsBody({ onClose }) {
         </div>
 
         {message && <p className="reportmessage">{message}</p>}
-
         <div className="reportbottom">
-          <button className="reportcancelbtn" onClick={onClose}>
-            Cancel
-          </button>
+          <button className="reportcancelbtn" onClick={onClose}>Cancel</button>
         </div>
       </div>
     </div>

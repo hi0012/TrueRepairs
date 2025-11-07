@@ -45,9 +45,7 @@ router.get("/local", async (req, res, next) => {
     if (!modelKey) return res.status(404).json({ error: `Model ${model} not found for ${year}` });
 
     const modelData = yearData[modelKey];
-    const engineKey =
-      Object.keys(modelData).find((k) => norm(k) === norm(engine)) ||
-      Object.keys(modelData).find((k) => norm(k).includes(norm(engine)) || norm(engine).includes(norm(k)));
+    const engineKey = Object.keys(modelData).find((k) => norm(k) === norm(engine)) || Object.keys(modelData).find((k) => norm(k).includes(norm(engine)) || norm(engine).includes(norm(k)));
     if (!engineKey) {
       return res.status(404).json({ error: `Engine ${engine} not found for ${year} ${modelKey}` });
     }
