@@ -7,6 +7,7 @@ import { AiOutlineMail } from 'react-icons/ai'
 import { FaPhone } from 'react-icons/fa'
 import PrivacyPolicy from './PrivacyPolicy'
 import TermsAndConditions from './TermsAndConditions'
+import HrDividerWhiteCar from './HrDividerWhiteCar'
 
 const Footer = () => {
   const [displayTermsAndConditions, setDisplayTermsAndConditions] = useState(false);
@@ -24,7 +25,7 @@ const Footer = () => {
             <p><FaPhone /> (325) 653-5423</p>
           </div>
         </div>
-        <hr />
+        <HrDividerWhiteCar/>
         <div className='footer-bottom-container'>
           <div className='footer-bottom-left'>
             <p>©2025 TrueRepairs. All rights reserved.</p>
