@@ -37,6 +37,7 @@ const Profile = ({ open, onClose }) => {
             const res = await axios.post("http://localhost:5000/update-profile", {
                 currentEmail,
                 newEmail,
+                password: emailPassword
             });
 
             setMessage(res.data.message || "Email updated successfully");
@@ -52,6 +53,7 @@ const Profile = ({ open, onClose }) => {
             setCurrentEmail(res.data.user.email);
             setNewEmail("");
             setDisplayPopupEmail(false);
+            setEmailPassword("");
 
             setTimeout(() => setMessage(""), 3000);
         } catch (err) {

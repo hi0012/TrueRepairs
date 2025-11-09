@@ -619,17 +619,18 @@ app.post("/send-support", async (req, res) => {
 
 app.post("/update-profile", async (req, res) => {
   try {
-    const { currentEmail, newEmail } = req.body;
+    // 1. Get the password from the request body
+    const { currentEmail, newEmail, password } = req.body;
 
-    // Validate input
-    if (!currentEmail || !newEmail) {
+    // 2. Validate input
+    if (!currentEmail || !newEmail || !password) {
       return res.status(400).json({
         success: false,
-        message: "Both currentEmail and newEmail are required",
+        message: "Current email, new email, and password are required",
       });
     }
 
-    // Find user by current email
+    // 3. Find user by current email
     const user = await UserModel.findOne({ email: currentEmail });
     if (!user) {
       return res.status(404).json({
@@ -638,15 +639,32 @@ app.post("/update-profile", async (req, res) => {
       });
     }
 
-    // Check if new email already exists
-    const emailExists = await UserModel.findOne({ email: newEmail });
-    if (emailExists) {
-      return res.status(409).json({
+    // Check if the provided password is correct
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ // 401 means "Unauthorized"
         success: false,
-        message: "Email already in use",
+        message: "Incorrect password. Please try again.",
       });
     }
 
+    // 5. Check if new email already exists
+    const emailExists = await UserModel.findOne({ email: newEmail });
+    if (emailExists && emailExists._id.toString() !== user._id.toString()) { // Check it's not the same user
+      return res.status(409).json({
+        success: false,
+        message: "That email is already in use",
+      });
+    }
+
+    // 6. Get the old email before saving
+    const oldEmail = user.email;
+
+    // 7. Update user's email
+    user.email = newEmail;
+    await user.save();
+
+    // 8. Update all associated data
     await Promise.all([
       Vehicle.updateMany({ email: currentEmail }, { email: newEmail }),
       Lookup.updateMany({ userEmail: currentEmail }, { userEmail: newEmail }),
@@ -654,10 +672,6 @@ app.post("/update-profile", async (req, res) => {
       Estimate.updateMany({ userEmail: currentEmail }, { userEmail: newEmail })
     ]);
     
-    // Update user email
-    user.email = newEmail;
-    await user.save();
-
     res.json({
       success: true,
       message: "Email updated successfully",
