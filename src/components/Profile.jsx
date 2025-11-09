@@ -52,8 +52,12 @@ const Profile = ({ open, onClose }) => {
             // Reflect new email in the UI
             setCurrentEmail(res.data.user.email);
             setNewEmail("");
-            setDisplayPopupEmail(false);
-            setEmailPassword("");
+
+            setTimeout(() => {
+                setDisplayPopupEmail(false);
+                setMessage("");
+                setEmailPassword("");
+            }, 2000);
 
             setTimeout(() => setMessage(""), 3000);
         } catch (err) {
@@ -226,7 +230,7 @@ const Profile = ({ open, onClose }) => {
                                 </button>
                             </div>
                         </form>
-                        {message && <p className="email-message">{message}</p>}
+                        {message && (<p className={`email-message ${message.includes("successfully") ? 'success' : 'error'}`}>{message}</p>)}
                     </div>
                 </div>
             )}
