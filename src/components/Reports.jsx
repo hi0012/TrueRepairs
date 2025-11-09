@@ -3,6 +3,7 @@ import "../styles/Reports.css";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import vehicleData from "../data/toyotaFull.json";
+import vehicleDataParts from "../../server/src/data/ToyotaParts.json";
 import logo from "/logo.png";
 import brand from "/TrueRepairs.png";
 const API = "http://localhost:5000";
@@ -213,8 +214,29 @@ function ReportsBody({ onClose }) {
 
         // aggregate or mark out-of-stock
         if (matches.length > 0) {
-          const anyOut = matches.some((m) => m.in_stock === false);
-          if (anyOut) {
+          // treat false/0/"0"/"false" as out-of-stock
+          const anyOutFlag = matches.some(
+            (m) =>
+              m.in_stock === false ||
+              m.in_stock === 0 ||
+              m.in_stock === "0" ||
+              m.in_stock === "false"
+          );
+
+          // usable = items that actually have a >0 price in at least one column
+          const usable = matches.filter((m) => {
+            const l = Number(m.low);
+            const h = Number(m.high);
+            const a = Number(m.avg);
+            return (
+              (Number.isFinite(l) && l > 0) ||
+              (Number.isFinite(h) && h > 0) ||
+              (Number.isFinite(a) && a > 0)
+            );
+          });
+
+          if (anyOutFlag || usable.length === 0) {
+            // Either explicitly OOS, or every price was 0.00 / missing
             partSummaries.push({
               name: `${item.part} (x${qty})`,
               category: item.category,
@@ -223,26 +245,51 @@ function ReportsBody({ onClose }) {
               avg: "Out of Stock",
             });
           } else {
-            const agg = matches.reduce(
+            // Aggregate only usable (nonzero-priced) matches
+            const agg = usable.reduce(
               (acc, m) => {
-                acc.low += Number(m.low || 0);
-                acc.high += Number(m.high || 0);
-                acc.avg += Number(m.avg || 0);
+                const l = Number(m.low);
+                const h = Number(m.high);
+                const a = Number(m.avg);
+                acc.low += Number.isFinite(l) && l > 0 ? l : 0;
+                acc.high += Number.isFinite(h) && h > 0 ? h : 0;
+                acc.avg += Number.isFinite(a) && a > 0 ? a : 0;
                 return acc;
               },
               { low: 0, high: 0, avg: 0 }
             );
 
-            partSummaries.push({
-              name: `${item.part} (x${qty})`,
-              category: item.category,
-              low: Number((agg.low * qty).toFixed(2)),
-              high: Number((agg.high * qty).toFixed(2)),
-              avg: Number((agg.avg * qty).toFixed(2)),
-            });
-            foundCount++;
+            // multiply by qty
+            const lowFinal = Number((agg.low * qty).toFixed(2));
+            const highFinal = Number((agg.high * qty).toFixed(2));
+            const avgFinal = Number((agg.avg * qty).toFixed(2));
+
+            // safety: if aggregation still ends up 0/0/0, call it Out of Stock
+            if (
+              lowFinal === 0 &&
+              highFinal === 0 &&
+              avgFinal === 0
+            ) {
+              partSummaries.push({
+                name: `${item.part} (x${qty})`,
+                category: item.category,
+                low: "Out of Stock",
+                high: "Out of Stock",
+                avg: "Out of Stock",
+              });
+            } else {
+              partSummaries.push({
+                name: `${item.part} (x${qty})`,
+                category: item.category,
+                low: lowFinal,
+                high: highFinal,
+                avg: avgFinal,
+              });
+              foundCount++;
+            }
           }
         } else {
+          // no matches at all
           partSummaries.push({
             name: `${item.part} (x${qty})`,
             category: item.category,
@@ -329,7 +376,6 @@ function ReportsBody({ onClose }) {
         return [finished, ...withoutTemp];
       });
 
-
       setMessage("Report saved!");
     } catch (e) {
       console.error("[REPORT] save report error:", e);
@@ -340,15 +386,16 @@ function ReportsBody({ onClose }) {
     }
 
     // Refresh reports from backend after save
-    const updated = await fetch(`${API}/api/reports?email=${encodeURIComponent(userEmail)}`);
+    const updated = await fetch(
+      `${API}/api/reports?email=${encodeURIComponent(userEmail)}`
+    );
     const freshData = await updated.json();
     setReports(freshData.items || freshData.reports || []);
-
   }
+
 
   // Download report
   async function handleDownload(r) {
-    // Expand the report
     setExpanded(r._id);
 
     // Wait until the report element exists in the DOM
@@ -372,11 +419,7 @@ function ReportsBody({ onClose }) {
       await Promise.all([logoImg.decode(), brandImg.decode()]);
 
       // Capture the on-screen report
-      const canvas = await html2canvas(element, {
-        scale: 2,
-        backgroundColor: "#ffffff",
-        useCORS: true,
-      });
+      const canvas = await html2canvas(element, {scale: 2, backgroundColor: "#ffffff", useCORS: true,});
       const imgData = canvas.toDataURL("image/png");
 
       // Set up jsPDF
@@ -391,9 +434,9 @@ function ReportsBody({ onClose }) {
       pdf.addImage(logoImg, "PNG", margin, logoY, 45, 45);
       pdf.addImage(brandImg, "PNG", margin + 45, logoY - 20, 100, 100);
       pdf.setFontSize(11);
+      pdf.setTextColor(0, 0, 0);
       pdf.text(`Date: ${dateStr}`, pdfWidth - 170, logoY + 20);
       pdf.setFontSize(18);
-      pdf.setTextColor(0, 0, 0);
       pdf.text("TrueRepairs Report", margin, 100);
       pdf.setFontSize(13);
       pdf.text(`${r.vehicle?.year || ""} ${r.vehicle?.make || ""} ${r.vehicle?.model || ""} (${r.parts?.length || 0} parts)`, margin, 118);
@@ -405,7 +448,7 @@ function ReportsBody({ onClose }) {
 
       // Quick Links
       pdf.setFontSize(11);
-      pdf.setTextColor(0, 0, 255);
+      pdf.setTextColor(0, 0, 0);
       let linkY = 135 + imgHeight + 25;
       pdf.text("Quick Links:", margin, linkY);
       const { year, make, model, engine } = r.vehicle || {};
@@ -422,24 +465,99 @@ function ReportsBody({ onClose }) {
       pdf.text("Detailed Part Breakdown", margin, 60);
       let y = 90;
 
-      function findPartDetails(vehicle, category, partName) {
-        const yearEntry = vehicleData.find((y) => y.year === Number(vehicle.year));
-        if (!yearEntry) return [];
-        const modelEntry = yearEntry.models.find(
-          (m) => m.model.toUpperCase() === String(vehicle.model).toUpperCase()
-        );
-        const engineEntry = modelEntry?.engines.find(
-          (en) => en.engine.toUpperCase() === String(vehicle.engine).toUpperCase()
-        );
-        const categoryEntry = engineEntry?.categories.find(
-          (c) => c.category.toUpperCase() === String(category).toUpperCase()
-        );
-        if (!categoryEntry) return [];
-        const matches = categoryEntry?.parttypes?.[partName];
-        return Array.isArray(matches) ? matches : [];
+      // Drop-in replacement
+      function findPartDetailsSmart(vehicle, preferredCategory, partName, data = typeof vehicleDataParts !== "undefined" ? vehicleDataParts : undefined) {
+        const norm = (s) =>
+          String(s ?? "")
+            .toUpperCase()
+            .replace(/&/g, "AND")
+            .replace(/[^A-Z0-9]+/g, " ")
+            .replace(/\s+/g, " ")
+            .trim();
+
+        const findKeyCI = (obj, target) => {
+          if (!obj || target == null) return null;
+          const want = norm(target);
+          // exact first
+          for (const k of Object.keys(obj)) if (norm(k) === want) return k;
+          // then contains either way
+          for (const k of Object.keys(obj)) {
+            const nk = norm(k);
+            if (nk.includes(want) || want.includes(nk)) return k;
+          }
+          return null;
+        };
+
+        const pickBucket = (node) => node?.parttypes ?? node?.partTypes ?? node;
+
+        if (!data) return { items: [], usedCategory: null, usedPartKey: null };
+
+        // get engine node from either object
+        const getEngineNode = () => {
+          if (Array.isArray(data)) {
+            const yearEntry =
+              data.find((y) => String(y.year) === String(vehicle.year)) ??
+              data.find((y) => norm(y.year) === norm(vehicle.year));
+            if (!yearEntry) return null;
+            const modelEntry =
+              (yearEntry.models || []).find((m) => norm(m.model) === norm(vehicle.model)) ??
+              (yearEntry.models || []).find((m) => norm(m.model).includes(norm(vehicle.model)));
+            if (!modelEntry) return null;
+            const engineEntry =
+              (modelEntry.engines || []).find((en) => norm(en.engine) === norm(vehicle.engine)) ??
+              (modelEntry.engines || []).find((en) => norm(en.engine).includes(norm(vehicle.engine)));
+            if (!engineEntry) return null;
+            return engineEntry;
+          } else {
+            const yearKey = data[String(vehicle.year)] != null ? String(vehicle.year) : findKeyCI(data, vehicle.year);
+            if (!yearKey) return null;
+            const yearNode = data[yearKey];
+
+            const modelKey = findKeyCI(yearNode, vehicle.model);
+            if (!modelKey) return null;
+            const modelNode = yearNode[modelKey];
+
+            const engineKey = findKeyCI(modelNode, vehicle.engine);
+            if (!engineKey) return null;
+            return modelNode[engineKey];
+          }
+        };
+
+        const engineNode = getEngineNode();
+        if (!engineNode) return { items: [], usedCategory: null, usedPartKey: null };
+
+        // categories can be under engine.categories or directly on engine
+        const catsNode = engineNode.categories ?? engineNode;
+        if (!catsNode || typeof catsNode !== "object") {
+          return { items: [], usedCategory: null, usedPartKey: null };
+        }
+
+        const allCatKeys = Object.keys(catsNode);
+        const orderedCats = [];
+        if (preferredCategory) {
+          const prefKey = findKeyCI(catsNode, preferredCategory);
+          if (prefKey) orderedCats.push(prefKey);
+        }
+        for (const k of allCatKeys) if (!orderedCats.includes(k)) orderedCats.push(k);
+
+        // Try each candidate category for the part name
+        for (const ck of orderedCats) {
+          const catNode = catsNode[ck];
+          const bucket = pickBucket(catNode);
+          if (!bucket || typeof bucket !== "object") continue;
+
+          const partKey = findKeyCI(bucket, partName);
+          const matches = partKey ? bucket[partKey] : null;
+          if (Array.isArray(matches) && matches.length) {
+            return { items: matches, usedCategory: ck, usedPartKey: partKey };
+          }
+        }
+
+        return { items: [], usedCategory: orderedCats[0] ?? null, usedPartKey: null };
       }
 
       pdf.setFontSize(12);
+      pdf.setTextColor(0, 0, 0);
 
       for (const p of r.parts || []) {
         if (y > pdfHeight - 150) {
@@ -447,36 +565,34 @@ function ReportsBody({ onClose }) {
           y = 60;
         }
 
+        // Clean the part name
+        const cleanPartName = (p.name || "").split("(")[0].trim();
+
+        // prefer the given category, but auto-scan others if needed
+        const { items: details, usedCategory } = findPartDetailsSmart(r.vehicle, p.category, cleanPartName);
+
+        // Header line uses the category we actually matched
         pdf.setFontSize(14);
-        pdf.text(`${p.category} - ${p.name}`, margin, y);
+        const headerCategory = usedCategory || p.category || "Unknown";
+        pdf.text(`${headerCategory} - ${p.name || "Unknown"}`, margin, y);
         y += 10;
         pdf.setDrawColor(200);
         pdf.line(margin, y, pdfWidth - margin, y);
         y += 10;
 
-        const details = findPartDetails(r.vehicle, p.category, p.name.split("(")[0].trim());
         if (details.length > 0) {
           for (const item of details) {
             pdf.setFontSize(11);
-            pdf.setTextColor(50, 50, 50);
-            pdf.text(`Brand: ${item.brand || "N/A"}`, margin, y);
-            y += 14;
-            pdf.text(`Part #: ${item.partnumber || "N/A"}`, margin, y);
-            y += 14;
-            pdf.text(
-              `Description: ${item.description || "N/A"}`,
-              margin,
-              y,
-              { maxWidth: pdfWidth - 2 * margin }
-            );
-            y += 28;
-            pdf.text(`Price: ${item.price ? `$${Number(item.price).toFixed(2)}` : "N/A"}`, margin, y);
-            y += 14;
-            pdf.text(`Availability: ${item.in_stock ? "In Stock" : "Out of Stock"}`, margin, y);
-            y += 22;
+            pdf.setTextColor(0, 0, 0);
+            pdf.text(`Brand: ${item.brand ?? "N/A"}`, margin, y); y += 14;
+            pdf.text(`Part #: ${item.partnumber ?? "N/A"}`, margin, y); y += 14;
+            pdf.text(`Description: ${item.description ?? "N/A"}`, margin, y, { maxWidth: pdfWidth - 2 * margin }); y += 14;
+            pdf.text(`Price: ${item.price != null ? `$${Number(item.price).toFixed(2)}` : "N/A"}`, margin, y); y += 14;
+            pdf.text(`Availability: ${item.in_stock ? "In Stock" : "Out of Stock"}`, margin, y); y += 22;
           }
         } else {
           pdf.setFontSize(11);
+          pdf.setTextColor(0, 0, 0);
           pdf.text("No detailed items found for this part.", margin, y);
           y += 20;
         }
