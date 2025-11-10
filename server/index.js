@@ -16,9 +16,11 @@ const Lookup = require("./models/lookup.js");
 const vehdb = require("./src/services/vehdb");
 const Vehicle = require("./models/Vehicle.js");
 const { getCarSpecs, vinDecode } = require("./src/services/ninjaApi");
-const { scrapeRockAuto } = require("./src/services/rockauto");
 const reportRoutes = require("./src/routes/reportRoutes.js");
-const estimateRoutes = require("./src/routes/estimate.js");
+// const externalRoutes = require("./src/routes/external.js");
+//const estimateRoutes = require("./src/routes/estimate");
+const fs = require("fs");
+const toyotaData = JSON.parse(fs.readFileSync(path.join(__dirname, "src", "data", "toyotaENGTRIM.json"), "utf-8"));
 
 const TEMP_SECRET = process.env.TEMP_SECRET;
 if (process.env.SENDGRID_API_KEY) sgMail.setApiKey(process.env.SENDGRID_API_KEY);
@@ -26,6 +28,7 @@ if (process.env.SENDGRID_API_KEY) sgMail.setApiKey(process.env.SENDGRID_API_KEY)
 const app = express();
 app.use(cors());
 app.use(express.json());
+//app.use("/api", estimateRoutes); //
 
 app.use("/api", estimateRoutes);
 
@@ -35,202 +38,105 @@ app.get("/", (req, res) => {
 
 app.use("/api/reports", reportRoutes);
 
-app.post("/api/rockauto/categories", (req, res) => {
-  const { make, year, model, engine } = req.body;
-  const scriptPath = path.join(__dirname, "src", "services", "rockautoCategories.py");
-  const py = spawn("python", [scriptPath, make, year, model, engine]);
-
-  let data = "";
-  py.stdout.on("data", (chunk) => (data += chunk.toString()));
-  py.stderr.on("data", (chunk) => console.error("PyErr:", chunk.toString()));
-  py.on("close", () => {
-    try {
-      res.json(JSON.parse(data));
-    } catch {
-      res.status(500).json({ error: "Failed to parse Python output" });
-    }
-  });
+// Return all Toyota years
+app.get("/api/years", (req, res) => {
+  const years = toyotaData.map((item) => item.year);
+  res.json(years);
 });
 
-app.post("/api/rockauto/subcategories", (req, res) => {
-  const { make, year, model, engine, category } = req.body;
-  const scriptPath = path.join(__dirname, "src", "services", "rockautoSubcategories.py");
-  const py = spawn("python", [scriptPath, make, year, model, engine, category]);
-
-  let data = "";
-  py.stdout.on("data", (chunk) => (data += chunk.toString()));
-  py.stderr.on("data", (chunk) => console.error("PyErr:", chunk.toString()));
-  py.on("close", () => {
-    try {
-      res.json(JSON.parse(data));
-    } catch {
-      res.status(500).json({ error: "Failed to parse Python output" });
-    }
-  });
+// Return makes
+app.get("/api/makes", (req, res) => {
+  res.json(["Toyota"]);
 });
 
-app.post("/api/scrape-rockauto", (req, res) => {
-  const { make, year, model, engine, category, subcategory } = req.body;
-  if (!make || !year || !model || !engine || !category || !subcategory) {
-    return res.status(400).json({ success: false, message: "Missing required fields" });
-  }
+// Return all models for a given year
+app.get("/api/models/:year", (req, res) => {
+  const { year } = req.params;
+  const yearData = toyotaData.find((y) => y.year === parseInt(year));
+  if (!yearData) return res.json([]);
+  const models = yearData.models.map((m) => m.model);
+  res.json(models);
+});
 
-  const scriptPath = path.join(__dirname, "src", "services", "rockautoscrape.py");
-  const pyExe = process.env.PYTHON || (process.platform === "win32" ? "python" : "python3");
-
-  const py = spawn(
-    pyExe,
-    [scriptPath, String(make), String(year), String(model), String(engine), String(category), String(subcategory)],
-    { env: process.env }
+// engines or drivetrain info
+app.get("/api/engines/:year/:model", (req, res) => {
+  const { year, model } = req.params;
+  const yearData = toyotaData.find((y) => y.year === parseInt(year));
+  const modelData = yearData?.models.find(
+    (m) => m.model.toLowerCase() === model.toLowerCase()
   );
-
-  let out = "";
-  let err = "";
-
-  const killTimer = setTimeout(() => {
-    try {
-      py.kill();
-    } catch {}
-  }, 90000);
-
-  py.stdout.on("data", (c) => (out += c.toString()));
-  py.stderr.on("data", (c) => (err += c.toString()));
-
-  py.on("close", (code) => {
-    clearTimeout(killTimer);
-    try {
-      const parsed = out ? JSON.parse(out) : {};
-      return res.json({
-        success: true,
-        code,
-        parts: parsed,
-        debug: err,
-      });
-    } catch (e) {
-      return res.status(500).json({
-        success: false,
-        code,
-        error: "Failed to parse Python output",
-        raw: out,
-        debug: err,
-      });
-    }
-  });
-
-  py.on("error", (e) => {
-    clearTimeout(killTimer);
-    res.status(500).json({ success: false, error: e.message, debug: err });
-  });
+  if (!modelData) return res.json([]);
+  const engines = modelData.engines.map((e) => e.engine);
+  res.json(engines);
 });
 
-app.get("/api/cardetails/makes", async (req, res) => {
-  try {
-    const { year } = req.query;
-    if (!year) return res.status(400).json({ message: "Year required" });
+app.get("/api/trims/:year/:model/:engine", (req, res) => {
+  const { year, model, engine } = req.params;
+  const yearData = toyotaData.find(y => y.year == year);
+  if (!yearData) return res.json([]);
 
-    let allData = [];
-    let offset = 0;
-    const limit = 50;
+  const modelData = yearData.models.find(m => m.model === model);
+  if (!modelData) return res.json([]);
 
-    while (true) {
-      const data = await getCarSpecs({ year, limit, offset });
-      if (!data.length) break;
-      allData = allData.concat(data);
-      offset += limit;
-      if (data.length < limit) break;
-    }
+  const engineData = modelData.engines.find(e => e.engine === engine);
+  if (!engineData) return res.json([]);
 
-    const cap = (str = "") =>
-      str
-        .toLowerCase()
-        .split(" ")
-        .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
-        .join(" ");
-
-    const uniqueMakes = [...new Set(allData.map((c) => cap(c.make)))].sort();
-    res.json(uniqueMakes);
-  } catch {
-    res.status(500).json({ message: "Failed to load makes" });
-  }
-});
-
-app.get("/api/cardetails/models", async (req, res) => {
-  try {
-    const { year, make } = req.query;
-    if (!year || !make) return res.status(400).json({ message: "Year and make required" });
-
-    let allData = [];
-    let offset = 0;
-    const limit = 50;
-
-    while (true) {
-      const data = await getCarSpecs({ year, make, limit, offset });
-      if (!data.length) break;
-      allData = allData.concat(data);
-      offset += limit;
-      if (data.length < limit) break;
-    }
-
-    const cap = (str = "") =>
-      str
-        .toLowerCase()
-        .split(/([\s-]+)/)
-        .map((part) => (/^[a-z]/.test(part) ? part.charAt(0).toUpperCase() + part.slice(1) : part))
-        .join("");
-
-    const uniqueModels = [...new Set(allData.map((c) => cap(c.model)))].sort();
-    res.json(uniqueModels);
-  } catch (err) {
-    res.status(500).json({ message: "Failed to load models" });
-  }
+  res.json(engineData.trims || []);
 });
 
 app.post("/api/manual-vehicle", async (req, res) => {
   try {
-    const { year, make, model, trim, email } = req.body;
-    if (!year || !make || !model || !email) {
-      return res.status(400).json({ message: "Year, make, model, and email required" });
-    }
+    const { year, make, model, engine, trim, email } = req.body;
+    if (!year || !make || !model || !engine || !trim || !email)
+      return res.status(400).json({
+        message: "Year, make, model, engine, trim, and email are required",
+      });
 
-    const specs = await getCarSpecs({ year, make, model });
-    const carData = specs?.[0];
-    if (!carData) return res.status(404).json({ message: "Vehicle specs not found." });
-
-    const cap = (s = "") =>
-      s
-        .toLowerCase()
-        .split(" ")
-        .map((w) => w[0].toUpperCase() + w.slice(1))
-        .join(" ");
+    // Formatters
+    const cap = (s = "") => s.split(" ").map(w => w === w.toUpperCase() ? w : w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(" ");
 
     const yearStr = String(year);
     const makeFormatted = cap(make);
     const modelFormatted = cap(model);
-    const trimFormatted = trim ? cap(trim) : "";
-    const engine = carData.displacement
-      ? `${carData.displacement}L ${carData.cylinders || ""}-Cyl`.trim()
-      : "Unknown";
-    const fuel = cap(carData.fuel_type || "Unknown");
-    const drivetrain = (carData.drive || "FWD").toUpperCase();
-    const transmission = (carData.transmission || "AUTO").toUpperCase();
-    const nickname = `${yearStr} ${makeFormatted} ${modelFormatted}${
-      trimFormatted ? " " + trimFormatted : ""
-    }`;
+    const engineFormatted = engine.trim();
+    const trimFormatted = cap(trim);
 
+    let fuel = "Gas";
+    let drivetrain = "FWD";
+
+    const yearData = toyotaData.find((y) => String(y.year) === yearStr);
+    if (yearData) {
+      const modelData = yearData.models.find(
+        (m) => m.model.toLowerCase() === modelFormatted.toLowerCase()
+      );
+      if (modelData) {
+        const engineData = modelData.engines.find(
+          (e) => e.engine.toLowerCase() === engineFormatted.toLowerCase()
+        );
+        if (engineData) {
+          if (engineData.fuel) fuel = engineData.fuel;
+          if (engineData.drivetrain) drivetrain = engineData.drivetrain;
+        }
+      }
+    }
+
+    const nickname = `${yearStr} ${makeFormatted} ${modelFormatted} ${trimFormatted}`.trim();
+
+    // Save to DB
     const newVehicle = new Vehicle({
       email,
       nickname,
       year: yearStr,
       make: makeFormatted,
       model: modelFormatted,
+      engine: engineFormatted,
       trim: trimFormatted,
-      engine,
       fuel,
       drivetrain,
-      transmission,
-      mpg_city: carData.city_mpg || "Unknown",
-      mpg_highway: carData.highway_mpg || "Unknown",
-      class: carData.class || "Unknown",
+      transmission: "AUTO",
+      mpg_city: "Unknown",
+      mpg_highway: "Unknown",
+      class: "Unknown",
     });
 
     await newVehicle.save();
@@ -322,6 +228,7 @@ app.post("/api/vehicleinfo", async (req, res) => {
       return String(drive).toUpperCase();
     };
 
+    // Decode with Ninja
     const ninjaResp = await vinDecode(vin);
     let payload = { source: "NinjaAPI", data: ninjaResp || {} };
     let v = payload.data || {};
@@ -330,6 +237,7 @@ app.post("/api/vehicleinfo", async (req, res) => {
     let modelBase = v.model || v.model_name || v.series;
     let yearBase = v.year || v.model_year;
 
+    // Enrich using Ninja car specs if anything key is missing
     const missingKey =
       (!v.engine && !v.engine_size) ||
       !v.fuel_type ||
@@ -365,7 +273,8 @@ app.post("/api/vehicleinfo", async (req, res) => {
       } catch {}
     }
 
-    const make = capWords(v.make || v.manufacturer || v.brand || "Unknown");
+    // Normalize for save
+    const make  = capWords(v.make || v.manufacturer || v.brand || "Unknown");
     const model = capWords(v.model || v.model_name || v.series || "Unknown");
     const year = String(v.year || v.model_year || "Unknown");
     const trim = capWords(v.trim || "");
@@ -386,6 +295,7 @@ app.post("/api/vehicleinfo", async (req, res) => {
     const vehicleClass = v.class || "Unknown";
     const nickname = `${year} ${make} ${model}`.trim() || "Unnamed Vehicle";
 
+    // Persist
     const newVehicle = new Vehicle({
       email,
       vin,
@@ -752,6 +662,11 @@ app.use((err, req, res, next) => {
 (async () => {
   try {
     await connectDB();
+
+    app.use("/api", (req, res) => {
+      return res.status(404).json({ message: "Not Found", path: req.originalUrl });
+    });
+
     app.listen(5000, () => {
       console.log("App is running on http://localhost:5000");
     });
@@ -760,9 +675,3 @@ app.use((err, req, res, next) => {
     process.exit(1);
   }
 })();
-
-app.use("/api", (req, res) => {
-  return res
-    .status(404)
-    .json({ message: "Not Found", path: req.originalUrl });
-});

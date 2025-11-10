@@ -2,22 +2,22 @@ import React, { useState, useEffect, useRef } from "react";
 import "../styles/Reports.css";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
-
+import vehicleData from "../data/toyotaFull.json";
+import vehicleDataParts from "../../server/src/data/ToyotaParts.json";
+import logo from "/logo.png";
+import brand from "/TrueRepairs.png";
 const API = "http://localhost:5000";
 
-const priceToNumber = (v) => {
-  if (!v) return 0;
-  const s = String(v);
-  if (/out of stock/i.test(s)) return 0;
-  return Number(s.replace(/[^0-9.]/g, "")) || 0;
-};
-
+// Wrapper component
 export default function Reports({ open, onClose }) {
   if (!open) return null;
+  return <ReportsBody onClose={onClose} />;
+}
 
+// Core logic
+function ReportsBody({ onClose }) {
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const userEmail = user?.email || "";
-
   const [vehicles, setVehicles] = useState([]);
   const [selectedVehicle, setSelectedVehicle] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState("");
@@ -25,27 +25,17 @@ export default function Reports({ open, onClose }) {
   const [partsList, setPartsList] = useState([]);
   const [categories, setCategories] = useState([]);
   const [subcategories, setSubcategories] = useState([]);
-  const [loadingCategories, setLoadingCategories] = useState(false);
-  const [loadingSubcategories, setLoadingSubcategories] = useState(false);
   const [message, setMessage] = useState("");
   const [reports, setReports] = useState([]);
   const [expanded, setExpanded] = useState(null);
+  const [generating, setGenerating] = useState(false);
 
-  // multiple-report safe state
-  const [activeReports, setActiveReports] = useState({});
-  const [progressMap, setProgressMap] = useState({});
-  
-
-  const requestVersion = useRef(0);
-
-  // Vehicles
+  // Load user's vehicles
   useEffect(() => {
     if (!userEmail) return;
     (async () => {
       try {
-        const res = await fetch(
-          `${API}/api/vehicles?email=${encodeURIComponent(userEmail)}`
-        );
+        const res = await fetch(`${API}/api/vehicles?email=${encodeURIComponent(userEmail)}`);
         const data = await res.json();
         setVehicles(data.items || []);
       } catch (e) {
@@ -54,14 +44,12 @@ export default function Reports({ open, onClose }) {
     })();
   }, [userEmail]);
 
-  // Reports
+  // Load user's reports
   useEffect(() => {
     if (!userEmail) return;
     (async () => {
       try {
-        const res = await fetch(
-          `${API}/api/reports?email=${encodeURIComponent(userEmail)}`
-        );
+        const res = await fetch(`${API}/api/reports?email=${encodeURIComponent(userEmail)}`);
         const data = await res.json();
         setReports(data.items || data.reports || []);
       } catch (e) {
@@ -70,153 +58,95 @@ export default function Reports({ open, onClose }) {
     })();
   }, [userEmail]);
 
-  // Restore any active reports from localStorage
+  // Restore any saved "active" reports from localStorage
   useEffect(() => {
     const savedActive = JSON.parse(localStorage.getItem("activeReports") || "[]");
-    if (savedActive.length > 0) {
+    if (Array.isArray(savedActive) && savedActive.length > 0) {
       setReports((prev) => [...savedActive, ...prev]);
-      const activeMap = {};
-      savedActive.forEach((r) => (activeMap[r._id] = true));
-      setActiveReports(activeMap);
     }
   }, []);
 
-
+  // Vehicle select
   async function handleVehicleChange(e) {
     const vehicleId = e.target.value;
     const v = vehicles.find((veh) => veh._id === vehicleId);
+    if (!v) return;
 
-    setSelectedVehicle(null);
+    setSelectedVehicle(v);
     setSelectedCategory("");
     setSelectedPart("");
     setPartsList([]);
     setCategories([]);
     setSubcategories([]);
 
-    if (!v) return;
+    const { year, model, engine } = v;
+    const yearEntry = vehicleData.find((y) => y.year === Number(year));
+    if (!yearEntry) return setMessage("No data found for that year.");
 
-    const engineValue = v.data?.engine?.engine_size || v.engine || "Unknown";
-    const formattedEngine = engineValue.includes("L")
-      ? engineValue
-      : `${engineValue}L`;
-    const selected = { ...v, engine: formattedEngine.trim() };
-    setSelectedVehicle(selected);
-    setMessage(`Selected ${selected.year} ${selected.make} ${selected.model}`);
+    const modelEntry = yearEntry.models.find((m) => m.model.toUpperCase() === String(model).toUpperCase());
+    if (!modelEntry) return setMessage("No data found for that model.");
 
-    // Fetch categories
-    setLoadingCategories(true);
-    const currentVersion = ++requestVersion.current;
-    try {
-      const res = await fetch(`${API}/api/rockauto/categories`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          make: selected.make,
-          year: selected.year,
-          model: selected.model,
-          engine: selected.engine,
-        }),
-      });
+    const engineEntry = modelEntry.engines.find((en) => en.engine.toUpperCase() === String(engine).toUpperCase());
+    if (!engineEntry) return setMessage("No data found for that engine.");
 
-      const data = await res.json();
-      if (currentVersion !== requestVersion.current) return;
-
-      if (data.categories) {
-        setCategories(data.categories);
-        setMessage(`Loaded ${data.categories.length} categories.`);
-      } else {
-        setCategories([]);
-        setMessage("No categories found.");
-      }
-    } catch (err) {
-      console.error("Category fetch error:", err);
-      setMessage("Error fetching categories.");
-    } finally {
-      if (currentVersion === requestVersion.current)
-        setLoadingCategories(false);
-    }
+    const categoryNames = engineEntry.categories.map((c) => c.category);
+    setCategories(categoryNames);
+    setMessage(`Loaded ${categoryNames.length} categories.`);
   }
 
-  async function handleCategoryChange(e) {
+  // Categories
+  function handleCategoryChange(e) {
     const newCategory = e.target.value;
     setSelectedCategory(newCategory);
     setSelectedPart("");
-    setSubcategories([]);
-    if (!newCategory || !selectedVehicle) return;
 
-    setLoadingSubcategories(true);
-    const currentVersion = ++requestVersion.current;
-    try {
-      const res = await fetch(`${API}/api/rockauto/subcategories`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          make: selectedVehicle.make,
-          year: selectedVehicle.year,
-          model: selectedVehicle.model,
-          engine: selectedVehicle.engine,
-          category: newCategory,
-        }),
-      });
+    if (!selectedVehicle || !newCategory) return;
+    const { year, model, engine } = selectedVehicle;
 
-      const data = await res.json();
-      if (currentVersion !== requestVersion.current) return;
+    const yearEntry = vehicleData.find((y) => y.year === Number(year));
+    const modelEntry = yearEntry?.models.find((m) => m.model.toUpperCase() === String(model).toUpperCase());
+    const engineEntry = modelEntry?.engines.find((en) => en.engine.toUpperCase() === String(engine).toUpperCase());
+    const categoryEntry = engineEntry?.categories.find((c) => c.category === newCategory);
 
-      if (data.subcategories) {
-        setSubcategories(data.subcategories);
-        setMessage(`Loaded ${data.subcategories.length} subcategories.`);
-      } else {
-        setSubcategories([]);
-        setMessage("No subcategories found.");
-      }
-    } catch (err) {
-      console.error("Subcategory fetch error:", err);
-      setMessage("Error fetching subcategories.");
-    } finally {
-      if (currentVersion === requestVersion.current)
-        setLoadingSubcategories(false);
+    if (categoryEntry) {
+      setSubcategories(categoryEntry.parttypes.map((p) => ({ name: p })));
+      setMessage(`Loaded ${categoryEntry.parttypes.length} parts.`);
+    } else {
+      setSubcategories([]);
+      setMessage("No parts found for this category.");
     }
   }
 
+  // Add parts
   function handleAddPart() {
     if (!selectedCategory || !selectedPart) return;
 
-    const exists = partsList.some(
-      (p) => p.category === selectedCategory && p.part === selectedPart
-    );
-    if (exists) {
-      setMessage("That part is already in the list.");
-      return;
-    }
+    const exists = partsList.some((p) => p.category === selectedCategory && p.part === selectedPart);
+    if (exists) return setMessage("That part is already in the list.");
 
-    setPartsList([
-      ...partsList,
+    setPartsList((prev) => [
+      ...prev,
       { category: selectedCategory, part: selectedPart, quantity: 1 },
     ]);
     setSelectedPart("");
     setMessage(`Added ${selectedPart} (${selectedCategory}) to list.`);
   }
 
-
+  // Remove parts
   function handleRemovePart(index) {
-    setPartsList(partsList.filter((_, i) => i !== index));
+    setPartsList((prev) => prev.filter((_, i) => i !== index));
   }
 
-  // handleGenerate
+  // Generate report
   async function handleGenerate() {
-    if (!selectedVehicle) {
-      setMessage("Please select a vehicle.");
-      return;
-    }
-    if (partsList.length === 0) {
-      setMessage("Add at least one part before generating.");
-      return;
-    }
-    setPartsList([]);
-    const vehicleId = selectedVehicle._id;
-    const tempId = `temp-${Date.now()}`;
+    if (!selectedVehicle) return setMessage("Please select a vehicle.");
+    if (partsList.length === 0)
+      return setMessage("Add at least one part before generating.");
+    if (generating) return;
 
-    // Create temporary "generating" report
+    setGenerating(true);
+
+    const tempId = `temp-${Date.now()}`;
     const tempReport = {
       _id: tempId,
       vehicle: selectedVehicle,
@@ -227,127 +157,154 @@ export default function Reports({ open, onClose }) {
       total: partsList.length,
     };
 
-    // Add it to the right panel immediately
+    // add the temporary progress report
     setReports((prev) => [tempReport, ...prev]);
-
-    setActiveReports((prev) => ({ ...prev, [tempId]: true }));
-    setProgressMap((prev) => ({
-      ...prev,
-      [tempId]: { done: 0, total: partsList.length },
-    }));
-
     setMessage(`Generating report for ${selectedVehicle.make} ${selectedVehicle.model}...`);
 
     const partSummaries = [];
-    const overallPrices = [];
-
-    for (let i = 0; i < partsList.length; i++) {
-      const item = partsList[i];
-      const payload = {
-        make: (selectedVehicle.make || "").toUpperCase(),
-        year: selectedVehicle.year || "",
-        model: (selectedVehicle.model || "").toUpperCase(),
-        engine: (selectedVehicle.engine || "").toUpperCase(),
-        category: (item.category || "").toUpperCase(),
-        subcategory: (item.part || "").toUpperCase(),
-      };
-
-      try {
-        const res = await fetch(`${API}/api/scrape-rockauto`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-
-        const raw = await res.text();
-        let data;
-        try {
-          data = JSON.parse(raw);
-        } catch {
-          setReports((prev) =>
-            prev.map((r) =>
-              r._id === tempId
-                ? { ...r, progress: i + 1, total: partsList.length }
-                : r
-            )
-          );
-          partSummaries.push({ name: item.part, low: 0, high: 0, avg: 0 });
-          continue;
-        }
-
-        const rows = Array.isArray(data.parts)
-          ? data.parts
-          : Object.values(data.parts || {}).flat();
-
-        const nums = rows
-          .map((r) => priceToNumber(r.total || r.price || r.cost || r.amount))
-          .filter((n) => Number.isFinite(n) && n > 0);
-
-        if (!nums.length) {
-          partSummaries.push({ name: item.part, low: 0, high: 0, avg: 0 });
-        } else {
-          const low = Math.min(...nums);
-          const high = Math.max(...nums);
-          const avg = nums.reduce((a, b) => a + b, 0) / nums.length;
-
-          // multiply each by quantity
-          const qty = item.quantity || 1;
-          partSummaries.push({
-            name: `${item.part} (x${qty})`,
-            low: low * qty,
-            high: high * qty,
-            avg: avg * qty,
-          });
-          overallPrices.push(...nums.map((n) => n * qty));
-        }
-      } catch (err) {
-        console.error("[REPORT] scrape error:", err);
-        partSummaries.push({ name: item.part, low: 0, high: 0, avg: 0 });
-      }
-
-      // update live progress for this report
-      setReports((prev) =>
-        prev.map((r) =>
-          r._id === tempId
-            ? { ...r, progress: i + 1, total: partsList.length }
-            : r
-        )
-      );
-    }
-
-    // Handle no data case safely
-    if (overallPrices.length === 0) {
-      setReports((prev) => prev.filter((r) => r._id !== tempId));
-      setActiveReports((prev) => {
-        const updated = { ...prev };
-        delete updated[tempId];
-        return updated;
-      });
-      setMessage("No prices found for selected parts (nothing saved).");
-      return;
-    }
-
-    let totalLow = 0;
-    let totalHigh = 0;
-    let totalAvg = 0;
-
-    for (const part of partSummaries) {
-      totalLow += part.low || 0;
-      totalHigh += part.high || 0;
-      totalAvg += part.avg || 0;
-    }
-
-    const summary = {
-      totalLow,
-      totalHigh,
-      totalAvg,
-    };
-
-    const title = `${selectedVehicle.year} ${selectedVehicle.make} ${selectedVehicle.model} (${partsList.length} parts)`;
+    let foundCount = 0;
 
     try {
+      // generate pricing summary
+      for (let i = 0; i < partsList.length; i++) {
+        const item = partsList[i];
+        const qty = Math.max(1, Number(item.quantity) || 1);
+
+        const qs = new URLSearchParams({
+          year: String(selectedVehicle.year || ""),
+          model: String(selectedVehicle.model || ""),
+          engine: String(selectedVehicle.engine || ""),
+          parttype: String(item.part || ""),
+        }).toString();
+
+        let matches = [];
+        try {
+          const res = await fetch(`${API}/api/reports/local?${qs}`);
+          if (res.ok) {
+            const data = await res.json();
+            const target = String(item.part || "").toUpperCase();
+            matches = (data?.parts || []).filter((p) => {
+              const leaf = String(p.parttype || "").toUpperCase();
+              const fam = String(p.category || "").toUpperCase();
+              return (
+                leaf === target ||
+                fam === target ||
+                leaf.includes(target) ||
+                target.includes(leaf)
+              );
+            });
+          }
+        } catch (e) {
+          console.error("[REPORT] /local fetch failed:", e);
+        }
+
+        // aggregate or mark out-of-stock
+        if (matches.length > 0) {
+          const anyOutFlag = matches.some(
+            (m) => m.in_stock === false || m.in_stock === 0 || m.in_stock === "0" || m.in_stock === "false"
+          );
+
+          // if all prices are 0 or missing, treat as out-of-stock
+          const usable = matches.filter((m) => {
+            const l = Number(m.low);
+            const h = Number(m.high);
+            const a = Number(m.avg);
+            return (Number.isFinite(l) && l > 0) ||
+                  (Number.isFinite(h) && h > 0) ||
+                  (Number.isFinite(a) && a > 0);
+          });
+
+          if (anyOutFlag || usable.length === 0) {
+            partSummaries.push({
+              name: `${item.part} (x${qty})`,
+              category: item.category,
+              low: "Out of Stock",
+              high: "Out of Stock",
+              avg: "Out of Stock",
+            });
+          } else {
+            const agg = usable.reduce(
+              (acc, m) => {
+                const l = Number(m.low);
+                const h = Number(m.high);
+                const a = Number(m.avg);
+                acc.low  += Number.isFinite(l) && l > 0 ? l : 0;
+                acc.high += Number.isFinite(h) && h > 0 ? h : 0;
+                acc.avg  += Number.isFinite(a) && a > 0 ? a : 0;
+                return acc;
+              },
+              { low: 0, high: 0, avg: 0 }
+            );
+
+            // if totals end up 0/0/0, mark as Out of Stock
+            const lowFinal  = Number((agg.low  * qty).toFixed(2));
+            const highFinal = Number((agg.high * qty).toFixed(2));
+            const avgFinal  = Number((agg.avg  * qty).toFixed(2));
+
+            if (lowFinal === 0 && highFinal === 0 && avgFinal === 0) {
+              partSummaries.push({
+                name: `${item.part} (x${qty})`,
+                category: item.category,
+                low: "Out of Stock",
+                high: "Out of Stock",
+                avg: "Out of Stock",
+              });
+            } else {
+              partSummaries.push({
+                name: `${item.part} (x${qty})`,
+                category: item.category,
+                low: lowFinal,
+                high: highFinal,
+                avg: avgFinal,
+              });
+              foundCount++;
+            }
+          }
+        } else {
+          partSummaries.push({
+            name: `${item.part} (x${qty})`,
+            category: item.category,
+            low: "Out of Stock",
+            high: "Out of Stock",
+            avg: "Out of Stock",
+          });
+        }
+
+        // update progress bar live
+        setReports((prev) =>
+          prev.map((r) =>
+            r._id === tempId ? { ...r, progress: i + 1 } : r
+          )
+        );
+      }
+
+      // nothing found? remove the temp report
+      if (foundCount === 0) {
+        setReports((prev) => prev.filter((r) => r._id !== tempId));
+        setMessage("No prices found for selected parts (nothing saved).");
+        return;
+      }
+
+      // === totals ===
+      const totals = partSummaries.reduce(
+        (acc, p) => {
+          if (typeof p.low === "number") acc.low += p.low;
+          if (typeof p.high === "number") acc.high += p.high;
+          if (typeof p.avg === "number") acc.avg += p.avg;
+          return acc;
+        },
+        { low: 0, high: 0, avg: 0 }
+      );
+
+      const summary = {
+        totalLow: Number(totals.low.toFixed(2)),
+        totalHigh: Number(totals.high.toFixed(2)),
+        totalAvg: Number(totals.avg.toFixed(2)),
+      };
+
+      // === save to backend ===
       const saveBody = {
-        title,
+        title: tempReport.title,
         userEmail,
         vehicle: {
           year: selectedVehicle.year,
@@ -359,360 +316,496 @@ export default function Reports({ open, onClose }) {
         summary,
       };
 
-      // Save to backend
-      await fetch(`${API}/api/reports`, {
+      const response = await fetch(`${API}/api/reports`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(saveBody),
       });
 
-      // Fetch updated list
-      const r = await fetch(`${API}/api/reports?email=${encodeURIComponent(userEmail)}`);
-      const j = await r.json();
+      if (!response.ok) throw new Error("Failed to save report");
+      const savedReport = await response.json();
 
-      // Replace temp report with saved one
-      const updatedReports = j.items || j.reports || [];
-      setReports((prev) =>
-        prev.map((r) =>
-          r._id === tempId
-            ? updatedReports.find(
-                (saved) =>
-                  saved.title === title &&
-                  saved.vehicle?.make === selectedVehicle.make
-              ) || r
-            : r
-        )
-      );
+      // Force a clean re-render
+      setReports((prev) => {
+        // filter out the temporary one
+        const withoutTemp = prev.filter((r) => r._id !== tempId);
+
+        // build a brand-new finished object
+        const finished = {
+          ...savedReport,
+          title: tempReport.title,
+          parts: partSummaries,
+          summary,
+          vehicle: selectedVehicle,
+          createdAt: savedReport.createdAt || new Date().toISOString(),
+          isGenerating: false,
+          progress: partsList.length,
+          total: partsList.length,
+        };
+
+        // prepend to list
+        return [finished, ...withoutTemp];
+      });
+
 
       setMessage("Report saved!");
-      setPartsList([]);
     } catch (e) {
       console.error("[REPORT] save report error:", e);
       setMessage("Report generated, but failed to save.");
     } finally {
-      // clear active state
-      setActiveReports((prev) => {
-        const updated = { ...prev };
-        delete updated[tempId];
-        return updated;
-      });    
+      setGenerating(false);
+      setPartsList([]);
+    }
+
+    // Refresh reports from backend after save
+    const updated = await fetch(`${API}/api/reports?email=${encodeURIComponent(userEmail)}`);
+    const freshData = await updated.json();
+    setReports(freshData.items || freshData.reports || []);
+
+  }
+
+  // Download report
+  async function handleDownload(r) {
+    setExpanded(r._id);
+
+    // Wait until the report element exists in the DOM
+    let element = null;
+    for (let i = 0; i < 40; i++) {
+      element = document.getElementById(`report-${r._id}`);
+      if (element) break;
+      await new Promise((res) => setTimeout(res, 50));
+    }
+    if (!element) {
+      setMessage("Unable to locate report for download.");
+      return;
+    }
+
+    try {
+      // Load the two logo images and wait until both are fully decoded
+      const logoImg = new Image();
+      logoImg.src = logo;
+      const brandImg = new Image();
+      brandImg.src = brand;
+      await Promise.all([logoImg.decode(), brandImg.decode()]);
+
+      // Capture the on-screen report
+      const canvas = await html2canvas(element, {scale: 2, backgroundColor: "#ffffff", useCORS: true,});
+      const imgData = canvas.toDataURL("image/png");
+
+      // Set up jsPDF
+      const pdf = new jsPDF("p", "pt", "a4");
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const margin = 40;
+      const dateStr = new Date().toLocaleString();
+
+      // Header
+      const logoY = 30;
+      pdf.addImage(logoImg, "PNG", margin, logoY, 45, 45);
+      pdf.addImage(brandImg, "PNG", margin + 45, logoY - 20, 100, 100);
+      pdf.setFontSize(11);
+      pdf.setTextColor(0, 0, 0);
+      pdf.text(`Date: ${dateStr}`, pdfWidth - 170, logoY + 20);
+      pdf.setFontSize(18);
+      pdf.text("TrueRepairs Report", margin, 100);
+      pdf.setFontSize(13);
+      pdf.text(`${r.vehicle?.year || ""} ${r.vehicle?.make || ""} ${r.vehicle?.model || ""} (${r.parts?.length || 0} parts)`, margin, 118);
+
+      // Report snapshot
+      const imgProps = pdf.getImageProperties(imgData);
+      const imgHeight = (imgProps.height * (pdfWidth - 2 * margin)) / imgProps.width;
+      pdf.addImage(imgData, "PNG", margin, 135, pdfWidth - 2 * margin, imgHeight);
+
+      // Quick Links
+      pdf.setFontSize(11);
+      pdf.setTextColor(0, 0, 0);
+      let linkY = 135 + imgHeight + 25;
+      pdf.text("Quick Links:", margin, linkY);
+      const { year, make, model, engine } = r.vehicle || {};
+      for (const part of r.parts || []) {
+        const rockLink = `https://www.rockauto.com/en/catalog/${make},${year},${model},${engine}`;
+        linkY += 15;
+        pdf.textWithLink(`• ${part.name}`, margin + 10, linkY, { url: rockLink });
+      }
+
+      // Detailed Breakdown
+      pdf.addPage();
+      pdf.setFontSize(16);
+      pdf.setTextColor(0, 0, 0);
+      pdf.text("Detailed Part Breakdown", margin, 60);
+      let y = 90;
+
+      // Drop-in replacement
+      function findPartDetailsSmart(vehicle, preferredCategory, partName, data = typeof vehicleDataParts !== "undefined" ? vehicleDataParts : undefined) {
+        const norm = (s) =>
+          String(s ?? "")
+            .toUpperCase()
+            .replace(/&/g, "AND")
+            .replace(/[^A-Z0-9]+/g, " ")
+            .replace(/\s+/g, " ")
+            .trim();
+
+        const findKeyCI = (obj, target) => {
+          if (!obj || target == null) return null;
+          const want = norm(target);
+          // exact first
+          for (const k of Object.keys(obj)) if (norm(k) === want) return k;
+          // then contains either way
+          for (const k of Object.keys(obj)) {
+            const nk = norm(k);
+            if (nk.includes(want) || want.includes(nk)) return k;
+          }
+          return null;
+        };
+
+        const pickBucket = (node) => node?.parttypes ?? node?.partTypes ?? node;
+
+        if (!data) return { items: [], usedCategory: null, usedPartKey: null };
+
+        // get engine node from either object
+        const getEngineNode = () => {
+          if (Array.isArray(data)) {
+            const yearEntry =
+              data.find((y) => String(y.year) === String(vehicle.year)) ??
+              data.find((y) => norm(y.year) === norm(vehicle.year));
+            if (!yearEntry) return null;
+            const modelEntry =
+              (yearEntry.models || []).find((m) => norm(m.model) === norm(vehicle.model)) ??
+              (yearEntry.models || []).find((m) => norm(m.model).includes(norm(vehicle.model)));
+            if (!modelEntry) return null;
+            const engineEntry =
+              (modelEntry.engines || []).find((en) => norm(en.engine) === norm(vehicle.engine)) ??
+              (modelEntry.engines || []).find((en) => norm(en.engine).includes(norm(vehicle.engine)));
+            if (!engineEntry) return null;
+            return engineEntry;
+          } else {
+            const yearKey = data[String(vehicle.year)] != null ? String(vehicle.year) : findKeyCI(data, vehicle.year);
+            if (!yearKey) return null;
+            const yearNode = data[yearKey];
+
+            const modelKey = findKeyCI(yearNode, vehicle.model);
+            if (!modelKey) return null;
+            const modelNode = yearNode[modelKey];
+
+            const engineKey = findKeyCI(modelNode, vehicle.engine);
+            if (!engineKey) return null;
+            return modelNode[engineKey];
+          }
+        };
+
+        const engineNode = getEngineNode();
+        if (!engineNode) return { items: [], usedCategory: null, usedPartKey: null };
+
+        // categories can be under engine.categories or directly on engine
+        const catsNode = engineNode.categories ?? engineNode;
+        if (!catsNode || typeof catsNode !== "object") {
+          return { items: [], usedCategory: null, usedPartKey: null };
+        }
+
+        const allCatKeys = Object.keys(catsNode);
+        const orderedCats = [];
+        if (preferredCategory) {
+          const prefKey = findKeyCI(catsNode, preferredCategory);
+          if (prefKey) orderedCats.push(prefKey);
+        }
+        for (const k of allCatKeys) if (!orderedCats.includes(k)) orderedCats.push(k);
+
+        // Try each candidate category for the part name
+        for (const ck of orderedCats) {
+          const catNode = catsNode[ck];
+          const bucket = pickBucket(catNode);
+          if (!bucket || typeof bucket !== "object") continue;
+
+          const partKey = findKeyCI(bucket, partName);
+          const matches = partKey ? bucket[partKey] : null;
+          if (Array.isArray(matches) && matches.length) {
+            return { items: matches, usedCategory: ck, usedPartKey: partKey };
+          }
+        }
+
+        return { items: [], usedCategory: orderedCats[0] ?? null, usedPartKey: null };
+      }
+
+      pdf.setFontSize(12);
+      pdf.setTextColor(0, 0, 0);
+
+      for (const p of r.parts || []) {
+        if (y > pdfHeight - 150) {
+          pdf.addPage();
+          y = 60;
+        }
+
+        // Clean the part name
+        const cleanPartName = (p.name || "").split("(")[0].trim();
+
+        // prefer the given category, but auto-scan others if needed
+        const { items: details, usedCategory } = findPartDetailsSmart(r.vehicle, p.category, cleanPartName);
+
+        // Header line uses the category we actually matched
+        pdf.setFontSize(14);
+        const headerCategory = usedCategory || p.category || "Unknown";
+        pdf.text(`${headerCategory} - ${p.name || "Unknown"}`, margin, y);
+        y += 10;
+        pdf.setDrawColor(200);
+        pdf.line(margin, y, pdfWidth - margin, y);
+        y += 10;
+
+        if (details.length > 0) {
+          for (const item of details) {
+            pdf.setFontSize(11);
+            pdf.setTextColor(0, 0, 0);
+            pdf.text(`Brand: ${item.brand ?? "N/A"}`, margin, y); y += 14;
+            pdf.text(`Part #: ${item.partnumber ?? "N/A"}`, margin, y); y += 14;
+            pdf.text(`Description: ${item.description ?? "N/A"}`, margin, y, { maxWidth: pdfWidth - 2 * margin }); y += 14;
+            pdf.text(`Price: ${item.price != null ? `$${Number(item.price).toFixed(2)}` : "N/A"}`, margin, y); y += 14;
+            pdf.text(`Availability: ${item.in_stock ? "In Stock" : "Out of Stock"}`, margin, y); y += 22;
+          }
+        } else {
+          pdf.setFontSize(11);
+          pdf.setTextColor(0, 0, 0);
+          pdf.text("No detailed items found for this part.", margin, y);
+          y += 20;
+        }
+      }
+
+      // Footer
+      pdf.setFontSize(10);
+      pdf.setTextColor(0, 0, 0);
+      pdf.text("Generated with TrueRepairs | Estimate data from RockAuto.com", margin, pdfHeight - 40);
+
+      // Save
+      pdf.save(`TrueRepairs_Report_${r.vehicle?.make || ""}_${r.vehicle?.model || ""}.pdf`);
+      setMessage("PDF downloaded successfully.");
+    } catch (err) {
+      console.error("PDF generation failed:", err);
+      setMessage("Failed to generate PDF.");
     }
   }
 
+  const canGenerate = !!selectedVehicle && partsList.length > 0 && !generating;
 
-  async function downloadPDF(reportId) {
-    const element = document.getElementById(`report-${reportId}`);
-    if (!element) return;
-    const canvas = await html2canvas(element);
-    const imgData = canvas.toDataURL("image/png");
-    const pdf = new jsPDF("p", "pt", "a4");
-    pdf.addImage(imgData, "PNG", 20, 20, 560, 0);
-    pdf.save(`TrueRepairs_Report_${reportId}.pdf`);
-  }
-
-  function handleDownload(r) {
-    setExpanded(r._id);
-    setTimeout(() => downloadPDF(r._id), 120);
-  }
-
+  // Delete a report
   async function handleDeleteReport(id) {
     try {
-      await fetch(`${API}/api/reports/${id}`, { method: "DELETE" });
-      setReports((prev) => prev.filter((x) => x._id !== id));
+      // Send delete request to backend
+      const res = await fetch(`${API}/api/reports/${id}`, { method: "DELETE" });
+
+      if (!res.ok) {
+        throw new Error("Failed to delete report");
+      }
+
+      // Remove the deleted report from state
+      setReports((prev) => prev.filter((r) => r._id !== id));
+
+      setMessage("Report deleted successfully.");
     } catch (e) {
       console.error("Delete report failed:", e);
+      setMessage("Failed to delete report. Please try again.");
     }
   }
 
-  const canGenerate =
-    !!selectedVehicle && partsList.length > 0 && !activeReports[selectedVehicle?._id];
-  const disabledReason = !selectedVehicle
-    ? "Select a vehicle"
-    : partsList.length === 0
-    ? "Add at least one part"
-    : "";
+  return (
+    <div className="reportoverlay" onClick={onClose}>
+      <div className="reportpopup" onClick={(e) => e.stopPropagation()}>
+        <div className="reportheader">
+          <h1>Vehicle Reports</h1>
+          <p>Generate and save unique repair cost reports for your vehicles.</p>
+        </div>
 
-return (
-  <div className="reportoverlay" onClick={onClose}>
-    <div className="reportpopup" onClick={(e) => e.stopPropagation()}>
-      <div className="reportheader">
-        <h1>Vehicle Reports</h1>
-        <p>Generate and save unique repair cost reports for your vehicles.</p>
-      </div>
+        <div className="reportcolumns">
+          {/* LEFT SIDE */}
+          <div className="reportleft">
+            <div className="reportbox reportgeneratebox">
+              <h2>Generate Report</h2>
 
-      <div className="reportcolumns">
-        {/* LEFT: generator */}
-        <div className="reportleft">
-          <div className="reportbox reportgeneratebox">
-            <h2>Generate Report</h2>
-
-            {/* Vehicle select */}
-            <div className="reportselectfield">
-              <label>Select Vehicle:</label>
-              <select
-                value={selectedVehicle?._id || ""}
-                onChange={handleVehicleChange}
-              >
-                <option value="">Select Vehicle</option>
-                {vehicles.map((v) => (
-                  <option key={v._id} value={v._id}>
-                    {v.year} {v.make} {v.model}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Vehicle info */}
-            <div className="reportselected spaced">
-              {selectedVehicle ? (
-                <>
-                  <p><strong>Year:</strong> {selectedVehicle.year}</p>
-                  <p><strong>Make:</strong> {selectedVehicle.make}</p>
-                  <p><strong>Model:</strong> {selectedVehicle.model}</p>
-                  <p><strong>Engine:</strong> {selectedVehicle.engine}</p>
-                  <p><strong>Fuel:</strong> {selectedVehicle.fuel || selectedVehicle.data?.fuel?.fuel_type || "-"}</p>
-                  <p><strong>Drivetrain:</strong> {selectedVehicle.drivetrain || selectedVehicle.data?.drivetrain?.drive_type || "-"}</p>
-                </>
-              ) : (
-                <p className="reportplaceholder">Select a vehicle above.</p>
-              )}
-            </div>
-
-            {/* Category */}
-            <div className="reportselectfield">
-              <label>Area of Car:</label>
-              <select
-                value={selectedCategory}
-                onChange={handleCategoryChange}
-                disabled={loadingCategories || !categories.length}
-              >
-                {loadingCategories ? (
-                  <option>Loading categories...</option>
-                ) : (
-                  <>
-                    <option value="">Select Area</option>
-                    {categories.map((cat) => (
-                      <option key={cat} value={cat}>{cat}</option>
-                    ))}
-                  </>
-                )}
-              </select>
-            </div>
-
-            {/* Subcategory */}
-            <div className="reportselectfield">
-              <label>Part:</label>
-              <div className="reportpartadd">
+              {/* Vehicle select */}
+              <div className="reportselectfield">
+                <label>Select Vehicle:</label>
                 <select
-                  value={selectedPart}
-                  onChange={(e) => setSelectedPart(e.target.value)}
-                  disabled={loadingSubcategories || !subcategories.length}
+                  value={selectedVehicle?._id || ""}
+                  onChange={handleVehicleChange}
                 >
-                  {loadingSubcategories ? (
-                    <option>Loading parts...</option>
-                  ) : (
-                    <>
-                      <option value="">Select Part</option>
-                      {subcategories.map((sub, i) => (
-                        <option key={sub.url || sub.name + i} value={sub.name}>
-                          {sub.name}
-                        </option>
-                      ))}
-                    </>
-                  )}
+                  <option value="">Select Vehicle</option>
+                  {vehicles.map((v) => (
+                    <option key={v._id} value={v._id}>
+                      {v.year} {v.make} {v.model}
+                    </option>
+                  ))}
                 </select>
-                <button
-                  className="reportaddbtn"
-                  onClick={handleAddPart}
-                  disabled={!selectedPart}
-                >
-                  Add
-                </button>
               </div>
-            </div>
 
-            {/* Parts list */}
-            <div className="reportpartslist scrollbox">
-              <h3>Selected Parts:</h3>
-              {partsList.length === 0 ? (
-                <p className="reportempty">No parts added yet.</p>
-              ) : (
-                <ul>
-                  {partsList.map((item, i) => (
-                    <li key={`${item.category}-${item.part}-${i}`}>
-                      <span>{item.category} - {item.part}</span>
-                      <div className="quantity-controls">
-                        <label>Qty:</label>
-                        <input
-                          type="number"
-                          min="1"
-                          value={item.quantity}
-                          onChange={(e) => {
+              {/* Vehicle Info */}
+              <div className="reportselected spaced">
+                {selectedVehicle ? (<>
+                    <p><strong>Year:</strong> {selectedVehicle.year}</p>
+                    <p><strong>Make:</strong> {selectedVehicle.make}</p>
+                    <p><strong>Model:</strong> {selectedVehicle.model}</p>
+                    <p><strong>Engine:</strong> {selectedVehicle.engine}</p>
+                  </>) : (<p className="reportplaceholder">Select a vehicle above.</p>)
+                }
+              </div>
+
+              {/* Category */}
+              <div className="reportselectfield">
+                <label>Area of Car:</label>
+                <select
+                  value={selectedCategory}
+                  onChange={handleCategoryChange}
+                  disabled={!categories.length}>
+                  <option value="">Select Area</option>
+                  {categories.map((cat) => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Subcategory */}
+              <div className="reportselectfield">
+                <label>Part:</label>
+                <div className="reportpartadd">
+                  <select
+                    value={selectedPart}
+                    onChange={(e) => setSelectedPart(e.target.value)}
+                    disabled={!subcategories.length}>
+                    <option value="">Select Part</option>
+                    {subcategories.map((sub, i) => (
+                      <option key={i} value={sub.name}>{sub.name}</option>
+                    ))}
+                  </select>
+                  <button className="reportaddbtn" onClick={handleAddPart} disabled={!selectedPart}> Add </button>
+                </div>
+              </div>
+
+              {/* Parts List */}
+              <div className="reportpartslist scrollbox">
+                <h3>Selected Parts:</h3>
+                {partsList.length === 0 ? (
+                  <p className="reportempty">No parts added yet.</p>) : (
+                  <ul>
+                    {partsList.map((item, i) => (
+                      <li key={`${item.category}-${item.part}-${i}`}>
+                        <span>{item.category} - {item.part}</span>
+                        <div className="quantity-controls">
+                          <label>Qty:</label>
+                          <input type="number" min="1" value={item.quantity} onChange={(e) => {
+
                             const newQty = Math.max(1, parseInt(e.target.value) || 1);
                             setPartsList((prev) =>
-                              prev.map((p, idx) =>
-                                idx === i ? { ...p, quantity: newQty } : p
-                              )
+                              prev.map((p, idx) => idx === i ? { ...p, quantity: newQty } : p)
                             );
-                          }}
-                        />
-                        <button onClick={() => handleRemovePart(i)}>Remove</button>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              )}
+                          }}/>
+                          <button onClick={() => handleRemovePart(i)}>Remove</button>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+              <button className="reportgeneratebtn" disabled={!canGenerate} onClick={handleGenerate}> {generating ? "Generating..." : "Generate Report"} </button>
             </div>
+          </div>
 
-            {/* Generate button */}
-            <button
-              className="reportgeneratebtn"
-              disabled={
-                !selectedVehicle ||
-                partsList.length === 0 ||
-                activeReports[selectedVehicle?._id]
-              }
-              title={
-                !selectedVehicle
-                  ? "Select a vehicle"
-                  : partsList.length === 0
-                  ? "Add at least one part"
-                  : ""
-              }
-              onClick={handleGenerate}
-            >
-              {activeReports[selectedVehicle?._id]
-                ? `Generating (${progressMap[selectedVehicle?._id]?.done || 0} / ${
-                    progressMap[selectedVehicle?._id]?.total || 0
-                  })...`
-                : "Generate Report"}
-            </button>
+          {/* RIGHT SIDE */}
+          <div className="reportright">
+            <h2>Reports</h2>
+            {reports.length === 0 ? (
+              <p className="reportempty">No reports generated yet.</p>) : (
+                <ul className="RepList">
+                  {reports.map((r, i) => {
+                    const open = expanded === (r._id || i);
+                    return (
+                      <li
+                        key={r._id || i}
+                        className={`RepItem ${r.isGenerating ? "generating" : ""}`} >
+                          {r.isGenerating ? (<>
+                            <div className="RepItemHeader">
+                              <div>
+                                <strong>{r.title}</strong>
+                                <p>Generating... {r.progress}/{r.total}</p>
+                              </div>
+                            </div>
+                            <div className="progress-bar-container small">
+                              <div className="progress-bar-fill" style={{ width: `${(r.progress / r.total) * 100}%` }}/>
+                            </div></>) : (<>
+                            <div className="RepItemHeader">
+                              <div> 
+                                <strong>{r.title}</strong>
+                                <p>Date: {new Date(r.createdAt).toLocaleString()}</p>
+                              </div>
+                              <div className="RepActions">
+                                <button className="RepViewBtn" onClick={() => setExpanded(open ? null : (r._id || i))} >
+                                  {open ? "Hide" : "View"}
+                                </button>
+                                <button className="RepDownloadBtn" onClick={() => handleDownload(r)}>Download</button>
+                                <button className="RepDeleteBtn" onClick={() => handleDeleteReport(r._id)}>Delete</button>
+                              </div>
+                            </div>
+
+                            {/* Always render report div, just toggle visibility */}
+                            <div id={`report-${r._id}`} className={`RepDropdown ${open ? "visible" : "hidden"}`} style={{ display: open ? "block" : "none" }}>
+                              <table className="reporttable">
+                                <thead>
+                                  <tr>
+                                    <th>Part</th>
+                                    <th>Low ($)</th>
+                                    <th>High ($)</th>
+                                    <th>Average ($)</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {(r.parts || []).map((p, idx) => (
+                                    <tr key={idx}>
+                                      <td>{p.name || "Unknown"}</td>
+                                      <td>
+                                        {typeof p.low === "string"
+                                          ? p.low
+                                          : Number(p.low).toFixed(2)}
+                                      </td>
+                                      <td>
+                                        {typeof p.high === "string"
+                                          ? p.high
+                                          : Number(p.high).toFixed(2)}
+                                      </td>
+                                      <td>
+                                        {typeof p.avg === "string"
+                                          ? p.avg
+                                          : Number(p.avg).toFixed(2)}
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+
+                              <div className="reportsummary">
+                                <p>
+                                  <strong>Total Low:</strong> $
+                                  {Number(r.summary?.totalLow || 0).toFixed(2)}
+                                </p>
+                                <p>
+                                  <strong>Total High:</strong> $
+                                  {Number(r.summary?.totalHigh || 0).toFixed(2)}
+                                </p>
+                                <p>
+                                  <strong>Average:</strong> $
+                                  {Number(r.summary?.totalAvg || 0).toFixed(2)}
+                                </p>
+                              </div>
+                            </div>
+                          </>
+                        )}
+                      </li>
+                    );
+                })}
+              </ul>
+            )}
           </div>
         </div>
 
-        {/* RIGHT: Reports list */}
-        <div className="reportright">
-          <h2>Reports</h2>
-
-          {reports.length === 0 ? (
-            <p className="reportempty">No reports generated yet.</p>
-          ) : (
-            <ul className="RepList">
-              {reports.map((r, i) => {
-                const title = `${r.vehicle?.year || ""} ${r.vehicle?.make || ""} ${r.vehicle?.model || ""}`.trim();
-                const open = expanded === (r._id || i);
-
-                return (
-                  <li key={r._id || i} className={`RepItem ${r.isGenerating ? "generating" : ""}`}>
-                    {r.isGenerating ? (
-                      <>
-                        <div className="RepItemHeader">
-                          <div>
-                            <strong>{r.title}</strong>
-                            <p>
-                              Generating... {r.progress || 0}/{r.total || "?"}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="progress-bar-container small">
-                          <div
-                            className="progress-bar-fill"
-                            style={{
-                              width: `${(r.progress / (r.total || 1)) * 100}%`,
-                            }}
-                          />
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <div className="RepItemHeader">
-                          <div>
-                            <strong>{title || r.title}</strong>
-                            <p>Date: {new Date(r.createdAt).toLocaleString()}</p>
-                          </div>
-                          <div className="RepActions">
-                            <button
-                              className="RepViewBtn"
-                              onClick={() =>
-                                setExpanded(open ? null : (r._id || i))
-                              }
-                            >
-                              {open ? "Hide" : "View"}
-                            </button>
-                            <button
-                              className="RepDownloadBtn"
-                              onClick={() => handleDownload(r)}
-                            >
-                              Download
-                            </button>
-                            <button
-                              className="RepDeleteBtn"
-                              onClick={() => handleDeleteReport(r._id)}
-                            >
-                              Delete
-                            </button>
-                          </div>
-                        </div>
-
-                        {open && (
-                          <div id={`report-${r._id}`} className="RepDropdown">
-                            <table className="reporttable">
-                              <thead>
-                                <tr>
-                                  <th>Part</th>
-                                  <th>Low ($)</th>
-                                  <th>High ($)</th>
-                                  <th>Average ($)</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {(r.parts || []).map((p, idx) => (
-                                  <tr key={idx}>
-                                    <td>{p.name || "Unknown"}</td>
-                                    <td>{Number(p.low ?? 0).toFixed(2)}</td>
-                                    <td>{Number(p.high ?? 0).toFixed(2)}</td>
-                                    <td>{Number(p.avg ?? 0).toFixed(2)}</td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-
-                            <div className="reportsummary">
-                              <p>
-                                <strong>Total Low:</strong>{" "}
-                                ${Number(r.summary?.totalLow || 0).toFixed(2)}
-                              </p>
-                              <p>
-                                <strong>Total High:</strong>{" "}
-                                ${Number(r.summary?.totalHigh || 0).toFixed(2)}
-                              </p>
-                              <p>
-                                <strong>Average:</strong>{" "}
-                                ${Number(r.summary?.totalAvg || 0).toFixed(2)}
-                              </p>
-                            </div>
-                          </div>
-                        )}
-                      </>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
-          )}
+        {message && <p className="reportmessage">{message}</p>}
+        <div className="reportbottom">
+          <button className="reportcancelbtn" onClick={onClose}>Cancel</button>
         </div>
       </div>
-
-      {message && <p className="reportmessage">{message}</p>}
-
-      <div className="reportbottom">
-        <button className="reportcancelbtn" onClick={onClose}>
-          Cancel
-        </button>
-      </div>
     </div>
-  </div>
-);
+  );
 }
-
-
