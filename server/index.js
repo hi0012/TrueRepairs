@@ -660,7 +660,7 @@ app.post("/update-profile", async (req, res) => {
     const tokenPayload = { oldEmail: currentEmail, newEmail: newEmail };
     const token = jwt.sign(tokenPayload, TEMP_SECRET, { expiresIn: "15m" }); 
     
-    const verifyURL = `${process.env.CLIENT_URL2}verify-email-update/${token}`;
+    const verifyURL = `${process.env.CLIENT_URL2}/verify-email-update/${token}`;
 
     const msg = {
       to: newEmail, 
@@ -696,7 +696,7 @@ app.get("/verify-email-update/:token", async (req, res) => {
     // 2. Find the user by their OLD email
     const user = await UserModel.findOne({ email: oldEmail });
     if (!user) {
-      return res.redirect(`${process.env.CLIENT_URL}?email-update=failed`);
+      return res.redirect(`${process.env.CLIENT_URL}/?email-update=failed`);
     }
 
     user.email = newEmail;
@@ -713,7 +713,7 @@ app.get("/verify-email-update/:token", async (req, res) => {
 
   } catch (err) {
     console.error("Email verification update error:", err);
-    res.redirect(`${process.env.CLIENT_URL}?email-update=failed`);
+    res.redirect(`${process.env.CLIENT_URL}/?email-update=failed`);
   }
 });
 

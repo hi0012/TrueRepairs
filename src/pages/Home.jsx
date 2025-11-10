@@ -63,7 +63,7 @@ const Home = () => {
       // After 4 seconds, reload the page to show new data
       const timer = setTimeout(() => {
         setMessage('');
-        window.location.href = '/'; // Navigate to root (clears URL, reloads app)
+        //window.location.href = '/'; // Navigate to root (clears URL, reloads app)
       }, 4000);
       
       return () => clearTimeout(timer); // Cleanup timer
