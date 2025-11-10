@@ -83,14 +83,10 @@ function ReportsBody({ onClose }) {
     const yearEntry = vehicleData.find((y) => y.year === Number(year));
     if (!yearEntry) return setMessage("No data found for that year.");
 
-    const modelEntry = yearEntry.models.find(
-      (m) => m.model.toUpperCase() === String(model).toUpperCase()
-    );
+    const modelEntry = yearEntry.models.find((m) => m.model.toUpperCase() === String(model).toUpperCase());
     if (!modelEntry) return setMessage("No data found for that model.");
 
-    const engineEntry = modelEntry.engines.find(
-      (en) => en.engine.toUpperCase() === String(engine).toUpperCase()
-    );
+    const engineEntry = modelEntry.engines.find((en) => en.engine.toUpperCase() === String(engine).toUpperCase());
     if (!engineEntry) return setMessage("No data found for that engine.");
 
     const categoryNames = engineEntry.categories.map((c) => c.category);
@@ -108,15 +104,9 @@ function ReportsBody({ onClose }) {
     const { year, model, engine } = selectedVehicle;
 
     const yearEntry = vehicleData.find((y) => y.year === Number(year));
-    const modelEntry = yearEntry?.models.find(
-      (m) => m.model.toUpperCase() === String(model).toUpperCase()
-    );
-    const engineEntry = modelEntry?.engines.find(
-      (en) => en.engine.toUpperCase() === String(engine).toUpperCase()
-    );
-    const categoryEntry = engineEntry?.categories.find(
-      (c) => c.category === newCategory
-    );
+    const modelEntry = yearEntry?.models.find((m) => m.model.toUpperCase() === String(model).toUpperCase());
+    const engineEntry = modelEntry?.engines.find((en) => en.engine.toUpperCase() === String(engine).toUpperCase());
+    const categoryEntry = engineEntry?.categories.find((c) => c.category === newCategory);
 
     if (categoryEntry) {
       setSubcategories(categoryEntry.parttypes.map((p) => ({ name: p })));
@@ -131,9 +121,7 @@ function ReportsBody({ onClose }) {
   function handleAddPart() {
     if (!selectedCategory || !selectedPart) return;
 
-    const exists = partsList.some(
-      (p) => p.category === selectedCategory && p.part === selectedPart
-    );
+    const exists = partsList.some((p) => p.category === selectedCategory && p.part === selectedPart);
     if (exists) return setMessage("That part is already in the list.");
 
     setPartsList((prev) => [
@@ -171,9 +159,7 @@ function ReportsBody({ onClose }) {
 
     // add the temporary progress report
     setReports((prev) => [tempReport, ...prev]);
-    setMessage(
-      `Generating report for ${selectedVehicle.make} ${selectedVehicle.model}...`
-    );
+    setMessage(`Generating report for ${selectedVehicle.make} ${selectedVehicle.model}...`);
 
     const partSummaries = [];
     let foundCount = 0;
@@ -214,29 +200,21 @@ function ReportsBody({ onClose }) {
 
         // aggregate or mark out-of-stock
         if (matches.length > 0) {
-          // treat false/0/"0"/"false" as out-of-stock
           const anyOutFlag = matches.some(
-            (m) =>
-              m.in_stock === false ||
-              m.in_stock === 0 ||
-              m.in_stock === "0" ||
-              m.in_stock === "false"
+            (m) => m.in_stock === false || m.in_stock === 0 || m.in_stock === "0" || m.in_stock === "false"
           );
 
-          // usable = items that actually have a >0 price in at least one column
+          // if all prices are 0 or missing, treat as out-of-stock
           const usable = matches.filter((m) => {
             const l = Number(m.low);
             const h = Number(m.high);
             const a = Number(m.avg);
-            return (
-              (Number.isFinite(l) && l > 0) ||
-              (Number.isFinite(h) && h > 0) ||
-              (Number.isFinite(a) && a > 0)
-            );
+            return (Number.isFinite(l) && l > 0) ||
+                  (Number.isFinite(h) && h > 0) ||
+                  (Number.isFinite(a) && a > 0);
           });
 
           if (anyOutFlag || usable.length === 0) {
-            // Either explicitly OOS, or every price was 0.00 / missing
             partSummaries.push({
               name: `${item.part} (x${qty})`,
               category: item.category,
@@ -245,31 +223,25 @@ function ReportsBody({ onClose }) {
               avg: "Out of Stock",
             });
           } else {
-            // Aggregate only usable (nonzero-priced) matches
             const agg = usable.reduce(
               (acc, m) => {
                 const l = Number(m.low);
                 const h = Number(m.high);
                 const a = Number(m.avg);
-                acc.low += Number.isFinite(l) && l > 0 ? l : 0;
+                acc.low  += Number.isFinite(l) && l > 0 ? l : 0;
                 acc.high += Number.isFinite(h) && h > 0 ? h : 0;
-                acc.avg += Number.isFinite(a) && a > 0 ? a : 0;
+                acc.avg  += Number.isFinite(a) && a > 0 ? a : 0;
                 return acc;
               },
               { low: 0, high: 0, avg: 0 }
             );
 
-            // multiply by qty
-            const lowFinal = Number((agg.low * qty).toFixed(2));
+            // if totals end up 0/0/0, mark as Out of Stock
+            const lowFinal  = Number((agg.low  * qty).toFixed(2));
             const highFinal = Number((agg.high * qty).toFixed(2));
-            const avgFinal = Number((agg.avg * qty).toFixed(2));
+            const avgFinal  = Number((agg.avg  * qty).toFixed(2));
 
-            // safety: if aggregation still ends up 0/0/0, call it Out of Stock
-            if (
-              lowFinal === 0 &&
-              highFinal === 0 &&
-              avgFinal === 0
-            ) {
+            if (lowFinal === 0 && highFinal === 0 && avgFinal === 0) {
               partSummaries.push({
                 name: `${item.part} (x${qty})`,
                 category: item.category,
@@ -289,7 +261,6 @@ function ReportsBody({ onClose }) {
             }
           }
         } else {
-          // no matches at all
           partSummaries.push({
             name: `${item.part} (x${qty})`,
             category: item.category,
@@ -376,6 +347,7 @@ function ReportsBody({ onClose }) {
         return [finished, ...withoutTemp];
       });
 
+
       setMessage("Report saved!");
     } catch (e) {
       console.error("[REPORT] save report error:", e);
@@ -386,13 +358,11 @@ function ReportsBody({ onClose }) {
     }
 
     // Refresh reports from backend after save
-    const updated = await fetch(
-      `${API}/api/reports?email=${encodeURIComponent(userEmail)}`
-    );
+    const updated = await fetch(`${API}/api/reports?email=${encodeURIComponent(userEmail)}`);
     const freshData = await updated.json();
     setReports(freshData.items || freshData.reports || []);
-  }
 
+  }
 
   // Download report
   async function handleDownload(r) {
