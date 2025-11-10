@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import '../styles/Navbar.css'
-import logo from '../assets/TrueRepairs.png'
+import logo from '../assets/logoslogan.png'
 import TinyLogo from '../assets/logo.png'
 import SigninPopup from './SigninPopup'
 import RegisterPopup from './RegisterPopup'
@@ -29,6 +29,7 @@ const Navbar = ({ setSignInActive }) => {
   const handleLogout = () => {
     localStorage.removeItem("user")
     setUser(null);
+    window.dispatchEvent(new Event("userState"));
     navigate("/");
   }
   useEffect(()=> {
@@ -67,7 +68,7 @@ const Navbar = ({ setSignInActive }) => {
           </>
         ) : (
           <>
-            <button onClick={() => navigate("/dashboard")}>Dashboard</button>
+            <button className='homepage-dashboard-btn' onClick={() => navigate("/dashboard")}>Dashboard</button>
             <button className="homepage-logout-btn" onClick={handleLogout}>Logout</button>
           </>
         )}

@@ -1,0 +1,556 @@
+{
+	"info": {
+		"_postman_id": "7206e6e9-8611-4a5e-a533-10d2b66134a2",
+		"name": "TrueRepair - CarDetails: Details Endpoint",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "49536796",
+		"_collection_link": "https://backenddev61-8311644.postman.co/workspace/backenddev-testend's-Workspace~31d9f490-7f82-4ae5-8c76-32e3d08eff10/collection/49536796-7206e6e9-8611-4a5e-a533-10d2b66134a2?action=share&source=collection_link&creator=49536796"
+	},
+	"item": [
+		{
+			"name": "Successful GET",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5000/api/cardetails/details?year=2003&make=Bmw&model=325i",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"cardetails",
+						"details"
+					],
+					"query": [
+						{
+							"key": "year",
+							"value": "2003"
+						},
+						{
+							"key": "make",
+							"value": "Bmw"
+						},
+						{
+							"key": "model",
+							"value": "325i"
+						}
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "Successful GET",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5000/api/cardetails/details?year=2003&make=Bmw&model=325i",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"cardetails",
+								"details"
+							],
+							"query": [
+								{
+									"key": "year",
+									"value": "2003"
+								},
+								{
+									"key": "make",
+									"value": "Bmw"
+								},
+								{
+									"key": "model",
+									"value": "325i"
+								}
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "X-Powered-By",
+							"value": "Express"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json; charset=utf-8"
+						},
+						{
+							"key": "Content-Length",
+							"value": "841"
+						},
+						{
+							"key": "ETag",
+							"value": "W/\"349-7PjUBXioOn2YewJN8fDrYHAj0HM\""
+						},
+						{
+							"key": "Date",
+							"value": "Thu, 30 Oct 2025 16:46:55 GMT"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5"
+						}
+					],
+					"cookie": [],
+					"body": "[\n    {\n        \"city_mpg\": 18,\n        \"class\": \"compact car\",\n        \"combination_mpg\": 21,\n        \"cylinders\": 6,\n        \"displacement\": 2.5,\n        \"drive\": \"rwd\",\n        \"fuel_type\": \"gas\",\n        \"highway_mpg\": 26,\n        \"make\": \"bmw\",\n        \"model\": \"325i\",\n        \"transmission\": \"a\",\n        \"year\": 2003\n    },\n    {\n        \"city_mpg\": 18,\n        \"class\": \"compact car\",\n        \"combination_mpg\": 21,\n        \"cylinders\": 6,\n        \"displacement\": 2.5,\n        \"drive\": \"rwd\",\n        \"fuel_type\": \"gas\",\n        \"highway_mpg\": 27,\n        \"make\": \"bmw\",\n        \"model\": \"325i\",\n        \"transmission\": \"m\",\n        \"year\": 2003\n    },\n    {\n        \"city_mpg\": 18,\n        \"class\": \"small station wagon\",\n        \"combination_mpg\": 21,\n        \"cylinders\": 6,\n        \"displacement\": 2.5,\n        \"drive\": \"rwd\",\n        \"fuel_type\": \"gas\",\n        \"highway_mpg\": 26,\n        \"make\": \"bmw\",\n        \"model\": \"325i sport wagon\",\n        \"transmission\": \"a\",\n        \"year\": 2003\n    },\n    {\n        \"city_mpg\": 18,\n        \"class\": \"small station wagon\",\n        \"combination_mpg\": 21,\n        \"cylinders\": 6,\n        \"displacement\": 2.5,\n        \"drive\": \"rwd\",\n        \"fuel_type\": \"gas\",\n        \"highway_mpg\": 27,\n        \"make\": \"bmw\",\n        \"model\": \"325i sport wagon\",\n        \"transmission\": \"m\",\n        \"year\": 2003\n    }\n]"
+				}
+			]
+		},
+		{
+			"name": "Failed GET (Missing Year)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5000/api/cardetails/details?year=&make=Bmw&model=325i",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"cardetails",
+						"details"
+					],
+					"query": [
+						{
+							"key": "year",
+							"value": ""
+						},
+						{
+							"key": "make",
+							"value": "Bmw"
+						},
+						{
+							"key": "model",
+							"value": "325i"
+						}
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "Failed GET (Missing Year)",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5000/api/cardetails/details?year=&make=Bmw&model=325i",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"cardetails",
+								"details"
+							],
+							"query": [
+								{
+									"key": "year",
+									"value": ""
+								},
+								{
+									"key": "make",
+									"value": "Bmw"
+								},
+								{
+									"key": "model",
+									"value": "325i"
+								}
+							]
+						}
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "X-Powered-By",
+							"value": "Express"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json; charset=utf-8"
+						},
+						{
+							"key": "Content-Length",
+							"value": "28"
+						},
+						{
+							"key": "ETag",
+							"value": "W/\"1c-BG1+3MyjdwQin3CikIWLL7jS0qA\""
+						},
+						{
+							"key": "Date",
+							"value": "Thu, 30 Oct 2025 19:01:11 GMT"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"message\": \"Missing params\"\n}"
+				}
+			]
+		},
+		{
+			"name": "Failed GET (Missing Make)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5000/api/cardetails/details?year=2003&make=&model=325i",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"cardetails",
+						"details"
+					],
+					"query": [
+						{
+							"key": "year",
+							"value": "2003"
+						},
+						{
+							"key": "make",
+							"value": ""
+						},
+						{
+							"key": "model",
+							"value": "325i"
+						}
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "Failed GET (Missing Make)",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5000/api/cardetails/details?year=2003&make=&model=325i",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"cardetails",
+								"details"
+							],
+							"query": [
+								{
+									"key": "year",
+									"value": "2003"
+								},
+								{
+									"key": "make",
+									"value": ""
+								},
+								{
+									"key": "model",
+									"value": "325i"
+								}
+							]
+						}
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "X-Powered-By",
+							"value": "Express"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json; charset=utf-8"
+						},
+						{
+							"key": "Content-Length",
+							"value": "28"
+						},
+						{
+							"key": "ETag",
+							"value": "W/\"1c-BG1+3MyjdwQin3CikIWLL7jS0qA\""
+						},
+						{
+							"key": "Date",
+							"value": "Thu, 30 Oct 2025 19:00:22 GMT"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"message\": \"Missing params\"\n}"
+				}
+			]
+		},
+		{
+			"name": "Failed GET (Missing Model)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5000/api/cardetails/details?year=2003&make=Bmw&model",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"cardetails",
+						"details"
+					],
+					"query": [
+						{
+							"key": "year",
+							"value": "2003"
+						},
+						{
+							"key": "make",
+							"value": "Bmw"
+						},
+						{
+							"key": "model",
+							"value": null
+						}
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "Failed GET (Missing Model)",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5000/api/cardetails/details?year=2003&make=Bmw&model",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"cardetails",
+								"details"
+							],
+							"query": [
+								{
+									"key": "year",
+									"value": "2003"
+								},
+								{
+									"key": "make",
+									"value": "Bmw"
+								},
+								{
+									"key": "model",
+									"value": null
+								}
+							]
+						}
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "X-Powered-By",
+							"value": "Express"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json; charset=utf-8"
+						},
+						{
+							"key": "Content-Length",
+							"value": "28"
+						},
+						{
+							"key": "ETag",
+							"value": "W/\"1c-BG1+3MyjdwQin3CikIWLL7jS0qA\""
+						},
+						{
+							"key": "Date",
+							"value": "Thu, 30 Oct 2025 18:59:10 GMT"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"message\": \"Missing params\"\n}"
+				}
+			]
+		},
+		{
+			"name": "Failed GET (Missing Year, Make, Model)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5000/api/cardetails/details?year&make&model",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"cardetails",
+						"details"
+					],
+					"query": [
+						{
+							"key": "year",
+							"value": null
+						},
+						{
+							"key": "make",
+							"value": null
+						},
+						{
+							"key": "model",
+							"value": null
+						}
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "Failed GET (Missing Year, Make, Model)",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5000/api/cardetails/details?year&make&model",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"cardetails",
+								"details"
+							],
+							"query": [
+								{
+									"key": "year",
+									"value": null
+								},
+								{
+									"key": "make",
+									"value": null
+								},
+								{
+									"key": "model",
+									"value": null
+								}
+							]
+						}
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "X-Powered-By",
+							"value": "Express"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json; charset=utf-8"
+						},
+						{
+							"key": "Content-Length",
+							"value": "28"
+						},
+						{
+							"key": "ETag",
+							"value": "W/\"1c-BG1+3MyjdwQin3CikIWLL7jS0qA\""
+						},
+						{
+							"key": "Date",
+							"value": "Thu, 30 Oct 2025 18:58:09 GMT"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"message\": \"Missing params\"\n}"
+				}
+			]
+		}
+	]
+}

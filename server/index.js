@@ -385,11 +385,17 @@ app.get("/db-health", (req, res) => {
 app.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
+    if(!email) {
+      return res.status(400).json({success: false, message: "Email is required"})
+    }
+    if(!password) {
+      return res.status(400).json({success: false, message: "Password is required"})
+    }
     const user = await UserModel.findOne({ email });
-    if (!user) return res.json("User does not exist. Please try again.");
+    if (!user) return res.status(400).json({success: false, message: "User does not exist. Please try again."});
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.json("The password is incorrect. Please try again.");
+    if (!isMatch) return res.status(400).json({success: false, message: "The password is incorrect. Please try again."});
 
     res.json({ success: true, user: { id: user._id, email: user.email } });
   } catch {
@@ -399,13 +405,22 @@ app.post("/login", async (req, res) => {
 
 app.post("/register", async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, passwordConfirm } = req.body;
     const existingUser = await UserModel.findOne({ email });
+    if(!email) {
+      return res.status(400).json({success: false, message: "Email is required"})
+    }
+    if(!password) {
+      return res.status(400).json({success: false, message: "Password is required"})
+    }
+    if(!passwordConfirm) {
+      return res.status(400).json({success: false, message: "Confirm password is required"})
+    }
+    if(password !== passwordConfirm) {
+      return res.status(400).json({success: false, message: "Password and confirm password do not match."})
+    }
     if (existingUser) {
-      return res.json({
-        success: false,
-        message: "This email is already associated with an account.",
-      });
+      return res.status(400).json({ success: false, message: "This email is already associated with an account." });
     }
 
     const token = jwt.sign({ email, password }, TEMP_SECRET, {
@@ -541,6 +556,12 @@ app.post("/update-password", async (req, res) => {
 app.post("/send-support", async (req, res) => {
   try {
     const { name, email, feedback } = req.body;
+    if(!email) {
+      return res.status(400).json({success: false, message: "Email is required"})
+    }
+    if(!feedback) {
+      return res.status(400).json({success: false, message: "Feedback is required"})
+    }
     const msg = {
       to: "truerepairs.noreply@gmail.com",
       from: { email: "truerepairs.noreply@gmail.com", name: "TrueRepairs Support" },

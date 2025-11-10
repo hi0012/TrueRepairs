@@ -1,0 +1,193 @@
+{
+	"info": {
+		"_postman_id": "05211adb-2db9-4e14-87b8-1797b94a17ea",
+		"name": "TrueRepair - History Endpoint",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "49536796",
+		"_collection_link": "https://backenddev61-8311644.postman.co/workspace/backenddev-testend's-Workspace~31d9f490-7f82-4ae5-8c76-32e3d08eff10/collection/49536796-05211adb-2db9-4e14-87b8-1797b94a17ea?action=share&source=collection_link&creator=49536796"
+	},
+	"item": [
+		{
+			"name": "Successful GET",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5000/api/history?email=bent@gmail.com",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"history"
+					],
+					"query": [
+						{
+							"key": "email",
+							"value": "bent@gmail.com"
+						}
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "Successful GET",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5000/api/history?email=bent@gmail.com",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"history"
+							],
+							"query": [
+								{
+									"key": "email",
+									"value": "bent@gmail.com"
+								}
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "X-Powered-By",
+							"value": "Express"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json; charset=utf-8"
+						},
+						{
+							"key": "Content-Length",
+							"value": "7667"
+						},
+						{
+							"key": "ETag",
+							"value": "W/\"1df3-oo8zTBX3SQO++yvvQPqRgjeXeko\""
+						},
+						{
+							"key": "Date",
+							"value": "Thu, 30 Oct 2025 23:01:22 GMT"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"items\": [\n        {\n            \"_id\": \"6903ec089e6cec4e04de850a\",\n            \"userEmail\": \"bent@gmail.com\",\n            \"vin\": \"2FTRX18W1XCA76394\",\n            \"data\": {\n                \"source\": \"NinjaAPI\",\n                \"data\": {\n                    \"vin\": \"2FTRX18W1XCA76394\",\n                    \"country\": \"Canada\",\n                    \"manufacturer\": \"Ford\",\n                    \"model\": \"F-150\",\n                    \"class\": \"Pickup\",\n                    \"region\": \"North America\",\n                    \"wmi\": \"2FT\",\n                    \"vds\": \"RX18W1\",\n                    \"vis\": \"XCA76394\",\n                    \"year\": \"1999\"\n                }\n            },\n            \"createdAt\": \"2025-10-30T22:51:52.740Z\",\n            \"updatedAt\": \"2025-10-30T22:51:52.740Z\",\n            \"__v\": 0\n        },\n        {\n            \"_id\": \"6903e9659e6cec4e04de8506\",\n            \"userEmail\": \"bent@gmail.com\",\n            \"vin\": \"1HGCM82633A004352\",\n            \"data\": {\n                \"source\": \"NinjaAPI\",\n                \"data\": {\n                    \"vin\": \"1HGCM82633A004352\",\n                    \"country\": \"United states (usa)\",\n                    \"manufacturer\": \"Honda\",\n                    \"model\": \"Accord\",\n                    \"class\": \"Coupe\",\n                    \"region\": \"North America\",\n                    \"wmi\": \"1HG\",\n                    \"vds\": \"CM8263\",\n                    \"vis\": \"3A004352\",\n                    \"year\": \"2003\",\n                    \"engine\": \"2.4L 4-Cyl\",\n                    \"fuel_type\": \"gas\",\n                    \"drive\": \"fwd\",\n                    \"transmission\": \"a\",\n                    \"city_mpg\": 21,\n                    \"highway_mpg\": 31\n                }\n            },\n            \"createdAt\": \"2025-10-30T22:40:37.533Z\",\n            \"updatedAt\": \"2025-10-30T22:40:37.533Z\",\n            \"__v\": 0\n        },\n        {\n            \"_id\": \"68fd7f0dc39cec97ca4136d6\",\n            \"userEmail\": \"bent@gmail.com\",\n            \"vin\": \"2G2FS32K7X2548319\",\n            \"data\": {\n                \"source\": \"NinjaAPI\",\n                \"data\": {\n                    \"vin\": \"2G2FS32K7X2548319\",\n                    \"country\": \"Canada\",\n                    \"manufacturer\": \"Pontiac\",\n                    \"model\": \"Firebird\",\n                    \"class\": \"Convertible/Cabriolet\",\n                    \"region\": \"North America\",\n                    \"wmi\": \"2G2\",\n                    \"vds\": \"FS32K7\",\n                    \"vis\": \"X2548319\",\n                    \"year\": \"1999\",\n                    \"engine\": \"3.8L 6-Cyl\",\n                    \"fuel_type\": \"gas\",\n                    \"drive\": \"rwd\",\n                    \"transmission\": \"a\",\n                    \"city_mpg\": 17,\n                    \"highway_mpg\": 26\n                }\n            },\n            \"createdAt\": \"2025-10-26T01:53:17.504Z\",\n            \"updatedAt\": \"2025-10-26T01:53:17.504Z\",\n            \"__v\": 0\n        },\n        {\n            \"_id\": \"68fa658eee59b6f42bb33064\",\n            \"userEmail\": \"bent@gmail.com\",\n            \"vin\": \"1HGCP2F3XCA123456\",\n            \"data\": {\n                \"source\": \"NinjaAPI\",\n                \"data\": {\n                    \"vin\": \"1HGCP2F3XCA123456\",\n                    \"country\": \"United states (usa)\",\n                    \"manufacturer\": \"Honda\",\n                    \"model\": \"Accord\",\n                    \"class\": \"Sedan/Saloon\",\n                    \"region\": \"North America\",\n                    \"wmi\": \"1HG\",\n                    \"vds\": \"CP2F3X\",\n                    \"vis\": \"CA123456\",\n                    \"year\": \"2012\",\n                    \"engine\": \"2.4L 4-Cyl\",\n                    \"fuel_type\": \"gas\",\n                    \"drive\": \"fwd\",\n                    \"transmission\": \"m\",\n                    \"city_mpg\": 23,\n                    \"highway_mpg\": 31\n                }\n            },\n            \"createdAt\": \"2025-10-23T17:27:42.097Z\",\n            \"updatedAt\": \"2025-10-23T17:27:42.097Z\",\n            \"__v\": 0\n        },\n        {\n            \"_id\": \"68fa4fafcdaeb808d447eaaf\",\n            \"userEmail\": \"bent@gmail.com\",\n            \"vin\": \"1G4HP52L6SH123456\",\n            \"data\": {\n                \"source\": \"NinjaAPI\",\n                \"data\": {\n                    \"vin\": \"1G4HP52L6SH123456\",\n                    \"country\": \"United states (usa)\",\n                    \"manufacturer\": \"Buick\",\n                    \"model\": \"LeSabre\",\n                    \"class\": \"Sedan/Saloon\",\n                    \"region\": \"North America\",\n                    \"wmi\": \"1G4\",\n                    \"vds\": \"HP52L6\",\n                    \"vis\": \"SH123456\",\n                    \"year\": \"1995\",\n                    \"engine\": \"3.8L 6-Cyl\",\n                    \"fuel_type\": \"gas\",\n                    \"drive\": \"fwd\",\n                    \"transmission\": \"a\",\n                    \"city_mpg\": 17,\n                    \"highway_mpg\": 26\n                }\n            },\n            \"createdAt\": \"2025-10-23T15:54:23.803Z\",\n            \"updatedAt\": \"2025-10-23T15:54:23.803Z\",\n            \"__v\": 0\n        },\n        {\n            \"_id\": \"68fa4f9dcdaeb808d447eaab\",\n            \"userEmail\": \"bent@gmail.com\",\n            \"vin\": \"1J4GZ78Y0YC123987\",\n            \"data\": {\n                \"source\": \"NinjaAPI\",\n                \"data\": {\n                    \"vin\": \"1J4GZ78Y0YC123987\",\n                    \"country\": \"United States\",\n                    \"manufacturer\": \"Jeep\",\n                    \"model\": \"\",\n                    \"class\": \"\",\n                    \"region\": \"North America\",\n                    \"wmi\": \"1J4\",\n                    \"vds\": \"GZ78Y0\",\n                    \"vis\": \"YC123987\",\n                    \"year\": 2000\n                }\n            },\n            \"createdAt\": \"2025-10-23T15:54:05.014Z\",\n            \"updatedAt\": \"2025-10-23T15:54:05.014Z\",\n            \"__v\": 0\n        },\n        {\n            \"_id\": \"68fa4f89cdaeb808d447eaa6\",\n            \"userEmail\": \"bent@gmail.com\",\n            \"vin\": \"1HGEM2290YA123456\",\n            \"data\": {\n                \"source\": \"NinjaAPI\",\n                \"data\": {\n                    \"vin\": \"1HGEM2290YA123456\",\n                    \"country\": \"United States\",\n                    \"manufacturer\": \"Honda\",\n                    \"model\": \"\",\n                    \"class\": \"\",\n                    \"region\": \"North America\",\n                    \"wmi\": \"1HG\",\n                    \"vds\": \"EM2290\",\n                    \"vis\": \"YA123456\",\n                    \"year\": 2000\n                }\n            },\n            \"createdAt\": \"2025-10-23T15:53:45.823Z\",\n            \"updatedAt\": \"2025-10-23T15:53:45.823Z\",\n            \"__v\": 0\n        },\n        {\n            \"_id\": \"68fa4f64cdaeb808d447ea9b\",\n            \"userEmail\": \"bent@gmail.com\",\n            \"vin\": \"1GNEK13R3WJ456789\",\n            \"data\": {\n                \"source\": \"NinjaAPI\",\n                \"data\": {\n                    \"vin\": \"1GNEK13R3WJ456789\",\n                    \"country\": \"United states (usa)\",\n                    \"manufacturer\": \"Chevrolet\",\n                    \"model\": \"Tahoe\",\n                    \"class\": \"Sport Utility Vehicle (SUV)/Multi-Purpose Vehicle (MPV)\",\n                    \"region\": \"North America\",\n                    \"wmi\": \"1GN\",\n                    \"vds\": \"EK13R3\",\n                    \"vis\": \"WJ456789\",\n                    \"year\": \"1998\",\n                    \"engine\": \"5.7L 8-Cyl\",\n                    \"fuel_type\": \"gas\",\n                    \"drive\": \"rwd\",\n                    \"transmission\": \"a\",\n                    \"city_mpg\": 13,\n                    \"highway_mpg\": 17\n                }\n            },\n            \"createdAt\": \"2025-10-23T15:53:08.764Z\",\n            \"updatedAt\": \"2025-10-23T15:53:08.764Z\",\n            \"__v\": 0\n        },\n        {\n            \"_id\": \"68fa4f4ccdaeb808d447ea97\",\n            \"userEmail\": \"bent@gmail.com\",\n            \"vin\": \"1FTZX1767VNA34567\",\n            \"data\": {\n                \"source\": \"NinjaAPI\",\n                \"data\": {\n                    \"vin\": \"1FTZX1767VNA34567\",\n                    \"country\": \"United states (usa)\",\n                    \"manufacturer\": \"Ford\",\n                    \"model\": \"F-150\",\n                    \"class\": \"Pickup\",\n                    \"region\": \"North America\",\n                    \"wmi\": \"1FT\",\n                    \"vds\": \"ZX1767\",\n                    \"vis\": \"VNA34567\",\n                    \"year\": \"1997\"\n                }\n            },\n            \"createdAt\": \"2025-10-23T15:52:44.100Z\",\n            \"updatedAt\": \"2025-10-23T15:52:44.100Z\",\n            \"__v\": 0\n        },\n        {\n            \"_id\": \"68fa4f22cdaeb808d447ea8f\",\n            \"userEmail\": \"bent@gmail.com\",\n            \"vin\": \"2T1BURHE5JC073849\",\n            \"data\": {\n                \"source\": \"NinjaAPI\",\n                \"data\": {\n                    \"vin\": \"2T1BURHE5JC073849\",\n                    \"country\": \"Canada\",\n                    \"manufacturer\": \"Toyota\",\n                    \"model\": \"Corolla\",\n                    \"class\": \"Sedan/Saloon\",\n                    \"region\": \"North America\",\n                    \"wmi\": \"2T1\",\n                    \"vds\": \"BURHE5\",\n                    \"vis\": \"JC073849\",\n                    \"year\": \"2018\",\n                    \"engine\": \"1.8L 4-Cyl\",\n                    \"fuel_type\": \"gas\",\n                    \"drive\": \"fwd\",\n                    \"transmission\": \"a\",\n                    \"city_mpg\": 28,\n                    \"highway_mpg\": 36\n                }\n            },\n            \"createdAt\": \"2025-10-23T15:52:02.910Z\",\n            \"updatedAt\": \"2025-10-23T15:52:02.910Z\",\n            \"__v\": 0\n        },\n        {\n            \"_id\": \"68fa4c73d48af23766a9ef51\",\n            \"userEmail\": \"bent@gmail.com\",\n            \"vin\": \"1HGCM82633A004352\",\n            \"data\": {\n                \"source\": \"NinjaAPI\",\n                \"data\": {\n                    \"vin\": \"1HGCM82633A004352\",\n                    \"country\": \"United states (usa)\",\n                    \"manufacturer\": \"Honda\",\n                    \"model\": \"Accord\",\n                    \"class\": \"Coupe\",\n                    \"region\": \"North America\",\n                    \"wmi\": \"1HG\",\n                    \"vds\": \"CM8263\",\n                    \"vis\": \"3A004352\",\n                    \"year\": \"2003\",\n                    \"engine\": \"2.4L 4-Cyl\",\n                    \"fuel_type\": \"gas\",\n                    \"drive\": \"fwd\",\n                    \"transmission\": \"a\",\n                    \"city_mpg\": 21,\n                    \"highway_mpg\": 31\n                }\n            },\n            \"createdAt\": \"2025-10-23T15:40:35.940Z\",\n            \"updatedAt\": \"2025-10-23T15:40:35.940Z\",\n            \"__v\": 0\n        },\n        {\n            \"_id\": \"68fa42fcf01a866e51b2dcde\",\n            \"userEmail\": \"bent@gmail.com\",\n            \"vin\": \"1C4RJFBG0FC123456\",\n            \"data\": {\n                \"source\": \"NinjaAPI\",\n                \"data\": {\n                    \"vin\": \"1C4RJFBG0FC123456\",\n                    \"country\": \"United states (usa)\",\n                    \"manufacturer\": \"Jeep\",\n                    \"model\": \"Grand Cherokee\",\n                    \"class\": \"Sport Utility Vehicle (SUV)/Multi-Purpose Vehicle (MPV)\",\n                    \"region\": \"North America\",\n                    \"wmi\": \"1C4\",\n                    \"vds\": \"RJFBG0\",\n                    \"vis\": \"FC123456\",\n                    \"year\": \"2015\",\n                    \"engine\": \"3.6L 6-Cyl\",\n                    \"fuel_type\": \"gas\",\n                    \"drive\": \"rwd\",\n                    \"transmission\": \"a\",\n                    \"city_mpg\": 17,\n                    \"highway_mpg\": 25\n                }\n            },\n            \"createdAt\": \"2025-10-23T15:00:12.456Z\",\n            \"updatedAt\": \"2025-10-23T15:00:12.456Z\",\n            \"__v\": 0\n        },\n        {\n            \"_id\": \"68fa4274f01a866e51b2dcd7\",\n            \"userEmail\": \"bent@gmail.com\",\n            \"vin\": \"1HGCM82633A004352\",\n            \"data\": {\n                \"source\": \"NinjaAPI\",\n                \"data\": {\n                    \"vin\": \"1HGCM82633A004352\",\n                    \"country\": \"United states (usa)\",\n                    \"manufacturer\": \"Honda\",\n                    \"model\": \"Accord\",\n                    \"class\": \"Coupe\",\n                    \"region\": \"North America\",\n                    \"wmi\": \"1HG\",\n                    \"vds\": \"CM8263\",\n                    \"vis\": \"3A004352\",\n                    \"year\": \"2003\",\n                    \"engine\": \"2.4L 4-Cyl\",\n                    \"fuel_type\": \"gas\",\n                    \"drive\": \"fwd\",\n                    \"transmission\": \"a\",\n                    \"city_mpg\": 21,\n                    \"highway_mpg\": 31\n                }\n            },\n            \"createdAt\": \"2025-10-23T14:57:56.799Z\",\n            \"updatedAt\": \"2025-10-23T14:57:56.799Z\",\n            \"__v\": 0\n        },\n        {\n            \"_id\": \"68fa41f6f01a866e51b2dcd0\",\n            \"userEmail\": \"bent@gmail.com\",\n            \"vin\": \"1FTPW145XYA123456\",\n            \"data\": {\n                \"source\": \"NinjaAPI\",\n                \"data\": {\n                    \"vin\": \"1FTPW145XYA123456\",\n                    \"country\": \"United States\",\n                    \"manufacturer\": \"Ford\",\n                    \"model\": \"\",\n                    \"class\": \"\",\n                    \"region\": \"North America\",\n                    \"wmi\": \"1FT\",\n                    \"vds\": \"PW145X\",\n                    \"vis\": \"YA123456\",\n                    \"year\": 2000\n                }\n            },\n            \"createdAt\": \"2025-10-23T14:55:50.634Z\",\n            \"updatedAt\": \"2025-10-23T14:55:50.634Z\",\n            \"__v\": 0\n        },\n        {\n            \"_id\": \"68fa41ccf01a866e51b2dcc7\",\n            \"userEmail\": \"bent@gmail.com\",\n            \"vin\": \"1HGCG1657VA123456\",\n            \"data\": {\n                \"source\": \"NinjaAPI\",\n                \"data\": {\n                    \"vin\": \"1HGCG1657VA123456\",\n                    \"country\": \"United States\",\n                    \"manufacturer\": \"Honda\",\n                    \"model\": \"\",\n                    \"class\": \"\",\n                    \"region\": \"North America\",\n                    \"wmi\": \"1HG\",\n                    \"vds\": \"CG1657\",\n                    \"vis\": \"VA123456\",\n                    \"year\": 1997\n                }\n            },\n            \"createdAt\": \"2025-10-23T14:55:08.843Z\",\n            \"updatedAt\": \"2025-10-23T14:55:08.843Z\",\n            \"__v\": 0\n        },\n        {\n            \"_id\": \"68fa4154f01a866e51b2dcbe\",\n            \"userEmail\": \"bent@gmail.com\",\n            \"vin\": \"1FADP3F26JL123456\",\n            \"data\": {\n                \"source\": \"NinjaAPI\",\n                \"data\": {\n                    \"vin\": \"1FADP3F26JL123456\",\n                    \"country\": \"United states (usa)\",\n                    \"manufacturer\": \"Ford\",\n                    \"model\": \"Focus\",\n                    \"class\": \"Sedan/Saloon\",\n                    \"region\": \"North America\",\n                    \"wmi\": \"1FA\",\n                    \"vds\": \"DP3F26\",\n                    \"vis\": \"JL123456\",\n                    \"year\": \"2018\",\n                    \"engine\": \"2.3L 4-Cyl\",\n                    \"fuel_type\": \"gas\",\n                    \"drive\": \"awd\",\n                    \"transmission\": \"m\",\n                    \"city_mpg\": 19,\n                    \"highway_mpg\": 26\n                }\n            },\n            \"createdAt\": \"2025-10-23T14:53:08.813Z\",\n            \"updatedAt\": \"2025-10-23T14:53:08.813Z\",\n            \"__v\": 0\n        }\n    ]\n}"
+				}
+			]
+		},
+		{
+			"name": "Failed GET",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5000/api/history?email",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"history"
+					],
+					"query": [
+						{
+							"key": "email",
+							"value": null
+						}
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "Failed GET",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5000/api/history?email",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"history"
+							],
+							"query": [
+								{
+									"key": "email",
+									"value": null
+								}
+							]
+						}
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "X-Powered-By",
+							"value": "Express"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json; charset=utf-8"
+						},
+						{
+							"key": "Content-Length",
+							"value": "31"
+						},
+						{
+							"key": "ETag",
+							"value": "W/\"1f-fiVoWqUxpCPR6uxIP98S+jK+0jM\""
+						},
+						{
+							"key": "Date",
+							"value": "Thu, 30 Oct 2025 23:02:49 GMT"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"message\": \"email is required\"\n}"
+				}
+			]
+		}
+	]
+}

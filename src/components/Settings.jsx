@@ -89,7 +89,7 @@ const Settings = ({ open, onClose }) => {
                             <div className='settings-left-content'>
                                 <div className='row'>
                                     <span className='title'>Website Version:</span>
-                                    <span className='value'>V2.0.0</span>
+                                    <span className='value'>V3.0.0</span>
                                 </div>
                                 <div className='row'>
                                     <span className='title'>Last Login:</span>

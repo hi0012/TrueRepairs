@@ -31,7 +31,7 @@ const SigninPopup = ({open, onClose}) => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    axios.post("http://localhost:5000/login", { email, password })
+    axios.post("http://localhost:5000/login", { email, password }, {validateStatus: () => true})
       .then((res) => {
         if (res.data.success) {
           localStorage.setItem("user", JSON.stringify(res.data.user));
@@ -45,7 +45,7 @@ const SigninPopup = ({open, onClose}) => {
           setTimeout(() => setMessage2(""), 1000);
           getLoginTime();
         } else {
-          setMessage2("Invalid Login Credentials");
+          setMessage2(res.data.message||"Invalid Login Credentials");
           setTimeout(() => setMessage2(""), 1000);
         }
       })

@@ -7,6 +7,7 @@ import { AiOutlineMail } from 'react-icons/ai'
 import { FaPhone } from 'react-icons/fa'
 import PrivacyPolicy from './PrivacyPolicy'
 import TermsAndConditions from './TermsAndConditions'
+import HrDividerWhiteCar from './HrDividerWhiteCar'
 
 const Footer = () => {
   const [displayTermsAndConditions, setDisplayTermsAndConditions] = useState(false);
@@ -17,7 +18,6 @@ const Footer = () => {
         <div className='footer-top-container'>
           <div className='footer-top-left'>
             <img src={footerWhiteLogo} alt="" />
-            <p className='catchphrase'>From identifying damage to making repair decisions, we make the process easy and stress-free.</p>
           </div>
           <div className='footer-top-right'>
             <p><MdLocationPin /> State Hall, 5143 Cass Ave, Detroit, MI 48202</p>
@@ -25,7 +25,7 @@ const Footer = () => {
             <p><FaPhone /> (325) 653-5423</p>
           </div>
         </div>
-        <hr />
+        <HrDividerWhiteCar/>
         <div className='footer-bottom-container'>
           <div className='footer-bottom-left'>
             <p>©2025 TrueRepairs. All rights reserved.</p>

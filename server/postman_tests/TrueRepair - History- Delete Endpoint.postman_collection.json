@@ -1,0 +1,173 @@
+{
+	"info": {
+		"_postman_id": "f891cbc4-2121-4c74-9a1f-9c74a4b749ce",
+		"name": "TrueRepair - History: Delete Endpoint",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "49536796",
+		"_collection_link": "https://backenddev61-8311644.postman.co/workspace/backenddev-testend's-Workspace~31d9f490-7f82-4ae5-8c76-32e3d08eff10/collection/49536796-f891cbc4-2121-4c74-9a1f-9c74a4b749ce?action=share&source=collection_link&creator=49536796"
+	},
+	"item": [
+		{
+			"name": "Successful DELETE",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5000/api/history/6903ec089e6cec4e04de850a",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"history",
+						"6903ec089e6cec4e04de850a"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "Successful DELETE",
+					"originalRequest": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5000/api/history/6903ec089e6cec4e04de850a",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"history",
+								"6903ec089e6cec4e04de850a"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "X-Powered-By",
+							"value": "Express"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json; charset=utf-8"
+						},
+						{
+							"key": "Content-Length",
+							"value": "11"
+						},
+						{
+							"key": "ETag",
+							"value": "W/\"b-Ai2R8hgEarLmHKwesT1qcY913ys\""
+						},
+						{
+							"key": "Date",
+							"value": "Fri, 31 Oct 2025 02:55:13 GMT"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"ok\": true\n}"
+				}
+			]
+		},
+		{
+			"name": "Failed DELETE (Invalid ID)",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5000/api/history/6903ec089e6cec4eerde8s0",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"history",
+						"6903ec089e6cec4eerde8s0"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "Failed DELETE (Invalid ID)",
+					"originalRequest": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5000/api/history/6903ec089e6cec4eerde8s0",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"history",
+								"6903ec089e6cec4eerde8s0"
+							]
+						}
+					},
+					"status": "Internal Server Error",
+					"code": 500,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "X-Powered-By",
+							"value": "Express"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json; charset=utf-8"
+						},
+						{
+							"key": "Content-Length",
+							"value": "12"
+						},
+						{
+							"key": "ETag",
+							"value": "W/\"c-NsyIKrDf6fQ7+609QlCVGoC3ovk\""
+						},
+						{
+							"key": "Date",
+							"value": "Fri, 31 Oct 2025 02:57:10 GMT"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"ok\": false\n}"
+				}
+			]
+		}
+	]
+}

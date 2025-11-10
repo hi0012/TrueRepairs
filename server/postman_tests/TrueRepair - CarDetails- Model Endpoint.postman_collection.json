@@ -1,0 +1,415 @@
+{
+	"info": {
+		"_postman_id": "f99bcdcc-b9c6-4e4b-96e1-b70247fc0286",
+		"name": "TrueRepair - CarDetails: Model Endpoint",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "49536796",
+		"_collection_link": "https://backenddev61-8311644.postman.co/workspace/backenddev-testend's-Workspace~31d9f490-7f82-4ae5-8c76-32e3d08eff10/collection/49536796-f99bcdcc-b9c6-4e4b-96e1-b70247fc0286?action=share&source=collection_link&creator=49536796"
+	},
+	"item": [
+		{
+			"name": "Successful GET",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5000/api/cardetails/models?year=2003&make=Bmw",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"cardetails",
+						"models"
+					],
+					"query": [
+						{
+							"key": "year",
+							"value": "2003"
+						},
+						{
+							"key": "make",
+							"value": "Bmw"
+						}
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "Successful GET",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5000/api/cardetails/models?year=2003&make=Bmw",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"cardetails",
+								"models"
+							],
+							"query": [
+								{
+									"key": "year",
+									"value": "2003"
+								},
+								{
+									"key": "make",
+									"value": "Bmw"
+								}
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "X-Powered-By",
+							"value": "Express"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json; charset=utf-8"
+						},
+						{
+							"key": "Content-Length",
+							"value": "284"
+						},
+						{
+							"key": "ETag",
+							"value": "W/\"11c-fmF0tSDbhIo5KgKD0jJJKd9C458\""
+						},
+						{
+							"key": "Date",
+							"value": "Thu, 30 Oct 2025 13:39:01 GMT"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5"
+						}
+					],
+					"cookie": [],
+					"body": "[\n    \"325ci\",\n    \"325ci Convertible\",\n    \"325i\",\n    \"325i Sport Wagon\",\n    \"325xi\",\n    \"325xi Sport Wagon\",\n    \"330ci\",\n    \"330ci Convertible\",\n    \"330i\",\n    \"330xi\",\n    \"525i\",\n    \"525i Sport Wagon\",\n    \"530i\",\n    \"540i\",\n    \"540i Sport Wagon\",\n    \"745i\",\n    \"745li\",\n    \"760li\",\n    \"M3\",\n    \"M3 Convertible\",\n    \"M5\",\n    \"Roadster V8\",\n    \"X5\",\n    \"X5 4.6is\",\n    \"Z4 Roadster\",\n    \"Z8\"\n]"
+				}
+			]
+		},
+		{
+			"name": "Failed GET (Missing Make)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5000/api/cardetails/models?year=2003&make",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"cardetails",
+						"models"
+					],
+					"query": [
+						{
+							"key": "year",
+							"value": "2003"
+						},
+						{
+							"key": "make",
+							"value": null
+						}
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "Failed GET (Missing Make)",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5000/api/cardetails/models?year=2003&make",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"cardetails",
+								"models"
+							],
+							"query": [
+								{
+									"key": "year",
+									"value": "2003"
+								},
+								{
+									"key": "make",
+									"value": null
+								}
+							]
+						}
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "X-Powered-By",
+							"value": "Express"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json; charset=utf-8"
+						},
+						{
+							"key": "Content-Length",
+							"value": "36"
+						},
+						{
+							"key": "ETag",
+							"value": "W/\"24-uYe2byVxo9BJXYIFNc1/9JX/vfU\""
+						},
+						{
+							"key": "Date",
+							"value": "Thu, 30 Oct 2025 19:03:34 GMT"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"message\": \"Year and make required\"\n}"
+				}
+			]
+		},
+		{
+			"name": "Failed GET (Missing Year)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5000/api/cardetails/models?year=&make=Bmw",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"cardetails",
+						"models"
+					],
+					"query": [
+						{
+							"key": "year",
+							"value": ""
+						},
+						{
+							"key": "make",
+							"value": "Bmw"
+						}
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "Failed GET (Missing Year)",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5000/api/cardetails/models?year=&make=Bmw",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"cardetails",
+								"models"
+							],
+							"query": [
+								{
+									"key": "year",
+									"value": ""
+								},
+								{
+									"key": "make",
+									"value": "Bmw"
+								}
+							]
+						}
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "X-Powered-By",
+							"value": "Express"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json; charset=utf-8"
+						},
+						{
+							"key": "Content-Length",
+							"value": "36"
+						},
+						{
+							"key": "ETag",
+							"value": "W/\"24-uYe2byVxo9BJXYIFNc1/9JX/vfU\""
+						},
+						{
+							"key": "Date",
+							"value": "Thu, 30 Oct 2025 19:04:14 GMT"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"message\": \"Year and make required\"\n}"
+				}
+			]
+		},
+		{
+			"name": "Failed GET (Missing Year, and Make)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5000/api/cardetails/models?year=&make=",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"cardetails",
+						"models"
+					],
+					"query": [
+						{
+							"key": "year",
+							"value": ""
+						},
+						{
+							"key": "make",
+							"value": ""
+						}
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "Failed GET (Missing Year, and Make)",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5000/api/cardetails/models?year=&make=Bmw",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"cardetails",
+								"models"
+							],
+							"query": [
+								{
+									"key": "year",
+									"value": ""
+								},
+								{
+									"key": "make",
+									"value": "Bmw"
+								}
+							]
+						}
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "X-Powered-By",
+							"value": "Express"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json; charset=utf-8"
+						},
+						{
+							"key": "Content-Length",
+							"value": "36"
+						},
+						{
+							"key": "ETag",
+							"value": "W/\"24-uYe2byVxo9BJXYIFNc1/9JX/vfU\""
+						},
+						{
+							"key": "Date",
+							"value": "Thu, 30 Oct 2025 19:04:14 GMT"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"message\": \"Year and make required\"\n}"
+				}
+			]
+		}
+	]
+}

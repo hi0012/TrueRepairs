@@ -28,7 +28,10 @@
   }
 }
 
+
+
 @media (max-width: 1024px) {
+  /*
   .header {
     aspect-ratio: auto;
     background-size: cover;
@@ -60,8 +63,9 @@
   .header-right h2 {
     font-size: 32px;
   }
-
+  */
   /* ABOUT US */
+  /*
   .aboutus {
     flex-direction: column;
     align-items: center;
@@ -89,8 +93,9 @@
   .future {
     margin-top: 15px;
   }
-
+*/
   /* FEATURES */
+  /*
   .ai-feature-container,
   .estimate-feature-container,
   .report-feature-container {
@@ -120,16 +125,18 @@
   .report-feature-content p {
     font-size: 16px;
   }
-
+  */
   /* CONTACT US */
+  /*
   .contactus-container {
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
   }
-
+*/
   /* Image on top */
+  /*
   .contact-image {
     order: 1;
   }
@@ -141,17 +148,20 @@
     border-radius: 12px;
     object-fit: cover;
   }
-
+*/
   /* Form underneath */
+  /*
   .contactus-form {
     order: 2;
     width: 100%;
     max-width: 90%;
     margin-top: 20px;
   }
+    */
 }
 
 @media (max-width: 768px) {
+  /*
   .header {
     height: auto;
     padding: 20px;
@@ -160,7 +170,8 @@
   .header-right h2 {
     font-size: 26px;
   }
-
+  */
+  /*
   .ai-feature-content h2,
   .estimate-feature-content h2,
   .report-feature-content h2 {
@@ -173,11 +184,13 @@
     display: block;
     font-size: 15px;
   }
-
+*/
+/*
   .aboutus-parent {
     margin-top: 60px;
   }
-
+*/
+/*
   .contactus {
     margin-top: 60px;
   }
@@ -197,9 +210,14 @@
     height: auto;
     padding: 30px;
   }
+    */
+    
 }
 
 @media (max-width: 480px) {
+ 
+
+  /*
   .header {
     padding: 10px;
   }
@@ -213,6 +231,8 @@
     font-size: 22px;
   }
 
+  */
+  /*
   .ai-feature-content h2,
   .estimate-feature-content h2,
   .report-feature-content h2 {
@@ -224,7 +244,8 @@
   .report-feature-content p {
     font-size: 14px;
   }
-
+    */
+  /*
   .contactus-form {
     max-width: 95%;
     padding: 20px;
@@ -238,10 +259,12 @@
   .support-showcase p {
     font-size: 14px;
   }
+    */
 }
-
+/*
 @media (max-width: 768px) {
   .header {
     display: none;
   }
 }
+*/

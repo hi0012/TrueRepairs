@@ -1,14 +1,42 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import '../styles/Header.css'
 import RegisterPopup from './RegisterPopup'
+import { useNavigate } from 'react-router-dom';
 
 const Header = () => {
   const [registerOpen, setRegisterOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const retrieveUser = () => {
+    try {
+      return JSON.parse(localStorage.getItem("user"))
+    } catch {
+      return null
+    }
+  }
+
+  const [user, setUser] = useState(retrieveUser());
+
+  useEffect(()=> {
+    const getChanges = () => {
+      setUser(retrieveUser());
+    }
+    window.addEventListener("userState", getChanges);
+    return ()=> window.removeEventListener("storage", getChanges);
+  }, [])
+
+  const buttonCondition = () => {
+    if (user) {
+      navigate("/dashboard")
+    } else {
+      setRegisterOpen(true);
+    }
+  }
   return (
     <div className='header'>
         <div className='header-info'>
             <div className='header-left'>
-                <button onClick={()=>setRegisterOpen(true)}>Get Started</button> 
+                <button onClick={buttonCondition}>{user ? "Open Dashboard" : "Get Started"}</button> 
             </div>
             <div className='header-right'>
                <h2>Get <span className='test'>accurate</span> car repair cost estimates in seconds.</h2>
