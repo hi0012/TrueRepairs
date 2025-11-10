@@ -83,7 +83,6 @@ const Dashboard = () => {
       <VehicleInfo open={displayPopup === "vehicle"} onClose={popupClose} />
       <Report open={displayPopup === "report"} onClose={popupClose} />
 
-      {/* 🔴 Important: pass userEmail into the AI modal */}
       <AIModal
         open={displayPopup === "aimodal"}
         onClose={popupClose}
