@@ -1,14 +1,11 @@
-// Load env
 const path = require("path");
 require("dotenv").config({ path: path.resolve(__dirname, "../.env") });
 
-// Core deps
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
 const { spawn } = require("child_process");
 
-// App deps
 const connectDB = require("./db.js");
 const UserModel = require("./models/users.js");
 const bcrypt = require("bcryptjs");
@@ -25,18 +22,20 @@ const reportRoutes = require("./src/routes/reportRoutes.js");
 const fs = require("fs");
 const toyotaData = JSON.parse(fs.readFileSync(path.join(__dirname, "src", "data", "toyotaENGTRIM.json"), "utf-8"));
 
-// Env
 const TEMP_SECRET = process.env.TEMP_SECRET;
 if (process.env.SENDGRID_API_KEY) sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
-// App
 const app = express();
 app.use(cors());
 app.use(express.json());
 //app.use("/api", estimateRoutes); //
 
-// Root + reports first
-app.get("/", (req, res) => res.json({ ok: true, message: "TrueRepairs API" }));
+app.use("/api", estimateRoutes);
+
+app.get("/", (req, res) => {
+  res.json({ ok: true, message: "TrueRepairs API" });
+});
+
 app.use("/api/reports", reportRoutes);
 
 // Return all Toyota years
@@ -146,27 +145,25 @@ app.post("/api/manual-vehicle", async (req, res) => {
       message: "Manual vehicle added successfully!",
       vehicle: newVehicle,
     });
-  } catch (err) {
-    console.error("Error adding manual vehicle:", err);
+  } catch {
     res.status(500).json({ message: "Failed to add manual vehicle." });
   }
 });
 
-
 app.get("/api/cardetails/details", async (req, res) => {
   try {
     const { year, make, model } = req.query;
-    if (!year || !make || !model)
+    if (!year || !make || !model) {
       return res.status(400).json({ message: "Missing params" });
+    }
 
     const data = await getCarSpecs({ year, make, model });
     res.json(data);
-  } catch (err) {
+  } catch {
     res.status(500).json({ message: "Failed to load details" });
   }
-})
+});
 
-// Vehicles CRUD
 app.get("/api/vehicles", async (req, res) => {
   try {
     const { email } = req.query;
@@ -174,21 +171,20 @@ app.get("/api/vehicles", async (req, res) => {
 
     const vehicles = await Vehicle.find({ email });
     res.json({ items: vehicles });
-  } catch (err) {
+  } catch {
     res.status(500).json({ message: "Server error" });
   }
-})
-
+});
 
 app.post("/api/vehicles", async (req, res) => {
   try {
     const newVehicle = new Vehicle(req.body);
     await newVehicle.save();
     res.json(newVehicle);
-  } catch (err) {
+  } catch {
     res.status(500).json({ message: "Error saving vehicle" });
   }
-})
+});
 
 app.delete("/api/vehicles/:id", async (req, res) => {
   try {
@@ -199,7 +195,6 @@ app.delete("/api/vehicles/:id", async (req, res) => {
   }
 });
 
-// VIN decode + history
 app.post("/api/vehicleinfo", async (req, res) => {
   try {
     const { vin, email } = req.body;
@@ -207,7 +202,6 @@ app.post("/api/vehicleinfo", async (req, res) => {
       return res.status(400).json({ message: "VIN and email required" });
     }
 
-    // helpers
     const capWords = (str = "") =>
       String(str)
         .toLowerCase()
@@ -239,10 +233,9 @@ app.post("/api/vehicleinfo", async (req, res) => {
     let payload = { source: "NinjaAPI", data: ninjaResp || {} };
     let v = payload.data || {};
 
-    // Extract best-guess keys
-    let makeBase  = v.make || v.manufacturer || v.brand;
+    let makeBase = v.make || v.manufacturer || v.brand;
     let modelBase = v.model || v.model_name || v.series;
-    let yearBase  = v.year || v.model_year;
+    let yearBase = v.year || v.model_year;
 
     // Enrich using Ninja car specs if anything key is missing
     const missingKey =
@@ -264,7 +257,7 @@ app.post("/api/vehicleinfo", async (req, res) => {
           const s = specsList[0];
           const enrichedEngine = s.displacement
             ? `${s.displacement}L ${s.cylinders || ""}-Cyl`.trim()
-            : (v.engine || v.engine_size || "Unknown");
+            : v.engine || v.engine_size || "Unknown";
 
           v = {
             ...v,
@@ -277,20 +270,21 @@ app.post("/api/vehicleinfo", async (req, res) => {
           };
           payload.data = v;
         }
-      } catch (enrichErr) {
-        console.warn("Enrichment skipped:", enrichErr.message);
-      }
+      } catch {}
     }
 
     // Normalize for save
     const make  = capWords(v.make || v.manufacturer || v.brand || "Unknown");
     const model = capWords(v.model || v.model_name || v.series || "Unknown");
-    const year  = String(v.year || v.model_year || "Unknown");
-    const trim  = capWords(v.trim || "");
+    const year = String(v.year || v.model_year || "Unknown");
+    const trim = capWords(v.trim || "");
 
     const engine =
-      (v.engine || v.engine_size)
-        ? String(v.engine || v.engine_size).replace(/\b([a-z])/g, (c) => c.toUpperCase())
+      v.engine || v.engine_size
+        ? String(v.engine || v.engine_size).replace(
+            /\b([a-z])/g,
+            (c) => c.toUpperCase()
+          )
         : "Unknown";
 
     const fuel = formatFuel(v.fuel_type);
@@ -321,7 +315,6 @@ app.post("/api/vehicleinfo", async (req, res) => {
     });
     await newVehicle.save();
 
-    // history
     await Lookup.create({ userEmail: email, vin, data: payload });
 
     return res.json({
@@ -329,21 +322,20 @@ app.post("/api/vehicleinfo", async (req, res) => {
       source: payload.source,
       vehicle: newVehicle,
     });
-  } catch (err) {
-    console.error("Unexpected VIN lookup error:", err);
+  } catch {
     return res.status(500).json({ message: "Server error" });
   }
 });
 
-
-// Lookup history
 app.get("/api/history", async (req, res) => {
   try {
     const email = (req.query.email || "").trim().toLowerCase();
     if (!email) return res.status(400).json({ message: "email is required" });
 
     const items = await Lookup.find({ userEmail: email })
-      .sort({ createdAt: -1 }).limit(20).lean();
+      .sort({ createdAt: -1 })
+      .limit(20)
+      .lean();
 
     res.json({ items });
   } catch {
@@ -355,14 +347,18 @@ app.post("/api/history", async (req, res) => {
   try {
     const email = (req.body.email || "").trim().toLowerCase();
     const vin = (req.body.vin || "").trim().toUpperCase();
-    if (!email || !vin) return res.status(400).json({ message: "email and vin are required" });
+    if (!email || !vin) {
+      return res.status(400).json({ message: "email and vin are required" });
+    }
 
     const apiResp = await vehdb.vinDecode(vin);
     const payload = { vehicledb: apiResp.data };
     await Lookup.create({ userEmail: email, vin, data: payload });
     res.json(payload);
   } catch (e) {
-    res.status(e.response?.status || 500).json({ message: e.message || "Lookup failed" });
+    res
+      .status(e.response?.status || 500)
+      .json({ message: e.message || "Lookup failed" });
   }
 });
 
@@ -375,8 +371,10 @@ app.delete("/api/history/:id", async (req, res) => {
   }
 });
 
-// Health
-app.get("/api/health", (req, res) => res.json({ ok: true }));
+app.get("/api/health", (req, res) => {
+  res.json({ ok: true });
+});
+
 app.get("/db-health", (req, res) => {
   res.json({
     connected: mongoose.connection.readyState === 1,
@@ -384,7 +382,6 @@ app.get("/db-health", (req, res) => {
   });
 });
 
-// Auth
 app.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -405,10 +402,15 @@ app.post("/register", async (req, res) => {
     const { email, password } = req.body;
     const existingUser = await UserModel.findOne({ email });
     if (existingUser) {
-      return res.json({ success: false, message: "This email is already associated with an account." });
+      return res.json({
+        success: false,
+        message: "This email is already associated with an account.",
+      });
     }
 
-    const token = jwt.sign({ email, password }, TEMP_SECRET, { expiresIn: "15m" });
+    const token = jwt.sign({ email, password }, TEMP_SECRET, {
+      expiresIn: "15m",
+    });
     const resetURL = `${process.env.CLIENT_URL2}/verify/${token}`;
 
     const msg = {
@@ -421,13 +423,14 @@ app.post("/register", async (req, res) => {
 
     try {
       await sgMail.send(msg);
-      return res.json({ success: true, message: "Verification email sent! Please check your inbox." });
+      return res.json({
+        success: true,
+        message: "Verification email sent! Please check your inbox.",
+      });
     } catch (err) {
-      console.error("SendGrid error:", err);
       return res.status(500).send({ ok: false });
     }
-  } catch (err) {
-    console.error(err);
+  } catch {
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
@@ -438,13 +441,16 @@ app.get("/verify/:token", async (req, res) => {
     const decoded = jwt.verify(token, TEMP_SECRET);
 
     const existingUser = await UserModel.findOne({ email: decoded.email });
-    if (existingUser) return res.redirect(`${process.env.CLIENT_URL}/?verified=exists`);
+    if (existingUser) {
+      return res.redirect(`${process.env.CLIENT_URL}/?verified=exists`);
+    }
 
-    const newUser = await UserModel.create({ email: decoded.email, password: decoded.password });
-    console.log("Verified & created:", newUser.email);
+    const newUser = await UserModel.create({
+      email: decoded.email,
+      password: decoded.password,
+    });
     res.redirect(`${process.env.CLIENT_URL}/?verified=true`);
-  } catch (err) {
-    console.error("Verification error:", err);
+  } catch {
     res.redirect(`${process.env.CLIENT_URL}/?verified=false`);
   }
 });
@@ -453,11 +459,15 @@ app.post("/forgot-password", async (req, res) => {
   try {
     const { email } = req.body;
     const user = await UserModel.findOne({ email });
-    if (!user) return res.status(400).json({ message: "No account with that email found." });
+    if (!user) {
+      return res
+        .status(400)
+        .json({ message: "No account with that email found." });
+    }
 
     const token = crypto.randomBytes(20).toString("hex");
     user.resetPasswordToken = token;
-    user.resetPasswordExpires = Date.now() + 3600000; // 1 hr
+    user.resetPasswordExpires = Date.now() + 3600000;
     await user.save();
 
     const resetURL = `${process.env.CLIENT_URL}/reset-password/${token}`;
@@ -472,12 +482,10 @@ app.post("/forgot-password", async (req, res) => {
     try {
       await sgMail.send(msg);
       return res.send({ ok: true });
-    } catch (err) {
-      console.error("SendGrid error:", err);
+    } catch {
       return res.status(500).send({ ok: false });
     }
-  } catch (err) {
-    console.error(err);
+  } catch {
     res.status(500).json({ message: "Server error" });
   }
 });
@@ -489,18 +497,19 @@ app.post("/reset-password/:token", async (req, res) => {
 
     const user = await UserModel.findOne({
       resetPasswordToken: token,
-      resetPasswordExpires: { $gt: Date.now() }
+      resetPasswordExpires: { $gt: Date.now() },
     });
-    if (!user) return res.status(400).json({ message: "Invalid or expired token." });
+    if (!user) {
+      return res.status(400).json({ message: "Invalid or expired token." });
+    }
 
-    user.password = password; 
+    user.password = password;
     user.resetPasswordToken = undefined;
     user.resetPasswordExpires = undefined;
     await user.save();
 
     res.json({ message: "Password reset successful!" });
-  } catch (err) {
-    console.error(err);
+  } catch {
     res.status(500).json({ message: "Server error" });
   }
 });
@@ -509,12 +518,18 @@ app.post("/update-password", async (req, res) => {
   try {
     const { currentPassword, newPassword, email } = req.body;
     const user = await UserModel.findOne({ email });
-    if (!user) return res.status(404).json({ message: "User not found." });
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
 
     const isMatch = await bcrypt.compare(currentPassword, user.password);
-    if (!isMatch) return res.status(400).json({ message: "Current password is incorrect." });
+    if (!isMatch) {
+      return res
+        .status(400)
+        .json({ message: "Current password is incorrect." });
+    }
 
-    user.password = newPassword; 
+    user.password = newPassword;
     await user.save();
 
     return res.json({ message: "Password updated successfully!" });
@@ -534,18 +549,14 @@ app.post("/send-support", async (req, res) => {
     };
     await sgMail.send(msg);
     res.status(200).json({ success: true });
-  } catch (error) {
-    console.error("SendGrid error:", error);
+  } catch {
     res.status(500).json({ success: false });
   }
 });
 
-
 app.post("/update-profile", async (req, res) => {
   try {
     const { currentEmail, newEmail } = req.body;
-
-    // Validate input
     if (!currentEmail || !newEmail) {
       return res.status(400).json({
         success: false,
@@ -553,7 +564,6 @@ app.post("/update-profile", async (req, res) => {
       });
     }
 
-    // Find user by current email
     const user = await UserModel.findOne({ email: currentEmail });
     if (!user) {
       return res.status(404).json({
@@ -562,7 +572,6 @@ app.post("/update-profile", async (req, res) => {
       });
     }
 
-    // Check if new email already exists
     const emailExists = await UserModel.findOne({ email: newEmail });
     if (emailExists) {
       return res.status(409).json({
@@ -571,7 +580,6 @@ app.post("/update-profile", async (req, res) => {
       });
     }
 
-    // Update user email
     user.email = newEmail;
     await user.save();
 
@@ -580,9 +588,7 @@ app.post("/update-profile", async (req, res) => {
       message: "Email updated successfully",
       user: { email: user.email },
     });
-
-  } catch (err) {
-    console.error("Error in /update-profile:", err);
+  } catch {
     res.status(500).json({
       success: false,
       message: "Server error",
@@ -590,64 +596,69 @@ app.post("/update-profile", async (req, res) => {
   }
 });
 
-
 app.post("/deactivate-account", async (req, res) => {
   try {
     const { email, password } = req.body;
 
     const user = await UserModel.findOne({ email });
     if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
     }
 
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) {
-      return res.status(401).json({ success: false, message: "Invalid password" });
+      return res
+        .status(401)
+        .json({ success: false, message: "Invalid password" });
     }
 
     user.isActive = false;
     await user.save();
 
-    res.json({ success: true, message: "Account deactivated successfully" });
-  } catch (err) {
-    console.error("Deactivate account error:", err);
+    res.json({
+      success: true,
+      message: "Account deactivated successfully",
+    });
+  } catch {
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
 
-
 app.post("/delete-account", async (req, res) => {
-  const { email, password } = req.body;
-
   try {
+    const { email, password } = req.body;
+
     const user = await UserModel.findOne({ email });
-    if (!user) return res.status(404).json({ success: false, message: "User not found." });
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found." });
+    }
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(401).json({ success: false, message: "Incorrect password." });
+    if (!isMatch) {
+      return res
+        .status(401)
+        .json({ success: false, message: "Incorrect password." });
+    }
 
-    await Promise.all([
-      UserModel.deleteOne({ email }),
-      //Order.deleteMany({ userEmail: email }),
-      //Review.deleteMany({ userEmail: email })
-    ]);
+    await Promise.all([UserModel.deleteOne({ email })]);
 
-    return res.json({ success: true, message: "Account deleted successfully." });
-  } catch (err) {
-    console.error("Delete account error:", err);
+    return res.json({
+      success: true,
+      message: "Account deleted successfully.",
+    });
+  } catch {
     return res.status(500).json({ success: false, message: "Server error." });
   }
 });
 
-
-
-// Error handler
 app.use((err, req, res, next) => {
-  console.error("[ERROR]", err);
   res.status(500).json({ message: err.message || "Server error" });
 });
 
-// Start only after DB connects
 (async () => {
   try {
     await connectDB();

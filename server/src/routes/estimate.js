@@ -41,8 +41,7 @@ router.get("/estimate/ping", (req, res) => res.json({ ok: true }));
 router.post("/estimate", upload.single("file"), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ message: "image file is required" });
-    const email = (req.body.email || "").trim().toLowerCase();
-    if (!email) return res.status(400).json({ message: "email is required" });
+    const email = (req.body.email || "guest@truerepairs.ai").trim().toLowerCase();
 
     const client = visionClient();
     const [labelResp] = await client.labelDetection({ image: { content: req.file.buffer } });
@@ -117,8 +116,7 @@ router.post("/estimate", upload.single("file"), async (req, res) => {
 
 router.get("/estimates", async (req, res) => {
   try {
-    const email = (req.query.email || "").trim().toLowerCase();
-    if (!email) return res.status(400).json({ message: "email is required" });
+    const email = (req.query.email || "guest@truerepairs.ai").trim().toLowerCase();
     const items = await Estimate.find({ userEmail: email }).sort({ createdAt: -1 }).lean();
     res.json({ items });
   } catch (e) {
