@@ -1,0 +1,197 @@
+{
+	"info": {
+		"_postman_id": "fd7fc6d5-1619-4cdb-bfbe-4477bbe01a82",
+		"name": "TrueRepair - CarDetails: Make Endpoint ",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "49536796",
+		"_collection_link": "https://backenddev61-8311644.postman.co/workspace/backenddev-testend's-Workspace~31d9f490-7f82-4ae5-8c76-32e3d08eff10/collection/49536796-fd7fc6d5-1619-4cdb-bfbe-4477bbe01a82?action=share&source=collection_link&creator=49536796"
+	},
+	"item": [
+		{
+			"name": "Successful GET",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5000/api/cardetails/makes?year=2003",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"cardetails",
+						"makes"
+					],
+					"query": [
+						{
+							"key": "year",
+							"value": "2003"
+						}
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "Successful GET",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5000/api/cardetails/makes?year=2003",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"cardetails",
+								"makes"
+							],
+							"query": [
+								{
+									"key": "year",
+									"value": "2003"
+								}
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "X-Powered-By",
+							"value": "Express"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json; charset=utf-8"
+						},
+						{
+							"key": "Content-Length",
+							"value": "468"
+						},
+						{
+							"key": "ETag",
+							"value": "W/\"1d4-ZhpR/H2iol59yeMyowwmahQmBL4\""
+						},
+						{
+							"key": "Date",
+							"value": "Thu, 30 Oct 2025 01:24:56 GMT"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5"
+						}
+					],
+					"cookie": [],
+					"body": "[\n    \"Acura\",\n    \"Aston Martin\",\n    \"Audi\",\n    \"Bentley\",\n    \"Bmw\",\n    \"Bmw Alpina\",\n    \"Buick\",\n    \"Cadillac\",\n    \"Chevrolet\",\n    \"Chrysler\",\n    \"Daewoo\",\n    \"Dodge\",\n    \"Ferrari\",\n    \"Ford\",\n    \"Gmc\",\n    \"Honda\",\n    \"Hyundai\",\n    \"Infiniti\",\n    \"Isuzu\",\n    \"Jaguar\",\n    \"Jeep\",\n    \"Kia\",\n    \"Lamborghini\",\n    \"Land Rover\",\n    \"Lexus\",\n    \"Lincoln\",\n    \"London Taxi\",\n    \"Lotus\",\n    \"Maserati\",\n    \"Mazda\",\n    \"Mercedes-benz\",\n    \"Mercury\",\n    \"Mini\",\n    \"Mitsubishi\",\n    \"Morgan\",\n    \"Nissan\",\n    \"Oldsmobile\",\n    \"Pontiac\",\n    \"Porsche\",\n    \"Roush Performance\",\n    \"Saab\",\n    \"Saturn\",\n    \"Subaru\",\n    \"Suzuki\",\n    \"Toyota\",\n    \"Volkswagen\",\n    \"Volvo\"\n]"
+				}
+			]
+		},
+		{
+			"name": "Failed GET",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5000/api/cardetails/makes?year",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"cardetails",
+						"makes"
+					],
+					"query": [
+						{
+							"key": "year",
+							"value": null
+						}
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "Failed GET",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5000/api/cardetails/makes?year",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"cardetails",
+								"makes"
+							],
+							"query": [
+								{
+									"key": "year",
+									"value": null
+								}
+							]
+						}
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "X-Powered-By",
+							"value": "Express"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json; charset=utf-8"
+						},
+						{
+							"key": "Content-Length",
+							"value": "27"
+						},
+						{
+							"key": "ETag",
+							"value": "W/\"1b-aaWoeBlkd8/mSKoK++s0yo9XzgU\""
+						},
+						{
+							"key": "Date",
+							"value": "Thu, 30 Oct 2025 19:02:57 GMT"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"message\": \"Year required\"\n}"
+				}
+			]
+		}
+	]
+}

@@ -1,0 +1,399 @@
+{
+	"info": {
+		"_postman_id": "9debcfbe-405d-4fea-b054-764b082a0bee",
+		"name": "TrueRepair - VehicleInfo Endpoint",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "49536796",
+		"_collection_link": "https://backenddev61-8311644.postman.co/workspace/backenddev-testend's-Workspace~31d9f490-7f82-4ae5-8c76-32e3d08eff10/collection/49536796-9debcfbe-405d-4fea-b054-764b082a0bee?action=share&source=collection_link&creator=49536796"
+	},
+	"item": [
+		{
+			"name": "TrueRepair – VehicleInfo: Successful POST",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"vin\": \"1HGCM82633A004352\",\r\n    \"email\": \"bent@gmail.com\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5000/api/vehicleinfo",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"vehicleinfo"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "TrueRepair – VehicleInfo: Successful POST",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"vin\": \"1HGCM82633A004352\",\r\n    \"email\": \"bent@gmail.com\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5000/api/vehicleinfo",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"vehicleinfo"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "X-Powered-By",
+							"value": "Express"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json; charset=utf-8"
+						},
+						{
+							"key": "Content-Length",
+							"value": "779"
+						},
+						{
+							"key": "ETag",
+							"value": "W/\"30b-MqP9orafLGQT5ma5TtIQJllNn8A\""
+						},
+						{
+							"key": "Date",
+							"value": "Thu, 30 Oct 2025 22:40:37 GMT"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"message\": \"2003 Honda Accord added successfully!\",\n    \"source\": \"NinjaAPI\",\n    \"vehicle\": {\n        \"email\": \"bent@gmail.com\",\n        \"vin\": \"1HGCM82633A004352\",\n        \"nickname\": \"2003 Honda Accord\",\n        \"year\": \"2003\",\n        \"make\": \"Honda\",\n        \"model\": \"Accord\",\n        \"trim\": \"\",\n        \"engine\": \"2.4L 4-Cyl\",\n        \"fuel\": \"Gasoline\",\n        \"drivetrain\": \"FWD\",\n        \"transmission\": \"a\",\n        \"mpg_city\": \"21\",\n        \"mpg_highway\": \"31\",\n        \"class\": \"Coupe\",\n        \"data\": {\n            \"vin\": \"1HGCM82633A004352\",\n            \"country\": \"United states (usa)\",\n            \"manufacturer\": \"Honda\",\n            \"model\": \"Accord\",\n            \"class\": \"Coupe\",\n            \"region\": \"North America\",\n            \"wmi\": \"1HG\",\n            \"vds\": \"CM8263\",\n            \"vis\": \"3A004352\",\n            \"year\": \"2003\",\n            \"engine\": \"2.4L 4-Cyl\",\n            \"fuel_type\": \"gas\",\n            \"drive\": \"fwd\",\n            \"transmission\": \"a\",\n            \"city_mpg\": 21,\n            \"highway_mpg\": 31\n        },\n        \"_id\": \"6903e9659e6cec4e04de8504\",\n        \"createdAt\": \"2025-10-30T22:40:37.435Z\",\n        \"updatedAt\": \"2025-10-30T22:40:37.435Z\",\n        \"__v\": 0\n    }\n}"
+				}
+			]
+		},
+		{
+			"name": "TrueRepair – VehicleInfo: Failed POST (Missing Vin)",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"vin\": \"\",\r\n    \"email\": \"bent@gmail.com\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5000/api/vehicleinfo",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"vehicleinfo"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "TrueRepair – VehicleInfo: Failed POST (Missing Vin)",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"vin\": \"\",\r\n    \"email\": \"bent@gmail.com\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5000/api/vehicleinfo",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"vehicleinfo"
+							]
+						}
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "X-Powered-By",
+							"value": "Express"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json; charset=utf-8"
+						},
+						{
+							"key": "Content-Length",
+							"value": "36"
+						},
+						{
+							"key": "ETag",
+							"value": "W/\"24-OIUKyN5pp4DVlrlBOt161Mnifmc\""
+						},
+						{
+							"key": "Date",
+							"value": "Thu, 30 Oct 2025 22:52:01 GMT"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"message\": \"VIN and email required\"\n}"
+				}
+			]
+		},
+		{
+			"name": "TrueRepair – VehicleInfo: Failed POST (Missing Email Address)",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"vin\": \"2FTRX18W1XCA76394\",\r\n    \"email\": \"\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5173/api/vehicleinfo",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5173",
+					"path": [
+						"api",
+						"vehicleinfo"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "TrueRepair – VehicleInfo: Failed POST (Missing Email Address)",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"vin\": \"2FTRX18W1XCA76394\",\r\n    \"email\": \"\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5173/api/vehicleinfo",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5173",
+							"path": [
+								"api",
+								"vehicleinfo"
+							]
+						}
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "Vary",
+							"value": "Origin"
+						},
+						{
+							"key": "x-powered-by",
+							"value": "Express"
+						},
+						{
+							"key": "access-control-allow-origin",
+							"value": "*"
+						},
+						{
+							"key": "content-type",
+							"value": "application/json; charset=utf-8"
+						},
+						{
+							"key": "content-length",
+							"value": "36"
+						},
+						{
+							"key": "etag",
+							"value": "W/\"24-OIUKyN5pp4DVlrlBOt161Mnifmc\""
+						},
+						{
+							"key": "date",
+							"value": "Thu, 30 Oct 2025 22:56:10 GMT"
+						},
+						{
+							"key": "connection",
+							"value": "close"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"message\": \"VIN and email required\"\n}"
+				}
+			]
+		},
+		{
+			"name": "TrueRepair – VehicleInfo: Failed POST (Missing Vin and Email Address)",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"vin\": \"\",\r\n    \"email\": \"\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5173/api/vehicleinfo",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5173",
+					"path": [
+						"api",
+						"vehicleinfo"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "TrueRepair – VehicleInfo: Failed POST (Missing Vin and Email Address)",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"vin\": \"\",\r\n    \"email\": \"\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5173/api/vehicleinfo",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5173",
+							"path": [
+								"api",
+								"vehicleinfo"
+							]
+						}
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "Vary",
+							"value": "Origin"
+						},
+						{
+							"key": "x-powered-by",
+							"value": "Express"
+						},
+						{
+							"key": "access-control-allow-origin",
+							"value": "*"
+						},
+						{
+							"key": "content-type",
+							"value": "application/json; charset=utf-8"
+						},
+						{
+							"key": "content-length",
+							"value": "36"
+						},
+						{
+							"key": "etag",
+							"value": "W/\"24-OIUKyN5pp4DVlrlBOt161Mnifmc\""
+						},
+						{
+							"key": "date",
+							"value": "Thu, 30 Oct 2025 22:57:45 GMT"
+						},
+						{
+							"key": "connection",
+							"value": "close"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"message\": \"VIN and email required\"\n}"
+				}
+			]
+		}
+	]
+}

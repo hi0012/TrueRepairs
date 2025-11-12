@@ -37,7 +37,7 @@
     color: #0068d2;
     white-space: nowrap;
     font-weight: 500;
-    font-size: 18px;
+    font-size: clamp(12px, 1.5vw, 18px);
     padding: 13px 32px;
     background-color: white;
     border-radius: 50px;
@@ -94,4 +94,91 @@
     background-color: #0068d2;
     color: white;
     border: 1px solid white;
+}
+
+@media (max-width: 1200px) {
+    .header-right {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+    .header-right p {
+        font-size: clamp(22px, 1.2vw + 0.3rem, 26px);
+        overflow-wrap: break-word;
+        transition: font-size 0.2s ease-in-out;
+    }
+
+    .header-right h2 {
+        font-size: clamp(22px, 4vw, 66px);
+    }
+    
+}
+
+@media (max-width: 992px) {
+    .header-right h2 {
+        font-size: clamp(20px, 3.5vw, 55px);
+    }
+    .header-right p {
+        margin-top: 10px;
+        font-size: clamp(16px, 1.5vw + 0.2rem, 20px);
+        overflow-wrap: break-word;
+        transition: font-size 0.2s ease-in-out;
+    }
+    .header-left button {
+        font-size: clamp(12px, 2vw, 20px);
+        padding: 10px, 20px;
+    }
+}
+
+
+@media (max-width: 768px) {
+    .header-info {
+        display: flex;
+        justify-content: space-between;
+        gap: 20px;
+    }
+    .header-right {
+        margin-top: 10px;
+        gap: 5px;
+    }
+    .header-right h2 {
+        font-size: clamp(11px, 4vw, 28px);
+    }
+    .header-right p {
+        font-size: clamp(10px, 1.6vw, 14px);
+        overflow-wrap: break-word;
+    }
+    .header-left button {
+        font-size: clamp(11px, 2vw, 16px);
+        padding: 8px 18px;
+    }
+}
+
+@media (max-width: 480px) {
+  .header-info {
+     display: flex;
+    flex-direction: column-reverse;
+    align-items: center; 
+    justify-content: center;    
+    text-align: center;
+    position: relative;
+    height: auto;              
+    padding: 20px;
+    gap: 20px;
+    box-sizing: border-box;
+  }
+  .header-right h2 {
+    margin-top: 20px;
+    font-size: clamp(20px, 3vw, 26px);        
+    max-width: 100%;                    
+    overflow-wrap: break-word;
+  }
+  .header-left button {
+    font-size: clamp(8px, 2vw, 11px);
+    padding: 6px 16px;
+  }
+  .header-right p {
+    display: none;
+  }
+
 }

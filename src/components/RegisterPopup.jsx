@@ -21,7 +21,7 @@ const RegisterPopup = ({open, onClose}) => {
 
   axios.post("http://localhost:5000/register", {
     email, password, passwordConfirm
-  })
+  }, {validateStatus: () => true})
   .then((res) => {
     if (!res.data.success) {
       setMessage(res.data.message || "Registration failed.");

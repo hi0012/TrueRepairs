@@ -1,14 +1,11 @@
-// Load env
 const path = require("path");
 require("dotenv").config({ path: path.resolve(__dirname, "../.env") });
 
-// Core deps
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
 const { spawn } = require("child_process");
 
-// App deps
 const connectDB = require("./db.js");
 const UserModel = require("./models/users.js");
 const bcrypt = require("bcryptjs");
@@ -19,201 +16,129 @@ const Lookup = require("./models/lookup.js");
 const vehdb = require("./src/services/vehdb");
 const Vehicle = require("./models/Vehicle.js");
 const { getCarSpecs, vinDecode } = require("./src/services/ninjaApi");
-const { scrapeRockAuto } = require("./src/services/rockauto");
 const reportRoutes = require("./src/routes/reportRoutes.js");
 const Estimate = require("./models/estimate");
 const Report = require("./models/Report");
 // const externalRoutes = require("./src/routes/external.js");
-//const estimateRoutes = require("./src/routes/estimate"); // <-- ADDED
+//const estimateRoutes = require("./src/routes/estimate");
+const fs = require("fs");
+const toyotaData = JSON.parse(fs.readFileSync(path.join(__dirname, "src", "data", "toyotaENGTRIM.json"), "utf-8"));
 
-// Env
 const TEMP_SECRET = process.env.TEMP_SECRET;
 if (process.env.SENDGRID_API_KEY) sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
-// App
 const app = express();
 app.use(cors());
 app.use(express.json());
-//app.use("/api", estimateRoutes); // <-- ADDED
+//app.use("/api", estimateRoutes); //
 
-// Root + reports first
-app.get("/", (req, res) => res.json({ ok: true, message: "TrueRepairs API" }));
+app.use("/api", estimateRoutes);
+
+app.get("/", (req, res) => {
+  res.json({ ok: true, message: "TrueRepairs API" });
+});
+
 app.use("/api/reports", reportRoutes);
 
-// RockAuto categories
-app.post("/api/rockauto/categories", (req, res) => {
-  const { make, year, model, engine } = req.body;
-  const scriptPath = path.join(__dirname, "src", "services", "rockautoCategories.py");
-  const py = spawn("python", [scriptPath, make, year, model, engine]);
-
-  let data = "";
-  py.stdout.on("data", (chunk) => (data += chunk.toString()));
-  py.stderr.on("data", (chunk) => console.error("PyErr:", chunk.toString()));
-  py.on("close", () => {
-    try { res.json(JSON.parse(data)); }
-    catch { res.status(500).json({ error: "Failed to parse Python output" }); }
-  });
+// Return all Toyota years
+app.get("/api/years", (req, res) => {
+  const years = toyotaData.map((item) => item.year);
+  res.json(years);
 });
 
-// RockAuto subcategories
-app.post("/api/rockauto/subcategories", (req, res) => {
-  const { make, year, model, engine, category } = req.body;
-  const scriptPath = path.join(__dirname, "src", "services", "rockautoSubcategories.py");
-  const py = spawn("python", [scriptPath, make, year, model, engine, category]);
-
-  let data = "";
-  py.stdout.on("data", (chunk) => (data += chunk.toString()));
-  py.stderr.on("data", (chunk) => console.error("PyErr:", chunk.toString()));
-  py.on("close", () => {
-    try { res.json(JSON.parse(data)); }
-    catch { res.status(500).json({ error: "Failed to parse Python output" }); }
-  });
+// Return makes
+app.get("/api/makes", (req, res) => {
+  res.json(["Toyota"]);
 });
 
-// RockAuto scrape
-app.post("/api/scrape-rockauto", (req, res) => {
-  const { make, year, model, engine, category, subcategory } = req.body;
-  if (!make || !year || !model || !engine || !category || !subcategory) {
-    return res.status(400).json({ success: false, message: "Missing required fields" });
-  }
+// Return all models for a given year
+app.get("/api/models/:year", (req, res) => {
+  const { year } = req.params;
+  const yearData = toyotaData.find((y) => y.year === parseInt(year));
+  if (!yearData) return res.json([]);
+  const models = yearData.models.map((m) => m.model);
+  res.json(models);
+});
 
-  const scriptPath = path.join(__dirname, "src", "services", "rockautoscrape.py");
-  const pyExe = process.env.PYTHON || (process.platform === "win32" ? "python" : "python3");
-
-  console.log("[SCRAPE] payload:", { make, year, model, engine, category, subcategory });
-
-  const py = spawn(
-    pyExe,
-    [scriptPath, String(make), String(year), String(model), String(engine), String(category), String(subcategory)],
-    { env: process.env }
+// engines or drivetrain info
+app.get("/api/engines/:year/:model", (req, res) => {
+  const { year, model } = req.params;
+  const yearData = toyotaData.find((y) => y.year === parseInt(year));
+  const modelData = yearData?.models.find(
+    (m) => m.model.toLowerCase() === model.toLowerCase()
   );
-
-  let out = "";
-  let err = "";
-
-  // Safety timeout (kill after 90s)
-  const killTimer = setTimeout(() => {
-    console.warn("[SCRAPE] timed out, killing python");
-    try { py.kill(); } catch {}
-  }, 90_000);
-
-  py.stdout.on("data", (c) => (out += c.toString()));
-  py.stderr.on("data", (c) => (err += c.toString()));
-
-  py.on("close", (code) => {
-    clearTimeout(killTimer);
-    try {
-      const parsed = out ? JSON.parse(out) : {};
-      return res.json({
-        success: true,
-        code,        // python exit code
-        parts: parsed,
-        debug: err,  // stderr logs from Python
-      });
-    } catch (e) {
-      console.error("[SCRAPE] parse error:", e);
-      return res.status(500).json({
-        success: false,
-        code,
-        error: "Failed to parse Python output",
-        raw: out,
-        debug: err,
-      });
-    }
-  });
-
-  py.on("error", (e) => {
-    clearTimeout(killTimer);
-    console.error("[SCRAPE] spawn error:", e);
-    res.status(500).json({ success: false, error: e.message, debug: err });
-  });
+  if (!modelData) return res.json([]);
+  const engines = modelData.engines.map((e) => e.engine);
+  res.json(engines);
 });
 
+app.get("/api/trims/:year/:model/:engine", (req, res) => {
+  const { year, model, engine } = req.params;
+  const yearData = toyotaData.find(y => y.year == year);
+  if (!yearData) return res.json([]);
 
-// Car details
-app.get("/api/cardetails/makes", async (req, res) => {
-  try {
-    const { year } = req.query;
-    if (!year) return res.status(400).json({ message: "Year required" });
+  const modelData = yearData.models.find(m => m.model === model);
+  if (!modelData) return res.json([]);
 
-    let allData = [], offset = 0;
-    const limit = 50;
-    while (true) {
-      const data = await getCarSpecs({ year, limit, offset });
-      if (!data.length) break;
-      allData = allData.concat(data);
-      offset += limit;
-      if (data.length < limit) break;
-    }
-    const cap = (str = "") => str.toLowerCase().split(" ").map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(" ");
-    const uniqueMakes = [...new Set(allData.map(c => cap(c.make)))].sort();
-    res.json(uniqueMakes);
-  } catch {
-    res.status(500).json({ message: "Failed to load makes" });
-  }
-});
+  const engineData = modelData.engines.find(e => e.engine === engine);
+  if (!engineData) return res.json([]);
 
-app.get("/api/cardetails/models", async (req, res) => {
-  try {
-    const { year, make } = req.query;
-    if (!year || !make) return res.status(400).json({ message: "Year and make required" });
-
-    let allData = [], offset = 0;
-    const limit = 50;
-    while (true) {
-      const data = await getCarSpecs({ year, make, limit, offset });
-      if (!data.length) break;
-      allData = allData.concat(data);
-      offset += limit;
-      if (data.length < limit) break;
-    }
-    const cap = (str = "") =>
-      str.toLowerCase().split(/([\s-]+)/).map((part) =>
-        /^[a-z]/.test(part) ? part.charAt(0).toUpperCase() + part.slice(1) : part
-      ).join("");
-    const uniqueModels = [...new Set(allData.map(c => cap(c.model)))].sort();
-    res.json(uniqueModels);
-  } catch (err) {
-    console.error("Error in /models:", err.message);
-    res.status(500).json({ message: "Failed to load models" });
-  }
+  res.json(engineData.trims || []);
 });
 
 app.post("/api/manual-vehicle", async (req, res) => {
   try {
-    const { year, make, model, trim, email } = req.body;
-    if (!year || !make || !model || !email)
-      return res.status(400).json({ message: "Year, make, model, and email required" });
+    const { year, make, model, engine, trim, email } = req.body;
+    if (!year || !make || !model || !engine || !trim || !email)
+      return res.status(400).json({
+        message: "Year, make, model, engine, trim, and email are required",
+      });
 
-    const specs = await getCarSpecs({ year, make, model });
-    const carData = specs?.[0];
-    if (!carData) return res.status(404).json({ message: "Vehicle specs not found." });
+    // Formatters
+    const cap = (s = "") => s.split(" ").map(w => w === w.toUpperCase() ? w : w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(" ");
 
-    const cap = (s = "") => s.toLowerCase().split(" ").map(w => w[0].toUpperCase() + w.slice(1)).join(" ");
     const yearStr = String(year);
     const makeFormatted = cap(make);
     const modelFormatted = cap(model);
-    const trimFormatted = trim ? cap(trim) : "";
-    const engine = carData.displacement ? `${carData.displacement}L ${carData.cylinders || ""}-Cyl`.trim() : "Unknown";
-    const fuel = cap(carData.fuel_type || "Unknown");
-    const drivetrain = (carData.drive || "FWD").toUpperCase();
-    const transmission = (carData.transmission || "AUTO").toUpperCase();
-    const nickname = `${yearStr} ${makeFormatted} ${modelFormatted}${trimFormatted ? " " + trimFormatted : ""}`;
+    const engineFormatted = engine.trim();
+    const trimFormatted = cap(trim);
 
+    let fuel = "Gas";
+    let drivetrain = "FWD";
+
+    const yearData = toyotaData.find((y) => String(y.year) === yearStr);
+    if (yearData) {
+      const modelData = yearData.models.find(
+        (m) => m.model.toLowerCase() === modelFormatted.toLowerCase()
+      );
+      if (modelData) {
+        const engineData = modelData.engines.find(
+          (e) => e.engine.toLowerCase() === engineFormatted.toLowerCase()
+        );
+        if (engineData) {
+          if (engineData.fuel) fuel = engineData.fuel;
+          if (engineData.drivetrain) drivetrain = engineData.drivetrain;
+        }
+      }
+    }
+
+    const nickname = `${yearStr} ${makeFormatted} ${modelFormatted} ${trimFormatted}`.trim();
+
+    // Save to DB
     const newVehicle = new Vehicle({
       email,
       nickname,
       year: yearStr,
       make: makeFormatted,
       model: modelFormatted,
+      engine: engineFormatted,
       trim: trimFormatted,
-      engine,
       fuel,
       drivetrain,
-      transmission,
-      mpg_city: carData.city_mpg || "Unknown",
-      mpg_highway: carData.highway_mpg || "Unknown",
-      class: carData.class || "Unknown",
+      transmission: "AUTO",
+      mpg_city: "Unknown",
+      mpg_highway: "Unknown",
+      class: "Unknown",
     });
 
     await newVehicle.save();
@@ -222,27 +147,25 @@ app.post("/api/manual-vehicle", async (req, res) => {
       message: "Manual vehicle added successfully!",
       vehicle: newVehicle,
     });
-  } catch (err) {
-    console.error("Error adding manual vehicle:", err);
+  } catch {
     res.status(500).json({ message: "Failed to add manual vehicle." });
   }
 });
 
-
 app.get("/api/cardetails/details", async (req, res) => {
   try {
     const { year, make, model } = req.query;
-    if (!year || !make || !model)
+    if (!year || !make || !model) {
       return res.status(400).json({ message: "Missing params" });
+    }
 
     const data = await getCarSpecs({ year, make, model });
     res.json(data);
-  } catch (err) {
+  } catch {
     res.status(500).json({ message: "Failed to load details" });
   }
-})
+});
 
-// Vehicles CRUD
 app.get("/api/vehicles", async (req, res) => {
   try {
     const { email } = req.query;
@@ -250,21 +173,20 @@ app.get("/api/vehicles", async (req, res) => {
 
     const vehicles = await Vehicle.find({ email });
     res.json({ items: vehicles });
-  } catch (err) {
+  } catch {
     res.status(500).json({ message: "Server error" });
   }
-})
-
+});
 
 app.post("/api/vehicles", async (req, res) => {
   try {
     const newVehicle = new Vehicle(req.body);
     await newVehicle.save();
     res.json(newVehicle);
-  } catch (err) {
+  } catch {
     res.status(500).json({ message: "Error saving vehicle" });
   }
-})
+});
 
 app.delete("/api/vehicles/:id", async (req, res) => {
   try {
@@ -275,7 +197,6 @@ app.delete("/api/vehicles/:id", async (req, res) => {
   }
 });
 
-// VIN decode + history
 app.post("/api/vehicleinfo", async (req, res) => {
   try {
     const { vin, email } = req.body;
@@ -283,7 +204,6 @@ app.post("/api/vehicleinfo", async (req, res) => {
       return res.status(400).json({ message: "VIN and email required" });
     }
 
-    // helpers
     const capWords = (str = "") =>
       String(str)
         .toLowerCase()
@@ -310,17 +230,16 @@ app.post("/api/vehicleinfo", async (req, res) => {
       return String(drive).toUpperCase();
     };
 
-    // 1) Decode with Ninja (PRIMARY)
+    // Decode with Ninja
     const ninjaResp = await vinDecode(vin);
     let payload = { source: "NinjaAPI", data: ninjaResp || {} };
     let v = payload.data || {};
 
-    // Extract best-guess keys
-    let makeBase  = v.make || v.manufacturer || v.brand;
+    let makeBase = v.make || v.manufacturer || v.brand;
     let modelBase = v.model || v.model_name || v.series;
-    let yearBase  = v.year || v.model_year;
+    let yearBase = v.year || v.model_year;
 
-    // 2) Enrich using Ninja car specs if anything key is missing
+    // Enrich using Ninja car specs if anything key is missing
     const missingKey =
       (!v.engine && !v.engine_size) ||
       !v.fuel_type ||
@@ -340,7 +259,7 @@ app.post("/api/vehicleinfo", async (req, res) => {
           const s = specsList[0];
           const enrichedEngine = s.displacement
             ? `${s.displacement}L ${s.cylinders || ""}-Cyl`.trim()
-            : (v.engine || v.engine_size || "Unknown");
+            : v.engine || v.engine_size || "Unknown";
 
           v = {
             ...v,
@@ -353,31 +272,32 @@ app.post("/api/vehicleinfo", async (req, res) => {
           };
           payload.data = v;
         }
-      } catch (enrichErr) {
-        console.warn("Enrichment skipped:", enrichErr.message);
-      }
+      } catch {}
     }
 
-    // 3) Normalize for save
+    // Normalize for save
     const make  = capWords(v.make || v.manufacturer || v.brand || "Unknown");
     const model = capWords(v.model || v.model_name || v.series || "Unknown");
-    const year  = String(v.year || v.model_year || "Unknown");
-    const trim  = capWords(v.trim || "");
+    const year = String(v.year || v.model_year || "Unknown");
+    const trim = capWords(v.trim || "");
 
     const engine =
-      (v.engine || v.engine_size)
-        ? String(v.engine || v.engine_size).replace(/\b([a-z])/g, (c) => c.toUpperCase())
+      v.engine || v.engine_size
+        ? String(v.engine || v.engine_size).replace(
+            /\b([a-z])/g,
+            (c) => c.toUpperCase()
+          )
         : "Unknown";
 
-    const fuel         = formatFuel(v.fuel_type);
-    const drivetrain   = formatDrivetrain(v.drive || v.drivetrain);
+    const fuel = formatFuel(v.fuel_type);
+    const drivetrain = formatDrivetrain(v.drive || v.drivetrain);
     const transmission = v.transmission || "Unknown";
-    const mpg_city     = v.city_mpg || "Unknown";
-    const mpg_highway  = v.highway_mpg || "Unknown";
+    const mpg_city = v.city_mpg || "Unknown";
+    const mpg_highway = v.highway_mpg || "Unknown";
     const vehicleClass = v.class || "Unknown";
-    const nickname     = `${year} ${make} ${model}`.trim() || "Unnamed Vehicle";
+    const nickname = `${year} ${make} ${model}`.trim() || "Unnamed Vehicle";
 
-    // 4) Persist
+    // Persist
     const newVehicle = new Vehicle({
       email,
       vin,
@@ -397,7 +317,6 @@ app.post("/api/vehicleinfo", async (req, res) => {
     });
     await newVehicle.save();
 
-    // history
     await Lookup.create({ userEmail: email, vin, data: payload });
 
     return res.json({
@@ -405,21 +324,20 @@ app.post("/api/vehicleinfo", async (req, res) => {
       source: payload.source,
       vehicle: newVehicle,
     });
-  } catch (err) {
-    console.error("Unexpected VIN lookup error:", err);
+  } catch {
     return res.status(500).json({ message: "Server error" });
   }
 });
 
-
-// Lookup history
 app.get("/api/history", async (req, res) => {
   try {
     const email = (req.query.email || "").trim().toLowerCase();
     if (!email) return res.status(400).json({ message: "email is required" });
 
     const items = await Lookup.find({ userEmail: email })
-      .sort({ createdAt: -1 }).limit(20).lean();
+      .sort({ createdAt: -1 })
+      .limit(20)
+      .lean();
 
     res.json({ items });
   } catch {
@@ -431,14 +349,18 @@ app.post("/api/history", async (req, res) => {
   try {
     const email = (req.body.email || "").trim().toLowerCase();
     const vin = (req.body.vin || "").trim().toUpperCase();
-    if (!email || !vin) return res.status(400).json({ message: "email and vin are required" });
+    if (!email || !vin) {
+      return res.status(400).json({ message: "email and vin are required" });
+    }
 
     const apiResp = await vehdb.vinDecode(vin);
     const payload = { vehicledb: apiResp.data };
     await Lookup.create({ userEmail: email, vin, data: payload });
     res.json(payload);
   } catch (e) {
-    res.status(e.response?.status || 500).json({ message: e.message || "Lookup failed" });
+    res
+      .status(e.response?.status || 500)
+      .json({ message: e.message || "Lookup failed" });
   }
 });
 
@@ -451,8 +373,10 @@ app.delete("/api/history/:id", async (req, res) => {
   }
 });
 
-// Health
-app.get("/api/health", (req, res) => res.json({ ok: true }));
+app.get("/api/health", (req, res) => {
+  res.json({ ok: true });
+});
+
 app.get("/db-health", (req, res) => {
   res.json({
     connected: mongoose.connection.readyState === 1,
@@ -460,15 +384,20 @@ app.get("/db-health", (req, res) => {
   });
 });
 
-// Auth
 app.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
+    if(!email) {
+      return res.status(400).json({success: false, message: "Email is required"})
+    }
+    if(!password) {
+      return res.status(400).json({success: false, message: "Password is required"})
+    }
     const user = await UserModel.findOne({ email });
-    if (!user) return res.json("User does not exist. Please try again.");
+    if (!user) return res.status(400).json({success: false, message: "User does not exist. Please try again."});
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.json("The password is incorrect. Please try again.");
+    if (!isMatch) return res.status(400).json({success: false, message: "The password is incorrect. Please try again."});
 
     res.json({ success: true, user: { id: user._id, email: user.email } });
   } catch {
@@ -478,13 +407,27 @@ app.post("/login", async (req, res) => {
 
 app.post("/register", async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, passwordConfirm } = req.body;
     const existingUser = await UserModel.findOne({ email });
+    if(!email) {
+      return res.status(400).json({success: false, message: "Email is required"})
+    }
+    if(!password) {
+      return res.status(400).json({success: false, message: "Password is required"})
+    }
+    if(!passwordConfirm) {
+      return res.status(400).json({success: false, message: "Confirm password is required"})
+    }
+    if(password !== passwordConfirm) {
+      return res.status(400).json({success: false, message: "Password and confirm password do not match."})
+    }
     if (existingUser) {
-      return res.json({ success: false, message: "This email is already associated with an account." });
+      return res.status(400).json({ success: false, message: "This email is already associated with an account." });
     }
 
-    const token = jwt.sign({ email, password }, TEMP_SECRET, { expiresIn: "15m" });
+    const token = jwt.sign({ email, password }, TEMP_SECRET, {
+      expiresIn: "15m",
+    });
     const resetURL = `${process.env.CLIENT_URL2}/verify/${token}`;
 
     const msg = {
@@ -497,13 +440,14 @@ app.post("/register", async (req, res) => {
 
     try {
       await sgMail.send(msg);
-      return res.json({ success: true, message: "Verification email sent! Please check your inbox." });
+      return res.json({
+        success: true,
+        message: "Verification email sent! Please check your inbox.",
+      });
     } catch (err) {
-      console.error("SendGrid error:", err);
       return res.status(500).send({ ok: false });
     }
-  } catch (err) {
-    console.error(err);
+  } catch {
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
@@ -514,13 +458,16 @@ app.get("/verify/:token", async (req, res) => {
     const decoded = jwt.verify(token, TEMP_SECRET);
 
     const existingUser = await UserModel.findOne({ email: decoded.email });
-    if (existingUser) return res.redirect(`${process.env.CLIENT_URL}/?verified=exists`);
+    if (existingUser) {
+      return res.redirect(`${process.env.CLIENT_URL}/?verified=exists`);
+    }
 
-    const newUser = await UserModel.create({ email: decoded.email, password: decoded.password });
-    console.log("Verified & created:", newUser.email);
+    const newUser = await UserModel.create({
+      email: decoded.email,
+      password: decoded.password,
+    });
     res.redirect(`${process.env.CLIENT_URL}/?verified=true`);
-  } catch (err) {
-    console.error("Verification error:", err);
+  } catch {
     res.redirect(`${process.env.CLIENT_URL}/?verified=false`);
   }
 });
@@ -529,11 +476,15 @@ app.post("/forgot-password", async (req, res) => {
   try {
     const { email } = req.body;
     const user = await UserModel.findOne({ email });
-    if (!user) return res.status(400).json({ message: "No account with that email found." });
+    if (!user) {
+      return res
+        .status(400)
+        .json({ message: "No account with that email found." });
+    }
 
     const token = crypto.randomBytes(20).toString("hex");
     user.resetPasswordToken = token;
-    user.resetPasswordExpires = Date.now() + 3600000; // 1 hr
+    user.resetPasswordExpires = Date.now() + 3600000;
     await user.save();
 
     const resetURL = `${process.env.CLIENT_URL}/reset-password/${token}`;
@@ -548,12 +499,10 @@ app.post("/forgot-password", async (req, res) => {
     try {
       await sgMail.send(msg);
       return res.send({ ok: true });
-    } catch (err) {
-      console.error("SendGrid error:", err);
+    } catch {
       return res.status(500).send({ ok: false });
     }
-  } catch (err) {
-    console.error(err);
+  } catch {
     res.status(500).json({ message: "Server error" });
   }
 });
@@ -565,18 +514,19 @@ app.post("/reset-password/:token", async (req, res) => {
 
     const user = await UserModel.findOne({
       resetPasswordToken: token,
-      resetPasswordExpires: { $gt: Date.now() }
+      resetPasswordExpires: { $gt: Date.now() },
     });
-    if (!user) return res.status(400).json({ message: "Invalid or expired token." });
+    if (!user) {
+      return res.status(400).json({ message: "Invalid or expired token." });
+    }
 
-    user.password = password; 
+    user.password = password;
     user.resetPasswordToken = undefined;
     user.resetPasswordExpires = undefined;
     await user.save();
 
     res.json({ message: "Password reset successful!" });
-  } catch (err) {
-    console.error(err);
+  } catch {
     res.status(500).json({ message: "Server error" });
   }
 });
@@ -585,12 +535,18 @@ app.post("/update-password", async (req, res) => {
   try {
     const { currentPassword, newPassword, email } = req.body;
     const user = await UserModel.findOne({ email });
-    if (!user) return res.status(404).json({ message: "User not found." });
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
 
     const isMatch = await bcrypt.compare(currentPassword, user.password);
-    if (!isMatch) return res.status(400).json({ message: "Current password is incorrect." });
+    if (!isMatch) {
+      return res
+        .status(400)
+        .json({ message: "Current password is incorrect." });
+    }
 
-    user.password = newPassword; 
+    user.password = newPassword;
     await user.save();
 
     return res.json({ message: "Password updated successfully!" });
@@ -602,6 +558,12 @@ app.post("/update-password", async (req, res) => {
 app.post("/send-support", async (req, res) => {
   try {
     const { name, email, feedback } = req.body;
+    if(!email) {
+      return res.status(400).json({success: false, message: "Email is required"})
+    }
+    if(!feedback) {
+      return res.status(400).json({success: false, message: "Feedback is required"})
+    }
     const msg = {
       to: "truerepairs.noreply@gmail.com",
       from: { email: "truerepairs.noreply@gmail.com", name: "TrueRepairs Support" },
@@ -610,12 +572,10 @@ app.post("/send-support", async (req, res) => {
     };
     await sgMail.send(msg);
     res.status(200).json({ success: true });
-  } catch (error) {
-    console.error("SendGrid error:", error);
+  } catch {
     res.status(500).json({ success: false });
   }
 });
-
 
 app.post("/update-profile", async (req, res) => {
   try {
@@ -676,9 +636,7 @@ app.post("/update-profile", async (req, res) => {
       success: true,
       message: `Verification email sent to ${newEmail}. Please check your inbox.`,
     });
-
-  } catch (err) {
-    console.error("Error in /update-profile:", err);
+  } catch {
     res.status(500).json({
       success: false,
       message: "Server error",
@@ -723,34 +681,47 @@ app.post("/deactivate-account", async (req, res) => {
 
     const user = await UserModel.findOne({ email });
     if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
     }
 
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) {
-      return res.status(401).json({ success: false, message: "Invalid password" });
+      return res
+        .status(401)
+        .json({ success: false, message: "Invalid password" });
     }
 
     user.isActive = false;
     await user.save();
 
-    res.json({ success: true, message: "Account deactivated successfully" });
-  } catch (err) {
-    console.error("Deactivate account error:", err);
+    res.json({
+      success: true,
+      message: "Account deactivated successfully",
+    });
+  } catch {
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
 
-
 app.post("/delete-account", async (req, res) => {
-  const { email, password } = req.body;
-
   try {
+    const { email, password } = req.body;
+
     const user = await UserModel.findOne({ email });
-    if (!user) return res.status(404).json({ success: false, message: "User not found." });
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found." });
+    }
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(401).json({ success: false, message: "Incorrect password." });
+    if (!isMatch) {
+      return res
+        .status(401)
+        .json({ success: false, message: "Incorrect password." });
+    }
 
     await Promise.all([
       UserModel.deleteOne({ email }),
@@ -760,25 +731,27 @@ app.post("/delete-account", async (req, res) => {
       Estimate.deleteMany({ userEmail: email })
     ]);
 
-    return res.json({ success: true, message: "Account deleted successfully." });
-  } catch (err) {
-    console.error("Delete account error:", err);
+    return res.json({
+      success: true,
+      message: "Account deleted successfully.",
+    });
+  } catch {
     return res.status(500).json({ success: false, message: "Server error." });
   }
 });
 
-
-
-// Error handler
 app.use((err, req, res, next) => {
-  console.error("[ERROR]", err);
   res.status(500).json({ message: err.message || "Server error" });
 });
 
-// Start only after DB connects
 (async () => {
   try {
     await connectDB();
+
+    app.use("/api", (req, res) => {
+      return res.status(404).json({ message: "Not Found", path: req.originalUrl });
+    });
+
     app.listen(5000, () => {
       console.log("App is running on http://localhost:5000");
     });
@@ -787,8 +760,3 @@ app.use((err, req, res, next) => {
     process.exit(1);
   }
 })();
-
-// API 404 catch-all
-app.use("/api", (req, res) => {
-  return res.status(404).json({ message: "Not Found", path: req.originalUrl });
-});

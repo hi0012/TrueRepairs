@@ -1,0 +1,102 @@
+{
+	"info": {
+		"_postman_id": "c8866a0b-c446-40ec-b90b-addf2f4a3e0a",
+		"name": "TrueRepair - Vehicles Endpoint",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "49536796",
+		"_collection_link": "https://backenddev61-8311644.postman.co/workspace/backenddev-testend's-Workspace~31d9f490-7f82-4ae5-8c76-32e3d08eff10/collection/49536796-c8866a0b-c446-40ec-b90b-addf2f4a3e0a?action=share&source=collection_link&creator=49536796"
+	},
+	"item": [
+		{
+			"name": "Successful GET",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5000/api/vehicles?email=bent@gmail.com",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"vehicles"
+					],
+					"query": [
+						{
+							"key": "email",
+							"value": "bent@gmail.com"
+						}
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "Successful GET",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5000/api/vehicles?email=bent@gmail.com",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"vehicles"
+							],
+							"query": [
+								{
+									"key": "email",
+									"value": "bent@gmail.com"
+								}
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "X-Powered-By",
+							"value": "Express"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json; charset=utf-8"
+						},
+						{
+							"key": "Content-Length",
+							"value": "2170"
+						},
+						{
+							"key": "ETag",
+							"value": "W/\"87a-kwDsRnumYQA9BIGmsj0OjHC1mww\""
+						},
+						{
+							"key": "Date",
+							"value": "Thu, 30 Oct 2025 19:10:31 GMT"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"items\": [\n        {\n            \"_id\": \"68fa658dee59b6f42bb33062\",\n            \"email\": \"bent@gmail.com\",\n            \"vin\": \"1HGCP2F3XCA123456\",\n            \"nickname\": \"2012 Honda Accord\",\n            \"year\": \"2012\",\n            \"make\": \"Honda\",\n            \"model\": \"Accord\",\n            \"trim\": \"\",\n            \"engine\": \"2.4L 4-Cyl\",\n            \"fuel\": \"Gasoline\",\n            \"drivetrain\": \"FWD\",\n            \"transmission\": \"m\",\n            \"mpg_city\": \"23\",\n            \"mpg_highway\": \"31\",\n            \"class\": \"Sedan/Saloon\",\n            \"data\": {\n                \"vin\": \"1HGCP2F3XCA123456\",\n                \"country\": \"United states (usa)\",\n                \"manufacturer\": \"Honda\",\n                \"model\": \"Accord\",\n                \"class\": \"Sedan/Saloon\",\n                \"region\": \"North America\",\n                \"wmi\": \"1HG\",\n                \"vds\": \"CP2F3X\",\n                \"vis\": \"CA123456\",\n                \"year\": \"2012\",\n                \"engine\": \"2.4L 4-Cyl\",\n                \"fuel_type\": \"gas\",\n                \"drive\": \"fwd\",\n                \"transmission\": \"m\",\n                \"city_mpg\": 23,\n                \"highway_mpg\": 31\n            },\n            \"createdAt\": \"2025-10-23T17:27:41.975Z\",\n            \"updatedAt\": \"2025-10-23T17:27:41.975Z\",\n            \"__v\": 0\n        },\n        {\n            \"_id\": \"68fa65a6ee59b6f42bb33066\",\n            \"email\": \"bent@gmail.com\",\n            \"nickname\": \"2010 Honda Accord\",\n            \"year\": \"2010\",\n            \"make\": \"Honda\",\n            \"model\": \"Accord\",\n            \"trim\": \"\",\n            \"engine\": \"2.4L 4-Cyl\",\n            \"fuel\": \"Gas\",\n            \"drivetrain\": \"FWD\",\n            \"transmission\": \"A\",\n            \"mpg_city\": \"21\",\n            \"mpg_highway\": \"31\",\n            \"class\": \"compact car\",\n            \"createdAt\": \"2025-10-23T17:28:06.448Z\",\n            \"updatedAt\": \"2025-10-23T17:28:06.448Z\",\n            \"__v\": 0\n        },\n        {\n            \"_id\": \"68fd7f0dc39cec97ca4136d4\",\n            \"email\": \"bent@gmail.com\",\n            \"vin\": \"2G2FS32K7X2548319\",\n            \"nickname\": \"1999 Pontiac Firebird\",\n            \"year\": \"1999\",\n            \"make\": \"Pontiac\",\n            \"model\": \"Firebird\",\n            \"trim\": \"\",\n            \"engine\": \"3.8L 6-Cyl\",\n            \"fuel\": \"Gasoline\",\n            \"drivetrain\": \"RWD\",\n            \"transmission\": \"a\",\n            \"mpg_city\": \"17\",\n            \"mpg_highway\": \"26\",\n            \"class\": \"Convertible/Cabriolet\",\n            \"data\": {\n                \"vin\": \"2G2FS32K7X2548319\",\n                \"country\": \"Canada\",\n                \"manufacturer\": \"Pontiac\",\n                \"model\": \"Firebird\",\n                \"class\": \"Convertible/Cabriolet\",\n                \"region\": \"North America\",\n                \"wmi\": \"2G2\",\n                \"vds\": \"FS32K7\",\n                \"vis\": \"X2548319\",\n                \"year\": \"1999\",\n                \"engine\": \"3.8L 6-Cyl\",\n                \"fuel_type\": \"gas\",\n                \"drive\": \"rwd\",\n                \"transmission\": \"a\",\n                \"city_mpg\": 17,\n                \"highway_mpg\": 26\n            },\n            \"createdAt\": \"2025-10-26T01:53:17.400Z\",\n            \"updatedAt\": \"2025-10-26T01:53:17.400Z\",\n            \"__v\": 0\n        },\n        {\n            \"_id\": \"69036d4bd2509edab594cc66\",\n            \"email\": \"bent@gmail.com\",\n            \"nickname\": \"2003 Bmw 325i\",\n            \"year\": \"2003\",\n            \"make\": \"Bmw\",\n            \"model\": \"325i\",\n            \"trim\": \"\",\n            \"engine\": \"2.5L 6-Cyl\",\n            \"fuel\": \"Gas\",\n            \"drivetrain\": \"RWD\",\n            \"transmission\": \"A\",\n            \"mpg_city\": \"18\",\n            \"mpg_highway\": \"26\",\n            \"class\": \"compact car\",\n            \"createdAt\": \"2025-10-30T13:51:07.063Z\",\n            \"updatedAt\": \"2025-10-30T13:51:07.063Z\",\n            \"__v\": 0\n        }\n    ]\n}"
+				}
+			]
+		}
+	]
+}
