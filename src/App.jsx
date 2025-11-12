@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Route, Routes, useLocation } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Route, Routes, useLocation, useSearchParams } from "react-router-dom";
 
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
@@ -13,6 +13,8 @@ import ResetPassword from "./pages/ResetPassword";
 const App = () => {
   const [signInActive, setSignInActive] = useState(false);
   const location = useLocation();
+
+  //const [searchParams, setSearchParams] = useSearchParams();
 
   return (
     <div className="app-container">

@@ -17,6 +17,8 @@ const vehdb = require("./src/services/vehdb");
 const Vehicle = require("./models/Vehicle.js");
 const { getCarSpecs, vinDecode } = require("./src/services/ninjaApi");
 const reportRoutes = require("./src/routes/reportRoutes.js");
+const Estimate = require("./models/estimate");
+const Report = require("./models/Report");
 // const externalRoutes = require("./src/routes/external.js");
 //const estimateRoutes = require("./src/routes/estimate");
 const fs = require("fs");
@@ -577,14 +579,18 @@ app.post("/send-support", async (req, res) => {
 
 app.post("/update-profile", async (req, res) => {
   try {
-    const { currentEmail, newEmail } = req.body;
-    if (!currentEmail || !newEmail) {
+    // 1. Get the password from the request body
+    const { currentEmail, newEmail, password } = req.body;
+
+    // 2. Validate input
+    if (!currentEmail || !newEmail || !password) {
       return res.status(400).json({
         success: false,
-        message: "Both currentEmail and newEmail are required",
+        message: "Current email, new email, and password are required",
       });
     }
 
+    // 3. Find user by current email
     const user = await UserModel.findOne({ email: currentEmail });
     if (!user) {
       return res.status(404).json({
@@ -593,27 +599,79 @@ app.post("/update-profile", async (req, res) => {
       });
     }
 
-    const emailExists = await UserModel.findOne({ email: newEmail });
-    if (emailExists) {
-      return res.status(409).json({
+    // Check if the provided password is correct
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({
         success: false,
-        message: "Email already in use",
+        message: "Incorrect password. Please try again.",
       });
     }
 
-    user.email = newEmail;
-    await user.save();
+    // 5. Check if new email already exists
+    const emailExists = await UserModel.findOne({ email: newEmail });
+    if (emailExists && emailExists._id.toString() !== user._id.toString()) {
+      return res.status(409).json({
+        success: false,
+        message: "That email is already in use",
+      });
+    }
 
+    const tokenPayload = { oldEmail: currentEmail, newEmail: newEmail };
+    const token = jwt.sign(tokenPayload, TEMP_SECRET, { expiresIn: "15m" }); 
+    
+    const verifyURL = `${process.env.CLIENT_URL2}/verify-email-update/${token}`;
+
+    const msg = {
+      to: newEmail, 
+      from: { email: process.env.FROM_EMAIL, name: "TrueRepairs Support" },
+      subject: "Verify Your New Email Address",
+      text: `Please click the link below to confirm your email change (valid 15 minutes): ${verifyURL}`,
+      html: `<p>Please click the link below to confirm your email change (valid 15 minutes):</p><p><a href="${verifyURL}">Verify New Email</a></p>`,
+    };
+
+    await sgMail.send(msg);
+    
     res.json({
       success: true,
-      message: "Email updated successfully",
-      user: { email: user.email },
+      message: `Verification email sent to ${newEmail}. Please check your inbox.`,
     });
   } catch {
     res.status(500).json({
       success: false,
       message: "Server error",
     });
+  }
+});
+
+app.get("/verify-email-update/:token", async (req, res) => {
+  try {
+    const { token } = req.params;
+    
+    const decoded = jwt.verify(token, TEMP_SECRET);
+    const { oldEmail, newEmail } = decoded;
+
+    // 2. Find the user by their OLD email
+    const user = await UserModel.findOne({ email: oldEmail });
+    if (!user) {
+      return res.redirect(`${process.env.CLIENT_URL}/?email-update=failed`);
+    }
+
+    user.email = newEmail;
+    await user.save();
+
+    await Promise.all([
+      Vehicle.updateMany({ email: oldEmail }, { $set: { email: newEmail } }),
+      Lookup.updateMany({ userEmail: oldEmail }, { $set: { userEmail: newEmail } }),
+      Report.updateMany({ userEmail: oldEmail }, { $set: { userEmail: newEmail } }),
+      Estimate.updateMany({ userEmail: oldEmail }, { $set: { userEmail: newEmail } })
+    ]);
+
+    res.redirect(`${process.env.CLIENT_URL}/?email-update=success&newEmail=${newEmail}`);
+
+  } catch (err) {
+    console.error("Email verification update error:", err);
+    res.redirect(`${process.env.CLIENT_URL}/?email-update=failed`);
   }
 });
 
@@ -665,7 +723,13 @@ app.post("/delete-account", async (req, res) => {
         .json({ success: false, message: "Incorrect password." });
     }
 
-    await Promise.all([UserModel.deleteOne({ email })]);
+    await Promise.all([
+      UserModel.deleteOne({ email }),
+      Vehicle.deleteMany({ email }),
+      Lookup.deleteMany({ userEmail: email }),
+      Report.deleteMany({ email }),
+      Estimate.deleteMany({ userEmail: email })
+    ]);
 
     return res.json({
       success: true,

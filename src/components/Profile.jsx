@@ -37,21 +37,20 @@ const Profile = ({ open, onClose }) => {
             const res = await axios.post("http://localhost:5000/update-profile", {
                 currentEmail,
                 newEmail,
+                password: emailPassword
             });
 
-            setMessage(res.data.message || "Email updated successfully");
+            setMessage(res.data.message);
 
-            // Update localStorage with new email
-            const updatedUser = {
-                ...JSON.parse(localStorage.getItem("user")),
-                email: res.data.user.email,
-            };
-            localStorage.setItem("user", JSON.stringify(updatedUser));
-
-            // Reflect new email in the UI
-            setCurrentEmail(res.data.user.email);
+            // 2. Clear the new email field
             setNewEmail("");
-            setDisplayPopupEmail(false);
+
+            // 3. Wait 3 seconds to let the user read the message, THEN close the popup.
+            setTimeout(() => {
+                setDisplayPopupEmail(false);
+                setMessage("");
+                setEmailPassword(""); // Clear the password
+            }, 3000);
 
             setTimeout(() => setMessage(""), 3000);
         } catch (err) {
@@ -224,7 +223,7 @@ const Profile = ({ open, onClose }) => {
                                 </button>
                             </div>
                         </form>
-                        {message && <p className="email-message">{message}</p>}
+                        {message && (<p className={`email-message ${message.includes("successfully") ? 'success' : 'error'}`}>{message}</p>)}
                     </div>
                 </div>
             )}
