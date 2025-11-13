@@ -1,0 +1,204 @@
+.contactus{ 
+    margin-bottom: 5px;
+    margin-top: 50px;
+} 
+.contactus h1 { 
+    margin-bottom: 10px; 
+    text-align: center;
+    font-size: 35px;
+} 
+
+.contactus-container { 
+    display: flex; 
+    gap: 30px;
+    align-items: center;
+} 
+
+.contact-image img {
+    width: 200px; 
+    height: 200px; 
+    border-radius: 12px; 
+    border: 1px solid #b3d2f2; 
+} 
+
+.contactus-header { 
+    margin-top: 10px;
+    animation: slideDown 0.6s ease-in-out;
+    display: flex; 
+    gap: 20px; 
+    width: 100%; 
+} 
+.header-content { 
+    flex: 1%; 
+    border: 1px solid #b3d2f2; 
+    border-radius: 12px; 
+    align-items: center; 
+    text-align: center; 
+    display: flex; 
+    flex-direction: column; 
+    justify-content: center; 
+} 
+
+.contactus-container p { 
+    font-size: clamp(16px, 1.8vw, 22px);
+} 
+
+.contact-us-btn { 
+    font-size: 18px; 
+    border-radius: 50px; 
+    background-color: white; 
+    color: #0068d2; 
+    cursor: pointer; 
+    align-self: center; 
+    border: 1px solid #0068d2; 
+    padding: 10px 30px; 
+} 
+
+.contact-us-send-btn { 
+    margin: 0;
+    font-size: 15px;
+    border-radius: 50px;
+    background-color: white;
+    color: #0068d2;
+    cursor: pointer;
+    align-self: center;
+    border: 1px solid #0068d2;
+    padding: 10px 30px;
+} 
+
+.contact-us-send-btn:hover {
+    color: white;
+    background-color: #0068d2;
+    border: 1px solid white;
+}
+
+.contact-us-cancel-btn {
+    border-radius: 50px;
+    font-size: 15px;
+    background-color: white;
+    color: red;
+    align-items: center;
+    cursor: pointer;
+    border: 1px solid red;
+    padding: 10px 30px;
+}
+
+.contact-us-cancel-btn:hover {
+    font-size: 15px;
+    color: white;
+    background-color: red;
+    border: 1px solid white;
+} 
+.contactus-form {
+    width: 500px; 
+    margin: 40px auto;
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    background-color: #0068d2; 
+    border-radius: 8px; 
+    color: white; 
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2); 
+    margin-bottom: 20px; 
+    padding: 10px; 
+    animation: slideDown 0.6s ease-in-out; 
+} 
+.form-container { 
+    margin-top: 20px;
+    display: flex; 
+    flex-direction: column; 
+    align-items: stretch;
+    gap: 10px; 
+    width: 80%; 
+} 
+.form-container input {
+    width: 100%; 
+    box-sizing: border-box; 
+    padding: 10px; 
+    border-radius: 6px; 
+    border: 1px solid #ccc; 
+    font-size: 16px; 
+    min-height: 50px;
+    max-height: 150px;
+    overflow-y: auto;  
+}
+.form-container textarea { 
+    width: 100%; 
+    box-sizing: border-box; 
+    padding: 10px; 
+    border-radius: 6px; 
+    border: 1px solid #ccc; 
+    font-size: 16px; 
+    resize: none;
+    min-height: 100px;
+    max-height: 400px;
+    overflow-y: auto;  
+    scrollbar-width: thin;
+    font-weight: 300;
+} 
+
+.header-content p { 
+    margin-bottom: 10px; 
+    font-size: 30px; 
+    color: #0068d2 
+} 
+.group-btns {
+    display: flex;
+    justify-content: space-between;
+}
+
+@keyframes slideDown { 
+  from { 
+    opacity: 0; 
+    transform: translateY(-10px); 
+  } 
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  } 
+} 
+
+@media (max-width: 1200px) {
+    .contactus-header p {
+        font-size: clamp(19px, 2.6vw, 23px);
+    }
+    .header-content button {
+        font-size: clamp(18px, 2.6vw, 21px);
+        padding: 10px 20px;
+    }
+}
+
+@media (max-width: 992px) {
+     .contactus-header p {
+        font-size: clamp(18px, 2.4vw, 22px);
+    }
+    .header-content button {
+        font-size: clamp(17px, 2.4vw, 20px);
+        padding: 8px 15px;
+    }
+}
+
+@media (max-width: 768px) {
+  .contact-image {
+    display: none;
+  }
+  .contactus-header p {
+        font-size: clamp(17px, 2.2vw, 21px);
+    }
+    .header-content button {
+        font-size: clamp(16px, 2.2vw, 19px);
+        padding: 5px 10px;
+        margin-bottom: 5px;
+    }
+}
+
+@media (max-width: 480px) {
+    .contactus-header p {
+        font-size: clamp(16px, 2vw, 20px);
+    }
+    .header-content button {
+        font-size: clamp(15px, 2vw, 18px);
+        padding: 5px 10px;
+        margin-bottom: 5px;
+    }
+}

@@ -1,0 +1,543 @@
+{
+	"info": {
+		"_postman_id": "fe45dc9b-b57c-42c6-803e-754f9ddd6096",
+		"name": "TrueRepair - Manual Vehicle Endpoint",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "49536796",
+		"_collection_link": "https://backenddev61-8311644.postman.co/workspace/backenddev-testend's-Workspace~31d9f490-7f82-4ae5-8c76-32e3d08eff10/collection/49536796-fe45dc9b-b57c-42c6-803e-754f9ddd6096?action=share&source=collection_link&creator=49536796"
+	},
+	"item": [
+		{
+			"name": "TrueRepair – Manual-Vehicle: Successful POST",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"year\": \"2003\",\r\n    \"make\": \"Bmw\",\r\n    \"model\": \"325i\",\r\n    \"email\": \"jayjackson@gmail.com\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5000/api/manual-vehicle",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"manual-vehicle"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "TrueRepair – Manual-Vehicle: Successful POST",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"year\": \"2003\",\r\n    \"make\": \"Bmw\",\r\n    \"model\": \"325i\",\r\n    \"email\": \"jayjackson@gmail.com\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5000/api/manual-vehicle",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"manual-vehicle"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "X-Powered-By",
+							"value": "Express"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json; charset=utf-8"
+						},
+						{
+							"key": "Content-Length",
+							"value": "419"
+						},
+						{
+							"key": "ETag",
+							"value": "W/\"1a3-Np1BcnKXm8VdRDPA3sR/s2t+tUw\""
+						},
+						{
+							"key": "Date",
+							"value": "Thu, 30 Oct 2025 13:56:43 GMT"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"message\": \"Manual vehicle added successfully!\",\n    \"vehicle\": {\n        \"email\": \"jayjackson@gmail.com\",\n        \"nickname\": \"2003 Bmw 325i\",\n        \"year\": \"2003\",\n        \"make\": \"Bmw\",\n        \"model\": \"325i\",\n        \"trim\": \"\",\n        \"engine\": \"2.5L 6-Cyl\",\n        \"fuel\": \"Gas\",\n        \"drivetrain\": \"RWD\",\n        \"transmission\": \"A\",\n        \"mpg_city\": \"18\",\n        \"mpg_highway\": \"26\",\n        \"class\": \"compact car\",\n        \"_id\": \"69036e9bd2509edab594cc6a\",\n        \"createdAt\": \"2025-10-30T13:56:43.740Z\",\n        \"updatedAt\": \"2025-10-30T13:56:43.740Z\",\n        \"__v\": 0\n    }\n}"
+				}
+			]
+		},
+		{
+			"name": "TrueRepair – Manual-Vehicle: Failed POST (Missing Year)",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"year\": \"\",\r\n    \"make\": \"Bmw\",\r\n    \"model\": \"325i\",\r\n    \"email\": \"jayjackson@gmail.com\"\r\n}"
+				},
+				"url": {
+					"raw": "http://localhost:5000/api/manual-vehicle",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"manual-vehicle"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "TrueRepair – Manual-Vehicle: Failed POST (Missing Year)",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"year\": \"\",\r\n    \"make\": \"Bmw\",\r\n    \"model\": \"325i\",\r\n    \"email\": \"jayjackson@gmail.com\"\r\n}"
+						},
+						"url": {
+							"raw": "http://localhost:5000/api/manual-vehicle",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"manual-vehicle"
+							]
+						}
+					},
+					"status": "Internal Server Error",
+					"code": 500,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "X-Powered-By",
+							"value": "Express"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json; charset=utf-8"
+						},
+						{
+							"key": "Content-Length",
+							"value": "43"
+						},
+						{
+							"key": "ETag",
+							"value": "W/\"2b-cypCob7IZigpcFXbm9fKCgydxRM\""
+						},
+						{
+							"key": "Date",
+							"value": "Thu, 30 Oct 2025 14:16:15 GMT"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"message\": \"Failed to add manual vehicle.\"\n}"
+				}
+			]
+		},
+		{
+			"name": "TrueRepair – Manual-Vehicle: Failed POST (Missing Make)",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"year\": \"2003\",\r\n    \"make\": \"\",\r\n    \"model\": \"325i\",\r\n    \"email\": \"jayjackson@gmail.com\"\r\n}"
+				},
+				"url": {
+					"raw": "http://localhost:5000/api/manual-vehicle",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"manual-vehicle"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "TrueRepair – Manual-Vehicle: Failed POST (Missing Make)",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"year\": \"2003\",\r\n    \"make\": \"\",\r\n    \"model\": \"325i\",\r\n    \"email\": \"jayjackson@gmail.com\"\r\n}"
+						},
+						"url": {
+							"raw": "http://localhost:5000/api/manual-vehicle",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"manual-vehicle"
+							]
+						}
+					},
+					"status": "Internal Server Error",
+					"code": 500,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "X-Powered-By",
+							"value": "Express"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json; charset=utf-8"
+						},
+						{
+							"key": "Content-Length",
+							"value": "43"
+						},
+						{
+							"key": "ETag",
+							"value": "W/\"2b-cypCob7IZigpcFXbm9fKCgydxRM\""
+						},
+						{
+							"key": "Date",
+							"value": "Thu, 30 Oct 2025 14:20:20 GMT"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"message\": \"Failed to add manual vehicle.\"\n}"
+				}
+			]
+		},
+		{
+			"name": "TrueRepair – Manual-Vehicle: Failed POST (Missing Model)",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"year\": \"2003\",\r\n    \"make\": \"Bmw\",\r\n    \"model\": \"\",\r\n    \"email\": \"jayjackson@gmail.com\"\r\n}"
+				},
+				"url": {
+					"raw": "http://localhost:5000/api/manual-vehicle",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"manual-vehicle"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "TrueRepair – Manual-Vehicle: Failed POST (Missing Model)",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"year\": \"2003\",\r\n    \"make\": \"Bmw\",\r\n    \"model\": \"\",\r\n    \"email\": \"jayjackson@gmail.com\"\r\n}"
+						},
+						"url": {
+							"raw": "http://localhost:5000/api/manual-vehicle",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"manual-vehicle"
+							]
+						}
+					},
+					"status": "Internal Server Error",
+					"code": 500,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "X-Powered-By",
+							"value": "Express"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json; charset=utf-8"
+						},
+						{
+							"key": "Content-Length",
+							"value": "43"
+						},
+						{
+							"key": "ETag",
+							"value": "W/\"2b-cypCob7IZigpcFXbm9fKCgydxRM\""
+						},
+						{
+							"key": "Date",
+							"value": "Thu, 30 Oct 2025 14:22:10 GMT"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"message\": \"Failed to add manual vehicle.\"\n}"
+				}
+			]
+		},
+		{
+			"name": "TrueRepair – Manual-Vehicle: Failed POST (Missing Email Address)",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"year\": \"2003\",\r\n    \"make\": \"Bmw\",\r\n    \"model\": \"325i\",\r\n    \"email\": \"\"\r\n}"
+				},
+				"url": {
+					"raw": "http://localhost:5000/api/manual-vehicle",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"manual-vehicle"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "TrueRepair – Manual-Vehicle: Failed POST (Missing Email Address)",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"year\": \"2003\",\r\n    \"make\": \"Bmw\",\r\n    \"model\": \"325i\",\r\n    \"email\": \"\"\r\n}"
+						},
+						"url": {
+							"raw": "http://localhost:5000/api/manual-vehicle",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"manual-vehicle"
+							]
+						}
+					},
+					"status": "Internal Server Error",
+					"code": 500,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "X-Powered-By",
+							"value": "Express"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json; charset=utf-8"
+						},
+						{
+							"key": "Content-Length",
+							"value": "43"
+						},
+						{
+							"key": "ETag",
+							"value": "W/\"2b-cypCob7IZigpcFXbm9fKCgydxRM\""
+						},
+						{
+							"key": "Date",
+							"value": "Thu, 30 Oct 2025 14:23:54 GMT"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"message\": \"Failed to add manual vehicle.\"\n}"
+				}
+			]
+		},
+		{
+			"name": "TrueRepair – Manual-Vehicle: Failed POST (Missing Year, Make, Model, Email)",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"year\": \"\",\r\n    \"make\": \"\",\r\n    \"model\": \"\",\r\n    \"email\": \"\"\r\n}"
+				},
+				"url": {
+					"raw": "http://localhost:5000/api/manual-vehicle",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"manual-vehicle"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "TrueRepair – Manual-Vehicle: Failed POST (Missing Year, Make, Model, Email)",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"year\": \"\",\r\n    \"make\": \"\",\r\n    \"model\": \"\",\r\n    \"email\": \"\"\r\n}"
+						},
+						"url": {
+							"raw": "http://localhost:5000/api/manual-vehicle",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"manual-vehicle"
+							]
+						}
+					},
+					"status": "Internal Server Error",
+					"code": 500,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "X-Powered-By",
+							"value": "Express"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json; charset=utf-8"
+						},
+						{
+							"key": "Content-Length",
+							"value": "43"
+						},
+						{
+							"key": "ETag",
+							"value": "W/\"2b-cypCob7IZigpcFXbm9fKCgydxRM\""
+						},
+						{
+							"key": "Date",
+							"value": "Thu, 30 Oct 2025 14:31:30 GMT"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"message\": \"Failed to add manual vehicle.\"\n}"
+				}
+			]
+		}
+	]
+}

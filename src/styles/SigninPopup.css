@@ -1,0 +1,148 @@
+.signin {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(2, 171, 250, 0.3); 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.signin-form {
+    background: white;
+    gap: 20px;
+    padding: 30px;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 450px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    z-index: 10000;
+}
+.signin-form h3 {
+    text-align: center;
+}
+.signin-form input {
+    padding: 10px 15px;
+    border-radius: 10px;
+    width: 100%;
+    border: 1px solid #0068d2;
+    margin-bottom: 15px;
+}
+
+.signin-form button[type="submit"] {
+    border-radius: 50px;
+    font-size: 15px;
+    background-color: white;
+    color: #0068d2;
+    cursor: pointer;
+    align-self: center;
+    border: 1px solid #0068d2;
+    padding: 10px 30px;
+}
+
+.signin-form button[type="submit"]:hover {
+    color: white;
+    background-color: #0068d2;
+    border: 1px solid white;
+}
+
+.close-btn {
+    background-color: white;
+    font-size: 15px !important; 
+    color: red;
+    cursor: pointer;
+    border-radius: 50px;
+    border: 1px solid red;
+    padding: 10px 30px;
+  
+}
+.sub-btn {
+    font-size: 15px;
+}
+.close-btn:hover{
+    color: white;
+    background-color: red;
+    border: 1px solid white;
+}
+
+.forms-btns {
+    display: flex;
+    justify-content: space-between;
+}
+
+.fp-container{
+    margin-top: 12px;
+    text-align: left;
+}
+
+.fp-inline-box {
+    margin: 0 auto;
+    padding: 10px;
+    background: rgb(235, 230, 230, 0.6);
+    max-height: 140px;
+    overflow-y: auto;
+    border-radius: 5px;
+    font-size: 13px;
+    color: black;
+    cursor: pointer;
+}
+.fp-container .fp-agreement {
+    text-align: center;
+    margin-bottom: 10px;
+}
+.fp-container .fp-update {
+    text-align: center;
+}
+
+.fp-agreement{
+    font-size: 13px;
+    color: gray;
+    margin-top: 15px;
+}
+
+.fp-link {
+    font-size: 13px;
+    color: #0068d2;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.fp-inline-box::-webkit-scrollbar{
+    width: 5px;
+}
+
+.fp-inline-box::-webkit-scrollbar-thumb {
+    background-color: #0068d2;
+    border-radius: 5px;
+}
+
+.fp-inline-box::-webkit-scrollbar-track{
+    background-color: gray;
+    border-radius: 5px;
+}
+
+.reset-message.correct {
+    margin-top: 15px;
+    text-align: center;
+    font-size: 14px;
+    color: #28a745;
+}
+
+.reset-message.incorrect {
+    margin-top: 15px;
+    text-align: center;
+    font-size: 14px;
+    color: red;
+}
+.forgot-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+}
