@@ -163,6 +163,7 @@ export default function AIScanModal({ open, onClose, userEmail }) {
         {/* Header */}
         <div className="aiscan-header">
           <h1>AI Scan</h1>
+          <p>Generate and save unique a AI scan reports for your vehicles.</p>
         </div>
 
         <div className="aiscan-columns">
@@ -170,7 +171,7 @@ export default function AIScanModal({ open, onClose, userEmail }) {
           <div className="aiscan-left">
             <form onSubmit={onSubmit} className="aiscan-form">
               <p className="aiscan-email">{userEmail || "No email"}</p>
-
+              <p>Labor Rate</p>
               <input type="number" min="30" step="1" value={laborRate} onChange={(e) => setLaborRate(Number(e.target.value))} placeholder="Labor rate" className="aiscan-input"/>
               <input type="file" accept="image/*" onChange={(e) => setFile(e.target.files?.[0] || null)} className="aiscan-input"/>
 

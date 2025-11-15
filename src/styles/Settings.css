@@ -13,6 +13,12 @@
     animation: fadeIn 0.3s ease-in-out;
 } 
 
+
+.settings-header p { 
+    font-size: 16px;
+    color: #555;
+} 
+
 .settings-popup {  
     background: #fff;
     width: 95%;

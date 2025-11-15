@@ -475,7 +475,7 @@ function ReportsBody({ onClose }) {
   async function handleDownload(r) {
     setExpanded(r._id);
 
-    // Wait for report DOM element
+    // Wait for DOM to load
     let element = null;
     for (let i = 0; i < 40; i++) {
       element = document.getElementById(`report-${r._id}`);
@@ -488,36 +488,44 @@ function ReportsBody({ onClose }) {
     }
 
     try {
-
       // Load logos
       const logoImg = new Image(); logoImg.src = logo;
       const brandImg = new Image(); brandImg.src = brand;
       await Promise.all([logoImg.decode(), brandImg.decode()]);
 
-      // Snapshot of the report (keeps your style)
-      const canvas = await html2canvas(element, {scale: 2, backgroundColor: "#ffffff", useCORS: true,});
+      // Snapshot of the report
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        backgroundColor: "#ffffff",
+        useCORS: true,
+      });
       const imgData = canvas.toDataURL("image/png");
 
-      // PDF setup
+      // PDF base
       const pdf = new jsPDF("p", "pt", "a4");
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = pdf.internal.pageSize.getHeight();
       const margin = 40;
       const dateStr = new Date().toLocaleString();
 
-      // Header
+      // === HEADER ===
       const logoY = 30;
       pdf.addImage(logoImg, "PNG", margin, logoY, 45, 45);
       pdf.addImage(brandImg, "PNG", margin + 45, logoY - 20, 100, 100);
       pdf.setFontSize(11);
-      pdf.setTextColor(0, 0, 0);
       pdf.text(`Date: ${dateStr}`, pdfWidth - 170, logoY + 20);
+
       pdf.setFontSize(18);
       pdf.text("TrueRepairs Report", margin, 100);
-      pdf.setFontSize(13);
-      pdf.text(`${r.vehicle?.year || ""} ${r.vehicle?.make || ""} ${r.vehicle?.model || ""} (${r.parts?.length || 0} parts)`, margin, 118);
 
-      // Snapshot sizing
+      pdf.setFontSize(13);
+      pdf.text(
+        `${r.vehicle?.year || ""} ${r.vehicle?.make || ""} ${r.vehicle?.model || ""} (${r.parts?.length || 0} parts)`,
+        margin,
+        118
+      );
+
+      // === MAIN SNAPSHOT (multi-page) ===
       let imgWidth = pdfWidth - 2 * margin;
       let pageHeight = pdfHeight - 180;
       let imgHeight = (canvas.height * imgWidth) / canvas.width;
@@ -525,115 +533,152 @@ function ReportsBody({ onClose }) {
       let heightLeft = imgHeight;
       let position = 135;
 
-      // Add first chunk of image
+      // First portion
       pdf.addImage(imgData, "PNG", margin, position, imgWidth, imgHeight);
       heightLeft -= pageHeight;
 
-      // Auto-paging for tall reports
+      // Overflow pages
       while (heightLeft > 0) {
         pdf.addPage();
-        pdf.addImage(imgData, "PNG", margin, -imgHeight + heightLeft + 135, imgWidth, imgHeight);
+        pdf.addImage(
+          imgData,
+          "PNG",
+          margin,
+          -imgHeight + heightLeft + 135,
+          imgWidth,
+          imgHeight
+        );
         heightLeft -= pageHeight;
       }
 
-      // Quick Links Header
+      // === QUICK LINKS ===
       pdf.setFontSize(11);
-      pdf.setTextColor(0, 0, 0);
       let linkY = 135 + imgHeight + 25;
       pdf.text("Quick Links:", margin, linkY);
 
-      // Collect 1 unique URL per category
       const uniqueLinks = new Map();
 
       for (const p of r.parts || []) {
-
-        // Clean part name
         const cleanName = (p.name || "").split("(")[0].trim();
 
-        // Lookup matching JSON details
-        const { items } = findPartDetailsSmart(r.vehicle, p.category, cleanName);
+        const { items } = findPartDetailsSmart(
+          r.vehicle,
+          p.category,
+          cleanName
+        );
 
-        // If the JSON item had a URL, store once per category
         if (items && items.length > 0 && items[0].url) {
-          const url = items[0].url;
           const cat = p.category || cleanName;
           if (!uniqueLinks.has(cat)) {
-            uniqueLinks.set(cat, url);
+            uniqueLinks.set(cat, items[0].url);
           }
         }
       }
 
-      // Print QuickLinks
       for (const [cat, url] of uniqueLinks) {
         linkY += 15;
-        pdf.textWithLink(`• ${cat}`, margin + 10, linkY, {url});
+        pdf.textWithLink(`• ${cat}`, margin + 10, linkY, { url });
       }
 
-      // Detailed Breakdown Page
+      // === DETAILED BREAKDOWN — ONE PAGE PER PART ===
       pdf.addPage();
       pdf.setFontSize(16);
       pdf.text("Detailed Part Breakdown", margin, 60);
-      let y = 90;
 
-      pdf.setFontSize(12);
+      for (let idx = 0; idx < (r.parts || []).length; idx++) {
+        const p = r.parts[idx];
 
-      // Loop each part for breakdown
-      for (const p of r.parts || []) {
-
-        // Page break if close to bottom
-        if (y > pdfHeight - 150) {
+        // New page for every part except the first one
+        if (idx > 0) {
           pdf.addPage();
-          y = 60;
         }
 
-        // Strip (x1), (x2) etc
+        let y = 100;
+
+        // Clean name
         const cleanPart = (p.name || "").split("(")[0].trim();
 
-        // Smart JSON lookup
-        const { items: details, usedCategory } = findPartDetailsSmart(r.vehicle, p.category, cleanPart);
+        // JSON lookup
+        const { items: details, usedCategory } = findPartDetailsSmart(
+          r.vehicle,
+          p.category,
+          cleanPart
+        );
 
-        // Section Header
+        // Header
         const headerCategory = usedCategory || p.category || "Unknown";
+
         pdf.setFontSize(14);
         pdf.text(`${headerCategory} - ${p.name || "Unknown"}`, margin, y);
-        y += 10;
+        y += 12;
+
         pdf.setDrawColor(200);
         pdf.line(margin, y, pdfWidth - margin, y);
-        y += 10;
+        y += 20;
 
-        // Part details from JSON
+        // Part details
         if (details.length > 0) {
+          pdf.setFontSize(11);
 
           for (const item of details) {
-            pdf.setFontSize(11);
-            pdf.text(`Brand: ${item.brand ?? "N/A"}`, margin, y); y += 14;
-            pdf.text(`Part #: ${item.partnumber ?? "N/A"}`, margin, y); y += 14;
-            pdf.text(`Description: ${item.description ?? "N/A"}`, margin, y, {maxWidth: pdfWidth - 2 * margin}); y += 14;
-            pdf.text(`Price: ${item.price != null ? `$${Number(item.price).toFixed(2)}` : "N/A"}`, margin, y); y += 14;
-            pdf.text(`Availability: ${item.in_stock ? "In Stock" : "Out of Stock"}`, margin, y); y += 22;
-          }
+            pdf.text(`Brand: ${item.brand ?? "N/A"}`, margin, y);
+            y += 14;
 
+            pdf.text(`Part #: ${item.partnumber ?? "N/A"}`, margin, y);
+            y += 14;
+
+            pdf.text(`Description: ${item.description ?? "N/A"}`, margin, y, {
+              maxWidth: pdfWidth - 2 * margin,
+            });
+            y += 18;
+
+            pdf.text(
+              `Price: ${
+                item.price != null
+                  ? `$${Number(item.price).toFixed(2)}`
+                  : "N/A"
+              }`,
+              margin,
+              y
+            );
+            y += 14;
+
+            pdf.text(
+              `Availability: ${item.in_stock ? "In Stock" : "Out of Stock"}`,
+              margin,
+              y
+            );
+            y += 28;
+          }
         } else {
-          // No match
           pdf.setFontSize(11);
           pdf.text("No detailed items found for this part.", margin, y);
           y += 20;
         }
+
+        // Footer per page
+        pdf.setFontSize(10);
+        pdf.text(
+          "",
+          margin,
+          pdfHeight - 40
+        );
       }
 
-      // Footer
-      pdf.setFontSize(10);
-      pdf.text("Generated with TrueRepairs | Estimate data from RockAuto.com", margin, pdfHeight - 40);
+      // === SAVE PDF ===
+      pdf.save(
+        `TrueRepairs_Report_${r.vehicle?.make || ""}_${r.vehicle?.model || ""}.pdf`
+      );
 
-      // Save PDF
-      pdf.save(`TrueRepairs_Report_${r.vehicle?.make || ""}_${r.vehicle?.model || ""}.pdf`);
       setMessage("PDF downloaded successfully.");
-
     } catch (err) {
       console.error("PDF generation failed:", err);
       setMessage("Failed to generate PDF.");
     }
   }
+
+
+
   const canGenerate = !!selectedVehicle && partsList.length > 0 && !generating;
 
   // Delete a report
