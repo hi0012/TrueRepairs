@@ -29,6 +29,7 @@ const Support = ({ open, onClose }) => {
                 <div className='support-popup'>
                     <div className='support-title'>
                         <h1>Support</h1>
+                        <p>Find quick answers, troubleshooting steps, and helpful resources.</p>
                     </div>
                     <div className='support-container'>
                         {showCards.map((card, i) => {

@@ -13,21 +13,18 @@
   animation: fadeIn 0.3s ease-in-out;
 }
 
-/* Popup layout */
 .reportpopup {
   background: #fff;
   width: 95%;
-  max-width: 1600px;
+  max-width: 2300px;
   height: 90%;
   border-radius: 12px;
-  padding: 30px 40px 40px;
+  padding: 40px;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
   box-shadow: 0 6px 25px rgba(0, 0, 0, 0.5);
   z-index: 1000;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
   animation: slideUp 0.4s ease-in-out;
 }
 
@@ -53,12 +50,14 @@
   grid-template-columns: 1fr 1fr;
   gap: 24px;
   margin-bottom: 30px;
+  min-height: 0;
 }
 
 .reportleft,
 .reportright {
   display: flex;
   flex-direction: column;
+  min-height: 0; 
 }
 
 /* Left side */
@@ -203,6 +202,8 @@
   border-radius: 12px;
   padding: 25px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  overflow-y: auto;
+  min-height: 0;
 }
 .reportright h2 {
   text-align: center;
@@ -362,6 +363,13 @@
   display: block;
 }
 
+.reportcontent {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 10px;
+}
+
+
 /* Animations */
 @keyframes fadeIn {
   from { opacity: 0; }
@@ -400,8 +408,8 @@
 
   .reportleft,
   .reportright {
-    width: 100%;
-    height: auto;
+    max-height: 100%;
+    overflow-y: auto;
   }
 
   .reportbottom {

@@ -15,6 +15,12 @@
     transition: transform 0.2s ease;
 }
 
+.nav-logo-large {
+    width: 200px;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
 .navbar .nav-logo:hover {
     transform: scale(1.05);
 }
@@ -29,14 +35,14 @@
     align-items: center;
 }
 
-.navbar .nav-list li {
+.navbar li {
     cursor: pointer;
     border: 1px solid transparent;
     transition: border-color 0.3s ease, color 0.3s ease;
     padding: 5px 28px;
 }
 
-.navbar .nav-list li:hover {
+.navbar li:hover {
     color: white;
 
     background-color: #0068d2;

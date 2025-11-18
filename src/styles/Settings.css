@@ -1,7 +1,8 @@
-.settings-overlay{  
-    display: flex;  
-    align-items: center;  
-    justify-content: center;  
+
+.settings-overlay{
+    display: flex;
+    align-items: center;
+    justify-content: center;
     z-index: 999; 
     position: fixed;  
     top: 0;  
@@ -9,22 +10,29 @@
     width: 100%;  
     height: 100%;  
     backdrop-filter: blur(4px);  
-    background: rgba(0, 0, 0, 0.2);   
-}  
- 
+    background: rgba(0, 0, 0, 0.2);
+    animation: fadeIn 0.3s ease-in-out;
+} 
+
+
+.settings-header p { 
+    font-size: 16px;
+    color: #555;
+} 
+
 .settings-popup {  
-    background: #fff;  
-    width: 95%;  
-    height: 90%;  
-    max-height: 90vh;
-    border-radius: 12px;  
-    padding: 50px;  
-    display: flex;  
-    flex-direction: column; 
-    justify-content: space-between;  
-    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.5);  
-    z-index: 1000;  
-    overflow-y: auto; 
+    background: #fff;
+    width: 95%;
+    max-width: 2300px;
+    height: 90%;
+    border-radius: 12px;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    animation: slideUp 0.4s ease-in-out;
 }  
 .settings-header{  
     text-align: center;  

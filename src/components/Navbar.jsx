@@ -42,7 +42,7 @@ const Navbar = ({ setSignInActive }) => {
       {/* Logo */}
       <Link to="/" className="nav-logo-container">
         <img className="nav-logo small" src={TinyLogo} alt="Tiny TrueRepairs Logo" />
-        <img className="nav-logo large" src={logo} alt="TrueRepairs Logo" />
+        <img className="nav-logo-large" src={logo} alt="TrueRepairs Logo" />
       </Link>
 
       {/* Hamburger */}

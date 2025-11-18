@@ -17,10 +17,8 @@ const vehdb = require("./src/services/vehdb");
 const Vehicle = require("./models/Vehicle.js");
 const { getCarSpecs, vinDecode } = require("./src/services/ninjaApi");
 const reportRoutes = require("./src/routes/reportRoutes.js");
-const Estimate = require("./models/estimate");
-const Report = require("./models/Report");
 // const externalRoutes = require("./src/routes/external.js");
-//const estimateRoutes = require("./src/routes/estimate");
+const estimateRoutes = require("./src/routes/estimate.js");
 const fs = require("fs");
 const toyotaData = JSON.parse(fs.readFileSync(path.join(__dirname, "src", "data", "toyotaENGTRIM.json"), "utf-8"));
 
@@ -30,7 +28,7 @@ if (process.env.SENDGRID_API_KEY) sgMail.setApiKey(process.env.SENDGRID_API_KEY)
 const app = express();
 app.use(cors());
 app.use(express.json());
-//app.use("/api", estimateRoutes); //
+
 
 app.use("/api", estimateRoutes);
 

@@ -14,8 +14,6 @@ const App = () => {
   const [signInActive, setSignInActive] = useState(false);
   const location = useLocation();
 
-  //const [searchParams, setSearchParams] = useSearchParams();
-
   return (
     <div className="app-container">
       <SigninPopup open={signInActive} onClose={() => setSignInActive(false)} />

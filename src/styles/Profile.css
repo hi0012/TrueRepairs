@@ -36,8 +36,8 @@
 } 
 
 .profile-header p { 
-    font-size: 25px; 
-    font-weight: 600; 
+    font-size: 16px;
+    color: #555;
 } 
 
 .profile-container { 
@@ -428,21 +428,7 @@
 .save-password-btn:hover{ 
     background-color: #0068d2;  
     color: white;  
-}
-
-.email-message {
-  margin-top: 15px;
-  font-size: 0.9rem;
-  text-align: center;
-}
-
-.email-message.success {
-  color: #28a745;
-}
-
-.email-message.error {
-  color: #dc3545;
-}
+} 
 
 @keyframes fadeIn { 
     from { opacity: 0; } 
