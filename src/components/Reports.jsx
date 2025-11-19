@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect} from "react";
 import "../styles/Reports.css";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
@@ -16,6 +16,16 @@ export default function Reports({ open, onClose }) {
 
 // Core logic
 function ReportsBody({ onClose }) {
+const safe = (val) => {
+  if (val === null || val === undefined || val === "") return "-";
+  // Explicitly treat 0 as out of stock
+  if (val === 0 || val === "0") return "Out of Stock";
+  // If string but not numeric, return it directly
+  if (typeof val === "string" && isNaN(Number(val))) return val;
+  // Otherwise numeric formatting
+  return Number(val).toFixed(2);
+  };
+
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const userEmail = user?.email || "";
   const [vehicles, setVehicles] = useState([]);
@@ -58,13 +68,22 @@ function ReportsBody({ onClose }) {
     })();
   }, [userEmail]);
 
-  // Restore any saved "active" reports from localStorage
-  useEffect(() => {
-    const savedActive = JSON.parse(localStorage.getItem("activeReports") || "[]");
-    if (Array.isArray(savedActive) && savedActive.length > 0) {
-      setReports((prev) => [...savedActive, ...prev]);
-    }
-  }, []);
+  function getEngineEntry(vehicle, data = vehicleData) {
+    if (!vehicle) return null;
+
+    const yearEntry = data.find((y) => y.year === Number(vehicle.year));
+    if (!yearEntry) return null;
+
+    const modelEntry = yearEntry.models.find(
+      (m) => m.model.toUpperCase() === String(vehicle.model).toUpperCase()
+    );
+    if (!modelEntry) return null;
+
+    const engineEntry = modelEntry.engines.find(
+      (en) => en.engine.toUpperCase() === String(vehicle.engine).toUpperCase()
+    );
+    return engineEntry || null;
+  }
 
   // Vehicle select
   async function handleVehicleChange(e) {
@@ -72,23 +91,23 @@ function ReportsBody({ onClose }) {
     const v = vehicles.find((veh) => veh._id === vehicleId);
     if (!v) return;
 
+    // Reset UI
     setSelectedVehicle(v);
     setSelectedCategory("");
     setSelectedPart("");
     setPartsList([]);
     setCategories([]);
     setSubcategories([]);
+    setMessage("");
 
-    const { year, model, engine } = v;
-    const yearEntry = vehicleData.find((y) => y.year === Number(year));
-    if (!yearEntry) return setMessage("No data found for that year.");
+    // Use the reusable helper
+    const engineEntry = getEngineEntry(v);
+    if (!engineEntry) {
+      setMessage("No data found for this vehicle in the catalog.");
+      return;
+    }
 
-    const modelEntry = yearEntry.models.find((m) => m.model.toUpperCase() === String(model).toUpperCase());
-    if (!modelEntry) return setMessage("No data found for that model.");
-
-    const engineEntry = modelEntry.engines.find((en) => en.engine.toUpperCase() === String(engine).toUpperCase());
-    if (!engineEntry) return setMessage("No data found for that engine.");
-
+    // Load categories
     const categoryNames = engineEntry.categories.map((c) => c.category);
     setCategories(categoryNames);
     setMessage(`Loaded ${categoryNames.length} categories.`);
@@ -124,10 +143,7 @@ function ReportsBody({ onClose }) {
     const exists = partsList.some((p) => p.category === selectedCategory && p.part === selectedPart);
     if (exists) return setMessage("That part is already in the list.");
 
-    setPartsList((prev) => [
-      ...prev,
-      { category: selectedCategory, part: selectedPart, quantity: 1 },
-    ]);
+    setPartsList((prev) => [...prev,{ category: selectedCategory, part: selectedPart, quantity: 1 },]);
     setSelectedPart("");
     setMessage(`Added ${selectedPart} (${selectedCategory}) to list.`);
   }
@@ -139,23 +155,14 @@ function ReportsBody({ onClose }) {
 
   // Generate report
   async function handleGenerate() {
-    if (!selectedVehicle) return setMessage("Please select a vehicle.");
-    if (partsList.length === 0)
-      return setMessage("Add at least one part before generating.");
-    if (generating) return;
+    if (!selectedVehicle) {return setMessage("Please select a vehicle.");}
+    if (partsList.length === 0) {return setMessage("Add at least one part before generating.");}
+    if (generating) {return;}
 
     setGenerating(true);
 
     const tempId = `temp-${Date.now()}`;
-    const tempReport = {
-      _id: tempId,
-      vehicle: selectedVehicle,
-      title: `${selectedVehicle.year} ${selectedVehicle.make} ${selectedVehicle.model} (${partsList.length} parts)`,
-      createdAt: new Date().toISOString(),
-      isGenerating: true,
-      progress: 0,
-      total: partsList.length,
-    };
+    const tempReport = {_id: tempId, vehicle: selectedVehicle, title: `${selectedVehicle.year} ${selectedVehicle.make} ${selectedVehicle.model} (${partsList.length} parts)`, createdAt: new Date().toISOString(), isGenerating: true, progress: 0, total: partsList.length,};
 
     // add the temporary progress report
     setReports((prev) => [tempReport, ...prev]);
@@ -186,12 +193,7 @@ function ReportsBody({ onClose }) {
             matches = (data?.parts || []).filter((p) => {
               const leaf = String(p.parttype || "").toUpperCase();
               const fam = String(p.category || "").toUpperCase();
-              return (
-                leaf === target ||
-                fam === target ||
-                leaf.includes(target) ||
-                target.includes(leaf)
-              );
+              return (leaf === target || fam === target || leaf.includes(target) || target.includes(leaf));
             });
           }
         } catch (e) {
@@ -199,19 +201,15 @@ function ReportsBody({ onClose }) {
         }
 
         // aggregate or mark out-of-stock
-        if (matches.length > 0) {
-          const anyOutFlag = matches.some(
-            (m) => m.in_stock === false || m.in_stock === 0 || m.in_stock === "0" || m.in_stock === "false"
-          );
+        if (matches.length >= 0) {
+          const anyOutFlag = matches.some((m) => m.in_stock === false || m.in_stock === 0 || m.in_stock === "0" || m.in_stock === "false"|| m.price === null);
 
           // if all prices are 0 or missing, treat as out-of-stock
           const usable = matches.filter((m) => {
             const l = Number(m.low);
             const h = Number(m.high);
             const a = Number(m.avg);
-            return (Number.isFinite(l) && l > 0) ||
-                  (Number.isFinite(h) && h > 0) ||
-                  (Number.isFinite(a) && a > 0);
+            return (Number.isFinite(l) && l > 0) || (Number.isFinite(h) && h > 0) || (Number.isFinite(a) && a > 0);
           });
 
           if (anyOutFlag || usable.length === 0) {
@@ -272,9 +270,7 @@ function ReportsBody({ onClose }) {
 
         // update progress bar live
         setReports((prev) =>
-          prev.map((r) =>
-            r._id === tempId ? { ...r, progress: i + 1 } : r
-          )
+          prev.map((r) =>r._id === tempId ? { ...r, progress: i + 1 } : r)
         );
       }
 
@@ -285,7 +281,7 @@ function ReportsBody({ onClose }) {
         return;
       }
 
-      // === totals ===
+      // totals
       const totals = partSummaries.reduce(
         (acc, p) => {
           if (typeof p.low === "number") acc.low += p.low;
@@ -302,7 +298,7 @@ function ReportsBody({ onClose }) {
         totalAvg: Number(totals.avg.toFixed(2)),
       };
 
-      // === save to backend ===
+      // save to backend
       const saveBody = {
         title: tempReport.title,
         userEmail,
@@ -475,13 +471,14 @@ function ReportsBody({ onClose }) {
   async function handleDownload(r) {
     setExpanded(r._id);
 
-    // Wait for DOM to load
+    // Wait for the report element to mount
     let element = null;
     for (let i = 0; i < 40; i++) {
       element = document.getElementById(`report-${r._id}`);
       if (element) break;
       await new Promise((res) => setTimeout(res, 50));
     }
+
     if (!element) {
       setMessage("Unable to locate report for download.");
       return;
@@ -489,186 +486,206 @@ function ReportsBody({ onClose }) {
 
     try {
       // Load logos
-      const logoImg = new Image(); logoImg.src = logo;
-      const brandImg = new Image(); brandImg.src = brand;
+      const logoImg = new Image();
+      logoImg.src = logo;
+
+      const brandImg = new Image();
+      brandImg.src = brand;
+
       await Promise.all([logoImg.decode(), brandImg.decode()]);
 
-      // Snapshot of the report
-      const canvas = await html2canvas(element, {
-        scale: 2,
-        backgroundColor: "#ffffff",
-        useCORS: true,
-      });
-      const imgData = canvas.toDataURL("image/png");
-
-      // PDF base
+      // PDF setup
       const pdf = new jsPDF("p", "pt", "a4");
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const pdfW = pdf.internal.pageSize.getWidth();
+      const pdfH = pdf.internal.pageSize.getHeight();
       const margin = 40;
-      const dateStr = new Date().toLocaleString();
 
-      // === HEADER ===
-      const logoY = 30;
-      pdf.addImage(logoImg, "PNG", margin, logoY, 45, 45);
-      pdf.addImage(brandImg, "PNG", margin + 45, logoY - 20, 100, 100);
+      // Header info
+      const dateStr = new Date().toLocaleString();
+      const reportTitle = `${r.vehicle?.year || ""} ${r.vehicle?.make || ""} ${
+        r.vehicle?.model || ""
+      } (${r.parts?.length || 0} parts)`;
+
+      // Draw header
+      pdf.addImage(logoImg, "PNG", margin, 30, 45, 45);
+      pdf.addImage(brandImg, "PNG", margin + 50, 10, 110, 110);
       pdf.setFontSize(11);
-      pdf.text(`Date: ${dateStr}`, pdfWidth - 170, logoY + 20);
+      pdf.text(`Date: ${dateStr}`, pdfW - 170, 55);
 
       pdf.setFontSize(18);
       pdf.text("TrueRepairs Report", margin, 100);
 
       pdf.setFontSize(13);
-      pdf.text(
-        `${r.vehicle?.year || ""} ${r.vehicle?.make || ""} ${r.vehicle?.model || ""} (${r.parts?.length || 0} parts)`,
-        margin,
-        118
-      );
+      pdf.text(reportTitle, margin, 118);
 
-      // === MAIN SNAPSHOT (multi-page) ===
-      let imgWidth = pdfWidth - 2 * margin;
-      let pageHeight = pdfHeight - 180;
-      let imgHeight = (canvas.height * imgWidth) / canvas.width;
+      //  MULTI-SLICE CAPTURE SECTION
+      const originalScrollTop = element.scrollTop;
+      const totalHeight = element.scrollHeight;
+      const viewportHeight = element.clientHeight;
+      let currentY = 0;
 
-      let heightLeft = imgHeight;
-      let position = 135;
+      const usableTop = 140;
 
-      // First portion
-      pdf.addImage(imgData, "PNG", margin, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
+      while (currentY < totalHeight) {
+        element.scrollTop = currentY;
 
-      // Overflow pages
-      while (heightLeft > 0) {
-        pdf.addPage();
-        pdf.addImage(
-          imgData,
-          "PNG",
-          margin,
-          -imgHeight + heightLeft + 135,
-          imgWidth,
-          imgHeight
-        );
-        heightLeft -= pageHeight;
+        // Give the browser a moment
+        await new Promise((res) => setTimeout(res, 120));
+
+        const canvas = await html2canvas(element, {
+          scale: 2,
+          backgroundColor: "#ffffff",
+          useCORS: true,
+          scrollY: -window.scrollY,
+        });
+
+        const imgData = canvas.toDataURL("image/png");
+        const imgW = pdfW - 2 * margin;
+        const imgH = (canvas.height * imgW) / canvas.width;
+
+        // New page for all slices except the first
+        if (currentY > 0) pdf.addPage();
+
+        pdf.addImage(imgData, "PNG", margin, usableTop, imgW, imgH);
+
+        currentY += viewportHeight;
       }
+      pdf.text("Source: RockAuto Online Parts Catalog", margin, pdfH - 20);
+      element.scrollTop = originalScrollTop;
 
-      // === QUICK LINKS ===
+      // QUICK LINKS SECTION
+      pdf.addPage();
+      pdf.setFontSize(16);
+      pdf.text("Quick Links", margin, 60);
+
       pdf.setFontSize(11);
-      let linkY = 135 + imgHeight + 25;
-      pdf.text("Quick Links:", margin, linkY);
 
-      const uniqueLinks = new Map();
-
+      const linkMap = new Map();
       for (const p of r.parts || []) {
         const cleanName = (p.name || "").split("(")[0].trim();
+        const { items } = findPartDetailsSmart(r.vehicle, p.category, cleanName);
 
-        const { items } = findPartDetailsSmart(
-          r.vehicle,
-          p.category,
-          cleanName
-        );
-
-        if (items && items.length > 0 && items[0].url) {
+        if (items && items.length && items[0].url) {
           const cat = p.category || cleanName;
-          if (!uniqueLinks.has(cat)) {
-            uniqueLinks.set(cat, items[0].url);
-          }
+          if (!linkMap.has(cat)) linkMap.set(cat, items[0].url);
         }
       }
 
-      for (const [cat, url] of uniqueLinks) {
-        linkY += 15;
-        pdf.textWithLink(`• ${cat}`, margin + 10, linkY, { url });
+      let linkY = 90;
+      for (const [cat, url] of linkMap.entries()) {
+        pdf.textWithLink(`• ${cat}`, margin, linkY, { url });
+        linkY += 18;
       }
 
-      // === DETAILED BREAKDOWN — ONE PAGE PER PART ===
+      // DETAILED BREAKDOWN (1 per part)
       pdf.addPage();
       pdf.setFontSize(16);
       pdf.text("Detailed Part Breakdown", margin, 60);
 
-      for (let idx = 0; idx < (r.parts || []).length; idx++) {
-        const p = r.parts[idx];
-
-        // New page for every part except the first one
-        if (idx > 0) {
-          pdf.addPage();
-        }
+      for (let i = 0; i < (r.parts || []).length; i++) {
+        const p = r.parts[i];
+        if (i > 0) pdf.addPage();
 
         let y = 100;
 
-        // Clean name
         const cleanPart = (p.name || "").split("(")[0].trim();
+        const { items: details, usedCategory } = findPartDetailsSmart(r.vehicle, p.category, cleanPart);
 
-        // JSON lookup
-        const { items: details, usedCategory } = findPartDetailsSmart(
-          r.vehicle,
-          p.category,
-          cleanPart
-        );
-
-        // Header
-        const headerCategory = usedCategory || p.category || "Unknown";
+        const catLabel = usedCategory || p.category || "Unknown";
 
         pdf.setFontSize(14);
-        pdf.text(`${headerCategory} - ${p.name || "Unknown"}`, margin, y);
-        y += 12;
+        pdf.text(`${catLabel} - ${p.name || ""}`, margin, y);
 
+        y += 12;
         pdf.setDrawColor(200);
-        pdf.line(margin, y, pdfWidth - margin, y);
+        pdf.line(margin, y, pdfW - margin, y);
         y += 20;
 
-        // Part details
-        if (details.length > 0) {
+        pdf.setFontSize(11);
+
+        if (details.length) {
           pdf.setFontSize(11);
+
+          const colWidth = (pdfW - margin * 2) / 2;
+          const col1X = margin;
+          const col2X = margin + colWidth;
+
+          let col1Y = y;
+          let col2Y = y;
+
+          let currentColumn = 1;
 
           for (const item of details) {
-            pdf.text(`Brand: ${item.brand ?? "N/A"}`, margin, y);
-            y += 14;
+            // MEASURE TRUE HEIGHT
+            const brandText = `Brand: ${item.brand ?? "N/A"}`;
+            const partText = `Part #: ${item.partnumber ?? "N/A"}`;
+            const descText = `Description: ${item.description ?? "N/A"}`;
+            const priceText =`Price: ` + (item.price != null ? `$${Number(item.price).toFixed(2)}` : "N/A");
+            const availText = `Availability: ${item.in_stock ? "In Stock" : "Out of Stock"}`;
 
-            pdf.text(`Part #: ${item.partnumber ?? "N/A"}`, margin, y);
-            y += 14;
+            const brandH = pdf.getTextDimensions(brandText).h;
+            const partH = pdf.getTextDimensions(partText).h;
+            const descH = pdf.getTextDimensions(descText, { maxWidth: colWidth - 10 }).h;
+            const priceH = pdf.getTextDimensions(priceText).h;
+            const availH = pdf.getTextDimensions(availText).h;
 
-            pdf.text(`Description: ${item.description ?? "N/A"}`, margin, y, {
-              maxWidth: pdfWidth - 2 * margin,
-            });
-            y += 18;
+            const blockHeight = brandH + partH + descH + priceH + availH + 28;
 
-            pdf.text(
-              `Price: ${
-                item.price != null
-                  ? `$${Number(item.price).toFixed(2)}`
-                  : "N/A"
-              }`,
-              margin,
-              y
-            );
-            y += 14;
+            // Choose the correct column
+            let x = currentColumn === 1 ? col1X : col2X;
+            let yPos = currentColumn === 1 ? col1Y : col2Y;
 
-            pdf.text(
-              `Availability: ${item.in_stock ? "In Stock" : "Out of Stock"}`,
-              margin,
-              y
-            );
-            y += 28;
+            // If doesn't fit in current column, switch or new page
+            if (yPos + blockHeight > pdfH - 60) {
+              if (currentColumn === 1) {
+                currentColumn = 2;
+                x = col2X;
+                yPos = col2Y;
+              } else {
+                pdf.addPage();
+                col1Y = 100;
+                col2Y = 100;
+                currentColumn = 1;
+                x = col1X;
+                yPos = col1Y;
+              }
+            }
+
+            // Draw actual block
+            pdf.text(brandText, x, yPos);
+            yPos += brandH + 2;
+
+            pdf.text(partText, x, yPos);
+            yPos += partH + 2;
+
+            pdf.text(descText, x, yPos, { maxWidth: colWidth - 10 });
+            yPos += descH + 2;
+
+            pdf.text(priceText, x, yPos);
+            yPos += priceH + 2;
+
+            pdf.text(availText, x, yPos);
+            yPos += availH + 24;
+
+            // Update column Y
+            if (currentColumn === 1) {
+              col1Y = yPos;
+            } else {
+              col2Y = yPos;
+            }
           }
-        } else {
-          pdf.setFontSize(11);
-          pdf.text("No detailed items found for this part.", margin, y);
-          y += 20;
+
+          // Move main Y to bottom of the taller column
+          y = Math.max(col1Y, col2Y) + 20;
         }
 
-        // Footer per page
-        pdf.setFontSize(10);
-        pdf.text(
-          "",
-          margin,
-          pdfHeight - 40
-        );
+        else {
+          pdf.text("No detailed items found for this part.", margin, y);
+        }
       }
 
-      // === SAVE PDF ===
-      pdf.save(
-        `TrueRepairs_Report_${r.vehicle?.make || ""}_${r.vehicle?.model || ""}.pdf`
-      );
+      // Save
+      pdf.save(`TrueRepairs_Report_${r.vehicle?.make || ""}_${r.vehicle?.model || ""}.pdf`);
 
       setMessage("PDF downloaded successfully.");
     } catch (err) {
@@ -676,10 +693,6 @@ function ReportsBody({ onClose }) {
       setMessage("Failed to generate PDF.");
     }
   }
-
-
-
-  const canGenerate = !!selectedVehicle && partsList.length > 0 && !generating;
 
   // Delete a report
   async function handleDeleteReport(id) {
@@ -799,7 +812,7 @@ function ReportsBody({ onClose }) {
                     </ul>
                   )}
                 </div>
-                <button className="reportgeneratebtn" disabled={!canGenerate} onClick={handleGenerate}> {generating ? "Generating..." : "Generate Report"} </button>
+                <button className="reportgeneratebtn" onClick={handleGenerate}>Generate Report</button>
               </div>
             </div>
 
@@ -839,7 +852,7 @@ function ReportsBody({ onClose }) {
                                 </div>
                               </div>
 
-                              {/* Always render report div, just toggle visibility */}
+                              {/* Always render report div */}
                               <div id={`report-${r._id}`} className={`RepDropdown ${open ? "visible" : "hidden"}`} style={{ display: open ? "block" : "none" }}>
                                 <table className="reporttable">
                                   <thead>
@@ -854,21 +867,9 @@ function ReportsBody({ onClose }) {
                                     {(r.parts || []).map((p, idx) => (
                                       <tr key={idx}>
                                         <td>{p.name || "Unknown"}</td>
-                                        <td>
-                                          {typeof p.low === "string"
-                                            ? p.low
-                                            : Number(p.low).toFixed(2)}
-                                        </td>
-                                        <td>
-                                          {typeof p.high === "string"
-                                            ? p.high
-                                            : Number(p.high).toFixed(2)}
-                                        </td>
-                                        <td>
-                                          {typeof p.avg === "string"
-                                            ? p.avg
-                                            : Number(p.avg).toFixed(2)}
-                                        </td>
+                                        <td>{safe(p.low)}</td>
+                                        <td>{safe(p.high)}</td>
+                                        <td>{safe(p.avg)}</td>
                                       </tr>
                                     ))}
                                   </tbody>
@@ -908,5 +909,12 @@ function ReportsBody({ onClose }) {
       </div>
     </div>
   );
-
 }
+
+
+// Robert Simovski
+// Sources: 
+// https://react.dev/reference/react/hooks
+// https://developer.mozilla.org/en-US/docs/Web/API
+// https://artskydj.github.io/jsPDF/docs/jsPDF.html
+// https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements
