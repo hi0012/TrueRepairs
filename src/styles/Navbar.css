@@ -35,14 +35,14 @@
     align-items: center;
 }
 
-.navbar li {
+.navbar .nav-list li {
     cursor: pointer;
     border: 1px solid transparent;
     transition: border-color 0.3s ease, color 0.3s ease;
     padding: 5px 28px;
 }
 
-.navbar li:hover {
+.navbar .nav-list li:hover {
     color: white;
 
     background-color: #0068d2;
