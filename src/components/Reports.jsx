@@ -343,7 +343,6 @@ const safe = (val) => {
         return [finished, ...withoutTemp];
       });
 
-
       setMessage("Report saved!");
     } catch (e) {
       console.error("[REPORT] save report error:", e);
@@ -910,7 +909,6 @@ const safe = (val) => {
     </div>
   );
 }
-
 
 // Robert Simovski
 // Sources: 
