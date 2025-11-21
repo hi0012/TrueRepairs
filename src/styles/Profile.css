@@ -452,25 +452,31 @@
 }
 
 @media (max-width: 900px) {
+    .profile-overlay {
+        align-items: flex-start;
+        padding: 20px 0;
+    }
     .profile-popup {
         height: auto;
+        max-height: 95vh;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
     }
     .profile-container {
-        justify-content: center;
-        flex-wrap: wrap;
-        margin: 60px 0px;
-        height: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 25px;
     }
     .profile-edit-left {
-        width: 100%;
-        height: auto;
+        max-height: 100%;
+        overflow-y: auto;
     }
     .profile-edit-left h2 {
         font-size: clamp(18px, 2.5vw, 26px);
     }
     .profile-password-right {
-        width: 100%;
-        height: auto;
+        max-height: 100%;
+        overflow-y: auto;
     }
     .profile-password-right h2 {
         font-size: clamp(18px, 2.5vw, 26px);
@@ -483,72 +489,45 @@
         padding: 10px 24px;
         font-size: clamp(8px, 2.5vw, 15px);
     }
-    .profile-cancel-btn{
-        padding: 10px 24px;
-        font-size: clamp(8px, 2.5vw, 15px);
+    .profile-bottom {
+        margin-top: 30px;
+        padding-bottom: 30px;
+    }
+    .profile-cancel-btn {
+        width: 80%;
+        max-width: 300px;
     }
 }
 
-@media (max-width: 768px) {
-    .profile-popup {
-        height: auto;
-    }
-    .profile-container {
-    margin: 40px 0;
-  }
-
-  .save-email-btn {
-    padding: 8px 20px;
-    font-size: clamp(9px, 3vw, 14px);
-  }
-  .password-save-btn {
-    padding: 8px 20px;
-    font-size: clamp(9px, 3vw, 14px);
-  }
-  .profile-cancel-btn {
-    padding: 8px 20px;
-    font-size: clamp(9px, 3vw, 14px);
-  }
-
-  .profile-header p {
-    display: none;
-  }
-}
 
 @media (max-width: 480px) {
     .profile-popup {
         height: auto;
     }
     .profile-container {
-    margin: 20px 0;
-    gap: 1rem;
-  }
+        margin: 20px 0;
+        gap: 1rem;
+    }
   
   .profile-edit-left {
-    width: 100%;
-    padding: 10px;
-  }
-  .profile-password-right {
-    width: 100%;
-    padding: 10px;
-  }
+        width: 100%;
+        padding: 10px;
+    }
+    .profile-password-right {
+        width: 100%;
+        padding: 10px;
+    }
 
-  .save-email-btn {
-    padding: 8px 12px;
-    font-size: clamp(8px, 4vw, 12px);
-  }
-  .password-save-btn{
-    padding: 8px 12px;
-    font-size: clamp(8px, 4vw, 12px);
+    .save-email-btn {
+        padding: 8px 12px;
+        font-size: clamp(8px, 4vw, 12px);
+    }
+    .password-save-btn{
+        padding: 8px 12px;
+        font-size: clamp(8px, 4vw, 12px);
+    }
 
-  }
-
-  .profile-cancel-btn {
-    padding: 8px 12px;
-    font-size: clamp(8px, 4vw, 12px);
-  }
-  
-  .profile-header h1 {
-    font-size: clamp(18px, 5vw, 24px);
-  }
+    .profile-header h1 {
+        font-size: clamp(18px, 5vw, 24px);
+    }
 }
