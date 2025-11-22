@@ -33,6 +33,7 @@
     box-shadow: 0 6px 25px rgba(0, 0, 0, 0.5);
     z-index: 1000;
     animation: slideUp 0.4s ease-in-out;
+    overflow-y: auto;
 }  
 .settings-header{  
     text-align: center;  
@@ -415,16 +416,78 @@
     color: white; 
 } 
 @media (max-width: 1600px) { 
+    .settings-popup{
+        height: 90vh;
+    }
     .settings-left { 
         padding: 60px; 
     } 
     .settings-middle { 
         padding: 60px; 
-    } 
+    }
+    
     .settings-right { 
         padding: 60px;  
     } 
 } 
+@media (max-width: 1315px) {
+    .settings-middle {
+        width: 90%;
+        padding: 20px;
+    }
+    .settings-right {
+        width: 90%;
+        padding: 20px;
+    }
+    .settings-delete-btn{  
+     max-width: 100%; 
+    box-sizing: border-box; 
+    word-break: break-word; 
+    border: none;  
+    color: red;  
+    white-space: nowrap;  
+    font-weight: 500;  
+    padding: 12px 22px;  
+    background-color: white;  
+    font-size: clamp(13px, 1vw, 15px);  
+    border-radius: 50px;  
+    cursor: pointer;  
+    border: 1px solid red;  
+    transition: all 0.3s;  
+
+}  
+    .settings-deactivate-btn {
+         max-width: 100%;  
+    box-sizing: border-box; 
+    word-break: break-word; 
+    border: none;  
+    color: red;  
+    white-space: nowrap;  
+    font-weight: 500;  
+    padding: 12px 22px;  
+    background-color: white;  
+    font-size: clamp(13px, 1vw, 15px);  
+    border-radius: 50px;  
+    cursor: pointer;  
+    border: 1px solid red;  
+    transition: all 0.3s;  
+    }
+    .settings-cancel-btn{  
+    border: none;  
+    color: red;  
+    font-weight: 500;  
+    padding: 12px 22px;  
+    background-color: white;  
+    font-size: clamp(13px, 1vw, 15px);  
+    border-radius: 50px;  
+    cursor: pointer;  
+    border: 1px solid red;  
+    transition: all 0.3s;  
+}  
+    .settings-middle-content {
+        overflow-y: auto;
+    }
+}
 @media (max-width: 900px) { 
     .settings-popup{
         gap: 50px;
