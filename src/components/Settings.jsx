@@ -80,6 +80,7 @@ const Settings = ({ open, onClose }) => {
                 <div className='settings-popup'>
                     <div className='settings-header'>
                         <h1>Account Settings</h1>
+                        <p>Change, Deactivate, or Delete your account.</p>
                     </div>
                     <div className='settings-container'>
                         <div className='settings-left'>

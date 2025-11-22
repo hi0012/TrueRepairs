@@ -1,4 +1,9 @@
+<<<<<<< HEAD
 .support-overlay{  
+=======
+/* === OVERLAY === */
+.support-overlay {  
+>>>>>>> origin/clean-main
     display: flex;   
     align-items: center;   
     justify-content: center;   
@@ -9,6 +14,7 @@
     width: 100%;   
     height: 100%;   
     backdrop-filter: blur(4px);   
+<<<<<<< HEAD
     background: rgba(0, 0, 0, 0.2);    
 }  
 .support-popup{  
@@ -231,6 +237,228 @@
   from { opacity: 0; }
   to { opacity: 1; }
 }
+=======
+    background: rgba(0, 0, 0, 0.2);
+    animation: fadeIn 0.3s ease-in-out;
+}  
+
+/* === POPUP - NOW AUTO-FITS LIKE SETTINGS === */
+.support-popup {  
+    position: relative;
+    background: #fff;
+    width: 90%;
+    max-width: 1500px;
+    height: 85%;
+    border-radius: 12px;
+    padding: 30px;
+    
+    display: flex;
+    flex-direction: column;
+
+    /* Fixed bottom button stays visible */
+    justify-content: space-between;
+
+    /* Allows cards to scroll inside instead of overflowing */
+    overflow: hidden;
+
+    box-shadow: 0 6px 25px rgba(0,0,0,0.5);
+    animation: slideUp 0.4s ease-in-out;
+}
+
+/* === TITLE === */
+.support-title {
+    text-align: center;
+}
+.support-title h1 {
+    font-size: clamp(22px, 2vw, 30px);
+    margin-bottom: 20px;
+}
+
+.support-title p { 
+    font-size: 16px;
+    color: #555;
+} 
+
+/* === CONTAINER FOR CARDS === */
+.support-container {
+    flex: 1;
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    align-items: stretch;
+    position: relative;
+
+    overflow-y: auto;       /* scrolling still works */
+    padding-right: 10px;
+
+    /* Hide scrollbar (Chrome, Edge, Safari, Opera) */
+    scrollbar-width: none;         /* Firefox */
+    -ms-overflow-style: none;      /* IE/Edge Legacy */
+}
+
+/* Chrome/Safari */
+.support-container::-webkit-scrollbar {
+    display: none;
+}
+
+
+/* === CARD (SMALLER + FITS BETTER) === */
+.support-showcase {
+    flex: 1;
+    min-width: 0;
+    padding: 25px;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+
+    transition: 0.2s;
+    box-sizing: border-box;
+}
+.support-showcase:hover {
+    transform: scale(1.02);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+/* Blue card */
+.support-showcase.first-card {
+    background: #0274d7;
+    border-color: #0274d7;
+    color: white;
+}
+
+/* Icon */
+.support-images,
+.support-images-first {
+    font-size: 40px;
+}
+
+/* Card text */
+.support-showcase h1 {
+    font-size: clamp(18px, 2vw, 24px);
+    text-align: center;
+    word-wrap: break-word;
+}
+.support-showcase p {
+    text-align: center;
+    font-size: clamp(14px, 1.4vw, 18px);
+}
+
+.support-showcase a {
+    color: #0274d7;
+}
+
+/* === BOTTOM CANCEL BUTTON === */
+.support-bottom {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+}
+.support-cancel-btn {
+    padding: 10px 35px;
+    border-radius: 50px;
+    background: white;
+    border: 1px solid red;
+    color: red;
+    font-size: clamp(14px, 1vw, 16px);
+    cursor: pointer;
+    transition: 0.2s;
+}
+.support-cancel-btn:hover {
+    background: red;
+    color: white;
+}
+
+/* === ARROWS (INSIDE + SMALLER) === */
+.left-btn, .right-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 32px;
+    background: white;
+    border: none;
+    cursor: pointer;
+    color: #0274d7;
+    padding: 10px 14px;
+    border-radius: 50%;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    z-index: 20;
+    transition: 0.2s ease;
+}
+
+/* Hover */
+.left-btn:hover, .right-btn:hover {
+    transform: translateY(-50%) scale(1.15);
+}
+
+/* Position arrows on the far edges of the popup */
+.left-btn {
+    left: -20px;
+}
+
+.right-btn {
+    right: -20px;
+}
+
+/* === MOBILE LAYOUT LIKE REPORT POPUP === */
+@media (max-width: 900px) {
+
+  .support-overlay {
+    align-items: flex-start;
+    padding: 20px 0;
+  }
+
+  .support-popup {
+    height: auto;
+    max-height: 95vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 20px;
+  }
+
+  .support-container {
+    flex-direction: column;
+    gap: 20px;
+    overflow-y: visible;
+    width: 100%;
+  }
+
+  .support-showcase {
+    width: 100%;
+    min-width: unset;
+  }
+
+  .left-btn, .right-btn {
+    display: none;
+  }
+
+  .support-bottom {
+    margin-top: 25px;
+    padding-bottom: 25px;
+  }
+
+  .support-cancel-btn {
+    width: 80%;
+    max-width: 300px;
+  }
+}
+
+@media (max-width: 700px) {
+  .support-showcase h1 {
+    font-size: 20px;
+  }
+  .support-showcase p {
+    font-size: 14px;
+  }
+}
+
+
+/* Animations */
+@keyframes fadeIn { from {opacity: 0;} to {opacity: 1;} }
+>>>>>>> origin/clean-main
 @keyframes slideUp {
   from { transform: translateY(40px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }

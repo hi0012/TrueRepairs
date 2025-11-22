@@ -13,6 +13,7 @@
   animation: fadeIn 0.3s ease-in-out;
 }
 
+<<<<<<< HEAD
 /* Popup layout */
 .reportpopup {
   background: #fff;
@@ -21,13 +22,25 @@
   height: 90%;
   border-radius: 12px;
   padding: 30px 40px 40px;
+=======
+.reportpopup {
+  background: #fff;
+  width: 95%;
+  max-width: 2300px;
+  height: 90%;
+  border-radius: 12px;
+  padding: 40px;
+>>>>>>> origin/clean-main
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
   box-shadow: 0 6px 25px rgba(0, 0, 0, 0.5);
   z-index: 1000;
+<<<<<<< HEAD
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+=======
+>>>>>>> origin/clean-main
   animation: slideUp 0.4s ease-in-out;
 }
 
@@ -53,12 +66,20 @@
   grid-template-columns: 1fr 1fr;
   gap: 24px;
   margin-bottom: 30px;
+<<<<<<< HEAD
+=======
+  min-height: 0;
+>>>>>>> origin/clean-main
 }
 
 .reportleft,
 .reportright {
   display: flex;
   flex-direction: column;
+<<<<<<< HEAD
+=======
+  min-height: 0; 
+>>>>>>> origin/clean-main
 }
 
 /* Left side */
@@ -203,6 +224,11 @@
   border-radius: 12px;
   padding: 25px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+<<<<<<< HEAD
+=======
+  overflow-y: auto;
+  min-height: 0;
+>>>>>>> origin/clean-main
 }
 .reportright h2 {
   text-align: center;
@@ -362,6 +388,16 @@
   display: block;
 }
 
+<<<<<<< HEAD
+=======
+.reportcontent {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 10px;
+}
+
+
+>>>>>>> origin/clean-main
 /* Animations */
 @keyframes fadeIn {
   from { opacity: 0; }
@@ -400,8 +436,13 @@
 
   .reportleft,
   .reportright {
+<<<<<<< HEAD
     width: 100%;
     height: auto;
+=======
+    max-height: 100%;
+    overflow-y: auto;
+>>>>>>> origin/clean-main
   }
 
   .reportbottom {
@@ -431,4 +472,8 @@
     width: 100%;
     justify-content: flex-start;
   }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> origin/clean-main

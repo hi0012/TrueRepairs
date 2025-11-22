@@ -326,6 +326,7 @@
   }
 }
 
+<<<<<<< HEAD
 @media (max-width: 900px) {
   .VehInfoColumns {
     grid-template-columns: 1fr;
@@ -333,6 +334,42 @@
   .VehInfoLeft,
   .VehInfoRight {
     width: 100%;
+=======
+/* Responsive layout */
+@media (max-width: 900px) {
+  .VehInfoOverlay {
+    align-items: flex-start;
+    padding: 20px 0;
+  }
+
+  .VehInfoPopup {
+    height: auto;
+    max-height: 95vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .VehInfoColumns {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+  }
+
+  .VehInfoLeft,
+  .VehInfoRight {
+    max-height: 100%;
+    overflow-y: auto;
+  }
+
+  .VehInfoBottom {
+    margin-top: 30px;
+    padding-bottom: 30px;
+  }
+
+  .VehInfoCancelBtn {
+    width: 80%;
+    max-width: 300px;
+>>>>>>> origin/clean-main
   }
 }
 

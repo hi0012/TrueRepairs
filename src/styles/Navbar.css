@@ -15,6 +15,15 @@
     transition: transform 0.2s ease;
 }
 
+<<<<<<< HEAD
+=======
+.nav-logo-large {
+    width: 200px;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+>>>>>>> origin/clean-main
 .navbar .nav-logo:hover {
     transform: scale(1.05);
 }
@@ -390,6 +399,12 @@
     .nav-logo:nth-of-type(2) {
         display: none !important;
     }
+<<<<<<< HEAD
+=======
+    .nav-logo-large {
+        display: none !important;
+    }
+>>>>>>> origin/clean-main
     .navbar .nav-logo {
         width: 120px;
     }

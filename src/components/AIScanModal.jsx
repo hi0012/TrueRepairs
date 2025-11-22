@@ -1,22 +1,28 @@
 import { useEffect, useState } from "react";
+import "../styles/AIScanModal.css";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 
-console.log("API base URL:", import.meta.env.VITE_API_URL);
 const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 const usd = (n) =>
-  typeof n === "number"
-    ? n.toLocaleString(undefined, { style: "currency", currency: "USD", maximumFractionDigits: 0 })
-    : "-";
-
+  typeof n === "number" ? n.toLocaleString(undefined, {style: "currency", currency: "USD", maximumFractionDigits: 0,}): n;
 export default function AIScanModal({ open, onClose, userEmail }) {
   const [laborRate, setLaborRate] = useState(110);
   const [file, setFile] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState(null);
   const [history, setHistory] = useState([]);
+  const [expanded, setExpanded] = useState(null);
   const [msg, setMsg] = useState("");
 
-  useEffect(() => { if (open) { setMsg(""); setResult(null); loadHistory(); } }, [open]);
+  useEffect(() => {
+    if (open) {
+      setMsg("");
+      setResult(null);
+      loadHistory();
+    }
+  }, [open]);
 
   const loadHistory = async () => {
     try {
@@ -32,15 +38,26 @@ export default function AIScanModal({ open, onClose, userEmail }) {
   const onSubmit = async (e) => {
     e.preventDefault();
     setMsg("");
-    if (!file || !userEmail) { setMsg("Email and image are required."); return; }
+
+    if (!file || !userEmail) {
+      setMsg("Email and image are required.");
+      return;
+    }
+
     try {
       setSubmitting(true);
       setResult(null);
+
       const fd = new FormData();
       fd.append("email", userEmail);
       fd.append("laborRate", String(laborRate));
       fd.append("file", file);
-      const r = await fetch(`${API}/api/estimate`, { method: "POST", body: fd });
+
+      const r = await fetch(`${API}/api/estimate`, {
+        method: "POST",
+        body: fd,
+      });
+
       const j = await r.json();
       setResult(j);
       await loadHistory();
@@ -51,94 +68,335 @@ export default function AIScanModal({ open, onClose, userEmail }) {
     }
   };
 
-  if (!open) return null;
+  // DELETE estimate
+  async function handleDelete(id) {
+    try {
+      await fetch(`${API}/api/estimates/${id}`, { method: "DELETE" });
+      setHistory((h) => h.filter((x) => x._id !== id));
+    } catch (e) {
+      console.error("Delete failed", e);
+      setMsg("Failed to delete.");
+    }
+  }
 
+  // PDF download
+  async function handleDownload(est) {
+    // 1. Force open dropdown
+    setExpanded(est._id);
+
+    // 2. Wait for element to mount
+    let element = null;
+    for (let i = 0; i < 40; i++) {
+      element = document.getElementById(`aiscan-report-${est._id}`);
+      if (element) break;
+      await new Promise((res) => setTimeout(res, 50));
+    }
+
+    if (!element) {
+      alert("Unable to locate details for download.");
+      return;
+    }
+
+    try {
+      // Load logos
+      const logoImg = new Image();
+      logoImg.src = "/logo.png";     // same as Reports.jsx
+      const brandImg = new Image();
+      brandImg.src = "/TrueRepairs.png";
+
+      await Promise.all([logoImg.decode(), brandImg.decode()]);
+
+      // Screenshot
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        backgroundColor: "#ffffff",
+        useCORS: true
+      });
+
+      const snap = canvas.toDataURL("image/png");
+
+      // PDF setup
+      const pdf = new jsPDF("p", "pt", "a4");
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const margin = 40;
+      const dateStr = new Date().toLocaleString();
+
+      // === HEADER (logos + timestamp + title) ===
+      const logoY = 30;
+      pdf.addImage(logoImg, "PNG", margin, logoY, 45, 45);
+      pdf.addImage(brandImg, "PNG", margin + 45, logoY - 20, 100, 100);
+
+      pdf.setFontSize(11);
+      pdf.setTextColor(0, 0, 0);
+      pdf.text(`Date: ${dateStr}`, pdfWidth - 170, logoY + 20);
+
+      pdf.setFontSize(18);
+      pdf.text("AI Damage Estimate", margin, 100);
+
+      pdf.setFontSize(13);
+      pdf.text(
+        `${est.selection?.[0]?.part || est.selection?.part || "Damage"} Estimate`,
+        margin,
+        118
+      );
+
+      // SNAPSHOT IMAGE
+      const imgProps = pdf.getImageProperties(snap);
+      const imgHeight =
+        (imgProps.height * (pdfWidth - 2 * margin)) / imgProps.width;
+
+      pdf.addImage(snap, "PNG", margin, 135, pdfWidth - 2 * margin, imgHeight);
+
+      // Save
+      pdf.save(`AI_Estimate_${est._id}.pdf`);
+    } catch (err) {
+      console.error("PDF generation failed:", err);
+      setMsg("Failed to generate PDF.");
+    }
+  }
+
+  if (!open) return null;
   return (
-    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.42)", display: "grid", placeItems: "center", zIndex: 1000 }}>
-      <div style={{ width: "min(980px,96vw)", maxHeight: "92vh", overflow: "auto", background: "#fff", borderRadius: 16, boxShadow: "0 10px 40px rgba(0,0,0,.25)" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 20px", borderBottom: "1px solid #eee" }}>
-          <div style={{ fontSize: 20, fontWeight: 700 }}>AI Scan</div>
-          <button onClick={onClose} style={{ border: "1px solid #e5e7eb", background: "#fff", padding: "8px 12px", borderRadius: 8, cursor: "pointer" }}>Close</button>
+    <div className="aiscan-overlay">
+      <div className="aiscan-popup">
+        {/* Header */}
+        <div className="aiscan-header">
+          <h1>AI Scan</h1>
+          <p>Generate and save unique a AI scan reports for your vehicles.</p>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1.2fr", gap: 20, padding: 20 }}>
-          <div style={{ border: "1px solid #eee", padding: 16, borderRadius: 12, display: "grid", gap: 14 }}>
-            <form onSubmit={onSubmit} style={{ display: "grid", gap: 12 }}>
-              <div style={{ fontSize: 14, color: "#374151" }}>{userEmail || "No email"}</div>
-              <input type="number" min="30" step="1" value={laborRate} onChange={(e) => setLaborRate(Number(e.target.value))} placeholder="Labor rate (USD/hr)" style={{ padding: 10, borderRadius: 8, border: "1px solid #e5e7eb" }} />
-              <input type="file" accept="image/*" onChange={(e) => setFile(e.target.files?.[0] || null)} style={{ padding: 10, borderRadius: 8, border: "1px solid #e5e7eb" }} />
-              <button disabled={submitting || !userEmail} style={{ background: "#2563eb", color: "#fff", border: 0, padding: "10px 14px", borderRadius: 8, cursor: "pointer" }}>
+        <div className="aiscan-columns">
+          {/* LEFT SIDE */}
+          <div className="aiscan-left">
+            <form onSubmit={onSubmit} className="aiscan-form">
+              <p className="aiscan-email">{userEmail || "No email"}</p>
+              <p>Labor Rate</p>
+              <input type="number" min="30" step="1" value={laborRate} onChange={(e) => setLaborRate(Number(e.target.value))} placeholder="Labor rate" className="aiscan-input"/>
+              <input type="file" accept="image/*" onChange={(e) => setFile(e.target.files?.[0] || null)} className="aiscan-input"/>
+
+              <button className="aiscan-btn" disabled={submitting}>
                 {submitting ? "Estimating..." : "Upload & Estimate"}
               </button>
-              {msg && <div style={{ color: "#ef4444", fontSize: 13 }}>{msg}</div>}
+
+              {msg && <div className="aiscan-msg">{msg}</div>}
             </form>
 
-            <div style={{ borderTop: "1px solid #eee", paddingTop: 12 }}>
-              <div style={{ fontWeight: 700, marginBottom: 8 }}>Results</div>
-              {!result && <div style={{ color: "#6b7280" }}>Upload a photo to see the AI estimate here.</div>}
-              {result && (result.detected === false ? (
-                <div style={{ color: "#b91c1c" }}>{result.message || "Detection not confident. Try another photo."}</div>
-              ) : (
-                <div style={{ display: "grid", gap: 10, border: "1px solid #e5e7eb", borderRadius: 10, padding: 12, background: "#fff", color: "#111827" }}>
+            {/* RESULTS PANEL (unchanged) */}
+            <div className="aiscan-results">
+              <h2>Results</h2>
+              {!result ? (
+                <p className="aiscan-placeholder">
+                  Upload an image to get an estimate.
+                </p>) : (
+                <div className="aiscan-resultbox">
                   {(result.thumbUrl || result.imageUrl) && (
-                    <img src={result.thumbUrl || result.imageUrl} alt="" style={{ maxWidth: "100%", borderRadius: 8, border: "1px solid #e5e7eb" }} />
+                    <img src={result.thumbUrl || result.imageUrl} className="aiscan-image"/>
                   )}
-                  <div><b>Part/Operation:</b> {result.selection?.part || "—"} • {result.selection?.operation || "—"}</div>
-                  <div><b>Confidence:</b> {typeof result.confidence === "number" ? `${Math.round(result.confidence * 100)}%` : "—"}</div>
-                  <div style={{ fontSize: 12, letterSpacing: ".06em", textTransform: "uppercase", opacity: 0.7 }}>Labels</div>
-                  <div>
-                    {(result.visionLabels || []).map((l, i) => (
-                      <span key={i} style={{ display: "inline-block", padding: "4px 10px", border: "1px solid #e5e7eb", borderRadius: 999, margin: "4px 6px 0 0", fontSize: 12 }}>
-                        {l.description} {l.score ? `· ${Math.round(l.score * 100)}%` : ""}
-                      </span>
-                    ))}
-                    {(result.visionLabels || []).length === 0 && <span style={{ color: "#6b7280" }}>—</span>}
-                  </div>
-                  <div style={{ fontSize: 12, letterSpacing: ".06em", textTransform: "uppercase", opacity: 0.7 }}>Objects</div>
-                  <div>
-                    {(result.visionObjects || []).map((o, i) => (
-                      <span key={i} style={{ display: "inline-block", padding: "4px 10px", border: "1px solid #e5e7eb", borderRadius: 999, margin: "4px 6px 0 0", fontSize: 12 }}>
-                        {o.name} {o.score ? `· ${Math.round(o.score * 100)}%` : ""}
-                      </span>
-                    ))}
-                    {(result.visionObjects || []).length === 0 && <span style={{ color: "#6b7280" }}>—</span>}
-                  </div>
-                  <div style={{ fontSize: 12, letterSpacing: ".06em", textTransform: "uppercase", opacity: 0.7 }}>Estimate</div>
-                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14 }}>
-                    <tbody>
-                      <tr><td style={{ padding: "6px 4px" }}>Labor Hours</td><td style={{ padding: "6px 4px" }}>{result.breakdown?.laborHours ?? "—"}</td></tr>
-                      <tr><td style={{ padding: "6px 4px" }}>Labor Rate</td><td style={{ padding: "6px 4px" }}>{usd(result.breakdown?.laborRate)}</td></tr>
-                      <tr><td style={{ padding: "6px 4px" }}>Parts</td><td style={{ padding: "6px 4px" }}>{usd(result.breakdown?.parts)}</td></tr>
-                      <tr><td style={{ padding: "6px 4px" }}>Paint/Materials</td><td style={{ padding: "6px 4px" }}>{usd(result.breakdown?.paintMaterials)}</td></tr>
-                      <tr><td style={{ padding: "6px 4px" }}>Misc</td><td style={{ padding: "6px 4px" }}>{usd(result.breakdown?.misc)}</td></tr>
-                      <tr><td style={{ padding: "6px 4px", fontWeight: 700 }}>Total</td><td style={{ padding: "6px 4px", fontWeight: 900 }}>{usd(result.totalEstimated)}</td></tr>
-                    </tbody>
-                  </table>
+
+                  {Array.isArray(result.selection) && ( <>
+                      <h4>Detected Parts</h4>
+                      <ul>
+                        {result.selection.map((sel, i) => (
+                          <li key={i}>
+                            {sel.part} • {sel.defaultOp || sel.operation}
+                          </li>
+                        ))}
+                      </ul>
+                    </>
+                  )}
+
+                  {result.breakdown && (<>
+                      <h4>Breakdown</h4>
+
+                      {Array.isArray(result.breakdown) ? (
+                        <table className="aiscan-table">
+                          <thead>
+                            <tr>
+                              <th>Part</th>
+                              <th>Op</th>
+                              <th>Parts</th>
+                              <th>Labor</th>
+                              <th>Paint</th>
+                              <th>Misc</th>
+                              <th>Subtotal</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {result.breakdown.map((b, i) => (
+                              <tr key={i}>
+                                <td>{b.part}</td>
+                                <td>{b.operation}</td>
+                                <td>{usd(b.parts)}</td>
+                                <td>{b.hours}</td>
+                                <td>{usd(b.paint)}</td>
+                                <td>{usd(b.misc)}</td>
+                                <td>{usd(b.subtotal)}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>) : (
+                        <table className="aiscan-table">
+                          <tbody>
+                            <tr>
+                              <td>Labor Hours</td>
+                              <td>{result.breakdown.laborHours ?? "—"}</td>
+                            </tr>
+                            <tr>
+                              <td>Labor Rate</td>
+                              <td>{usd(result.breakdown.laborRate)}</td>
+                            </tr>
+                            <tr>
+                              <td>Parts</td>
+                              <td>{usd(result.breakdown.parts)}</td>
+                            </tr>
+                            <tr>
+                              <td>Paint/Materials</td>
+                              <td>{usd(result.breakdown.paintMaterials)}</td>
+                            </tr>
+                            <tr>
+                              <td>Misc</td>
+                              <td>{usd(result.breakdown.misc)}</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      )}
+
+                      <p>
+                        <b>Total:</b> {usd(result.totalEstimated)}
+                      </p>
+                    </>
+                  )}
                 </div>
-              ))}
+              )}
             </div>
           </div>
 
-          <div style={{ border: "1px solid #eee", padding: 16, borderRadius: 12 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-              <div style={{ fontWeight: 700 }}>History</div>
-              <button onClick={loadHistory} style={{ border: "1px solid #e5e7eb", background: "#fff", padding: "6px 10px", borderRadius: 8, cursor: "pointer" }}>Refresh</button>
-            </div>
-            <div style={{ display: "grid", gap: 10 }}>
-              {history.map((it) => (
-                <div key={it._id} style={{ display: "grid", gridTemplateColumns: "120px 1fr auto", alignItems: "center", border: "1px solid #f3f4f6", padding: 10, borderRadius: 10, background: "#fff", color: "#111827" }}>
-                  <img src={it.thumbUrl || it.imageUrl} alt="" style={{ width: 110, height: 82, objectFit: "cover", borderRadius: 8 }} />
-                  <div>
-                    <div style={{ fontWeight: 600 }}>{it.selection?.part} • {it.selection?.operation}</div>
-                    <div>{usd(it.totalEstimated)}</div>
-                    <div style={{ fontSize: 12, color: "#6b7280" }}>{new Date(it.createdAt).toLocaleString()}</div>
+          {/* RIGHT SIDE - HISTORY */}
+          <div className="aiscan-right">
+            <h2>History</h2>
+
+            <div className="aiscan-history">
+              {history.map((est) => {
+                const isOpen = expanded === est._id;
+
+                return (
+                  <div key={est._id} className="aiscan-history-item-wrapper">
+                    <div className="aiscan-history-item">
+                      <img src={est.thumbUrl || est.imageUrl} className="aiscan-thumb"/>
+                      <div>
+                        {Array.isArray(est.selection) ? (
+                          <strong>{est.selection .map((s) =>`${s.part} • ${s.defaultOp || s.operation}`) .join(", ")}</strong>) : (
+                          <strong>{est.selection?.part} • {est.selection?.operation}</strong>
+                        )}
+                        <div>{usd(est.totalEstimated)}</div>
+                        <div className="aiscan-date">
+                          {new Date(est.createdAt).toLocaleString()}
+                        </div>
+                      </div>
+
+                      {/* ACTION BUTTONS */}
+                      <div className="aiscan-actions">
+                        <button
+                          onClick={() => setExpanded(isOpen ? null : est._id)}
+                          className="aiscan-action-btn">{isOpen ? "Hide" : "View"}
+                        </button>
+
+                        <button onClick={() => handleDownload(est)} className="aiscan-action-btn">
+                          Download
+                        </button>
+
+                        <a href={est.imageUrl} target="_blank" rel="noreferrer" className="aiscan-action-btn"> Open Image</a>
+                        <button onClick={() => handleDelete(est._id)} className="aiscan-action-btn-danger">
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* DROPDOWN CONTENT */}
+                    {isOpen && (
+                      <div id={`aiscan-report-${est._id}`} className="aiscan-dropdown">
+                        {(est.thumbUrl || est.imageUrl) && (
+                          <img src={est.thumbUrl || est.imageUrl} className="aiscan-large-image"/>
+                        )}
+
+                        <h4>Breakdown</h4>
+
+                        {Array.isArray(est.breakdown) ? (
+                          <table className="aiscan-table">
+                            <thead>
+                              <tr>
+                                <th>Part</th>
+                                <th>Op</th>
+                                <th>Parts</th>
+                                <th>Labor</th>
+                                <th>Paint</th>
+                                <th>Misc</th>
+                                <th>Subtotal</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {est.breakdown.map((b, i) => (
+                                <tr key={i}>
+                                  <td>{b.part}</td>
+                                  <td>{b.operation}</td>
+                                  <td>{usd(b.parts)}</td>
+                                  <td>{b.hours}</td>
+                                  <td>{usd(b.paint)}</td>
+                                  <td>{usd(b.misc)}</td>
+                                  <td>{usd(b.subtotal)}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>) : (
+                          <table className="aiscan-table">
+                            <tbody>
+                              <tr>
+                                <td>Labor Hours</td>
+                                <td>{est.breakdown.laborHours ?? "—"}</td>
+                              </tr>
+                              <tr>
+                                <td>Labor Rate</td>
+                                <td>{usd(est.breakdown.laborRate)}</td>
+                              </tr>
+                              <tr>
+                                <td>Parts</td>
+                                <td>{usd(est.breakdown.parts)}</td>
+                              </tr>
+                              <tr>
+                                <td>Paint/Materials</td>
+                                <td>{usd(est.breakdown.paintMaterials)}</td>
+                              </tr>
+                              <tr>
+                                <td>Misc</td>
+                                <td>{usd(est.breakdown.misc)}</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        )}
+
+                        <p>
+                          <b>Total:</b> {usd(est.totalEstimated)}
+                        </p>
+                      </div>
+                    )}
                   </div>
-                  <a href={it.imageUrl} target="_blank" rel="noreferrer" style={{ textDecoration: "none", color: "#2563eb" }}>Open</a>
+                );
+              })}
+
+              {history.length === 0 && (
+                <div className="aiscan-placeholder">
+                  No saved estimates yet.
                 </div>
-              ))}
-              {history.length === 0 && <div style={{ color: "#6b7280" }}>No saved estimates yet.</div>}
+              )}
             </div>
           </div>
+        </div>
+
+        <div className="aiscan-bottom">
+          <button className="aiscan-cancelbtn" onClick={onClose}>
+            Cancel
+          </button>
         </div>
       </div>
     </div>

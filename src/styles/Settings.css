@@ -1,7 +1,14 @@
+<<<<<<< HEAD
 .settings-overlay{  
     display: flex;  
     align-items: center;  
     justify-content: center;  
+=======
+.settings-overlay{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+>>>>>>> origin/clean-main
     z-index: 999; 
     position: fixed;  
     top: 0;  
@@ -9,6 +16,7 @@
     width: 100%;  
     height: 100%;  
     backdrop-filter: blur(4px);  
+<<<<<<< HEAD
     background: rgba(0, 0, 0, 0.2);   
 }  
  
@@ -25,6 +33,31 @@
     box-shadow: 0 6px 25px rgba(0, 0, 0, 0.5);  
     z-index: 1000;  
     overflow-y: auto; 
+=======
+    background: rgba(0, 0, 0, 0.2);
+    animation: fadeIn 0.3s ease-in-out;
+} 
+
+
+.settings-header p { 
+    font-size: 16px;
+    color: #555;
+} 
+
+.settings-popup {  
+    background: #fff;
+    width: 95%;
+    max-width: 2300px;
+    height: 90%;
+    border-radius: 12px;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    animation: slideUp 0.4s ease-in-out;
+>>>>>>> origin/clean-main
 }  
 .settings-header{  
     text-align: center;  
@@ -406,6 +439,7 @@
     background-color: red; 
     color: white; 
 } 
+<<<<<<< HEAD
 @media (max-width: 1600px) { 
     .settings-left { 
         padding: 60px; 
@@ -509,6 +543,64 @@
         max-width: 100%;  
     } 
 } 
+=======
+
+@media (max-width: 900px) {
+
+    /* Overlay aligns to the top like Reports */
+    .settings-overlay {
+        align-items: flex-start;
+        padding: 20px 0;
+    }
+
+    /* Popup becomes auto-height + scrollable */
+    .settings-popup {
+        height: auto;
+        max-height: 95vh;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        padding: 30px;
+        gap: 40px;
+    }
+
+    /* Stack the 3 columns vertically */
+    .settings-container {
+        flex-direction: column;
+        height: auto;
+        gap: 25px;
+        margin-top: 10px;
+    }
+
+    /* Each box full width */
+    .settings-left,
+    .settings-middle,
+    .settings-right {
+        width: 100%;
+        height: auto;
+        padding: 40px;
+        gap: 35px;
+    }
+
+    /* Ensure text wraps cleanly */
+    .settings-left-content,
+    .settings-middle-content,
+    .settings-right-content {
+        width: 100%;
+    }
+
+    /* Bottom cancel button now stays inside safely */
+    .settings-bottom {
+        margin-top: 25px;
+        padding-bottom: 20px;
+    } 
+
+    .settings-cancel-btn {
+        width: 80%;
+        max-width: 300px;
+    }
+}
+
+>>>>>>> origin/clean-main
 
 @keyframes fadeIn {
   from { opacity: 0; }
