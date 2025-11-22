@@ -1,5 +1,5 @@
 
-/* === OVERLAY === */
+/*OVERLAY*/
 .support-overlay {  
     display: flex;   
     align-items: center;   
@@ -12,39 +12,33 @@
     height: 100%;   
     backdrop-filter: blur(4px);   
     background: rgba(0, 0, 0, 0.2);
-    animation: fadeIn 0.3s ease-in-out;
 }  
 
-/* === POPUP - NOW AUTO-FITS LIKE SETTINGS === */
+/* POPUP - NOW AUTO-FITS LIKE SETTINGS */
 .support-popup {  
-    position: relative;
     background: #fff;
-    width: 90%;
-    max-width: 1500px;
-    height: 85%;
+    width: 95%;
+    max-width: 2300px;
+    height: 90%;
     border-radius: 12px;
-    padding: 30px;
-    
+    padding: 40px;
+    max-height: 90vh;
     display: flex;
     flex-direction: column;
-
-    /* Fixed bottom button stays visible */
     justify-content: space-between;
-
-    /* Allows cards to scroll inside instead of overflowing */
+    z-index: 1000;
     overflow: hidden;
-
     box-shadow: 0 6px 25px rgba(0,0,0,0.5);
-    animation: slideUp 0.4s ease-in-out;
+    
 }
 
-/* === TITLE === */
+
+/*  Title */
 .support-title {
     text-align: center;
 }
 .support-title h1 {
     font-size: clamp(22px, 2vw, 30px);
-    margin-bottom: 20px;
 }
 
 .support-title p { 
@@ -52,21 +46,19 @@
     color: #555;
 } 
 
-/* === CONTAINER FOR CARDS === */
+/* CONTAINER FOR CARDS */
 .support-container {
-    flex: 1;
     display: flex;
-    gap: 15px;
+    gap: 20px;
+    height: 70%;
+    width: 100%;
     justify-content: center;
     align-items: stretch;
     position: relative;
-
-    overflow-y: auto;       /* scrolling still works */
     padding-right: 10px;
-
-    /* Hide scrollbar (Chrome, Edge, Safari, Opera) */
-    scrollbar-width: none;         /* Firefox */
-    -ms-overflow-style: none;      /* IE/Edge Legacy */
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
 }
 
 /* Chrome/Safari */
@@ -75,20 +67,18 @@
 }
 
 
-/* === CARD (SMALLER + FITS BETTER) === */
+/* CARD (SMALLER + FITS BETTER) */
 .support-showcase {
-    flex: 1;
-    min-width: 0;
-    padding: 25px;
-    border: 2px solid #ccc;
-    border-radius: 8px;
-
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 15px;
-
-    transition: 0.2s;
+     padding: 50px; 
+    display: flex; 
+    flex-direction: column; 
+    border: 2px solid #ccc; 
+    height: 100%; 
+    width: 50%; 
+    border-radius: 6px; 
+    align-items: center; 
+    gap: 30px; 
+    transition: transform 0.2s ease, box-shadow 0.2s ease; 
     box-sizing: border-box;
 }
 .support-showcase:hover {
@@ -96,35 +86,38 @@
     box-shadow: 0 8px 20px rgba(0,0,0,0.15);
 }
 
-/* Blue card */
+/* Make the first card blue */
 .support-showcase.first-card {
     background: #0274d7;
     border-color: #0274d7;
     color: white;
 }
 
-/* Icon */
+/* Icon for the cards*/
 .support-images,
 .support-images-first {
     font-size: 40px;
 }
 
-/* Card text */
+/* Card text content */
 .support-showcase h1 {
     font-size: clamp(18px, 2vw, 24px);
     text-align: center;
     word-wrap: break-word;
 }
 .support-showcase p {
+    overflow-y: auto;
     text-align: center;
     font-size: clamp(14px, 1.4vw, 18px);
 }
-
+.support-showcase p::-webkit-scrollbar {
+    display: none;
+}
 .support-showcase a {
     color: #0274d7;
 }
 
-/* === BOTTOM CANCEL BUTTON === */
+/* CANCEL BUTTON Div */
 .support-bottom {
     display: flex;
     justify-content: center;
@@ -145,7 +138,7 @@
     color: white;
 }
 
-/* === ARROWS (INSIDE + SMALLER) === */
+/* Arrow buttons for left and right */
 .left-btn, .right-btn {
     position: absolute;
     top: 50%;
@@ -155,11 +148,15 @@
     border: none;
     cursor: pointer;
     color: #0274d7;
-    padding: 10px 14px;
-    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%; 
     box-shadow: 0 4px 10px rgba(0,0,0,0.15);
     z-index: 20;
     transition: 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center; 
 }
 
 /* Hover */
@@ -176,24 +173,71 @@
     right: -20px;
 }
 
-/* Mobile disable arrows */
-@media (max-width: 900px) {
-    .left-btn, .right-btn {
-        display: none;
-    }
-}
 
-/* === MOBILE === */
+/*  MOBILE */
 @media (max-width: 900px) {
     .support-container {
-        flex-wrap: wrap;
+         display: block;
+        position: relative;
+        overflow-y: visible;
+        max-height: 400px; 
+        padding: 10px;
+        background: transparent;
         overflow-y: auto;
+        border: 1px solid #ccc;
+        border-radius: 12px;
+    }
+    .support-popup {
+        display: flex;
+        flex-direction: column;
+        height: 90vh;
+        max-height: 90vh;
+        position: relative;
+}
+    
+    .support-bottom { 
+        padding: 20px 0;
+        text-align: center;
+    }
+
+    .left-btn, .right-btn {
+       position: fixed;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 16px;
+        background: white;
+        border: none;
+        cursor: pointer;
+        color: #0274d7;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        z-index: 20;
+        transition: 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .left-btn {
+        left: 20px;
+    }
+
+    .right-btn {
+        right: 20px;
     }
     .support-showcase {
         width: 100%;
+        margin: 20px 0;
+        flex: 0 0 auto;
+        box-sizing: border-box;
+        position: relative;
+        height: 350px;
     }
-    .left-btn, .right-btn {
-        display: none;
+    .support-images,
+    .support-images-first {
+        font-size: 40px; 
     }
 }
 
