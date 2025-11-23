@@ -520,6 +520,29 @@
     height: auto;
     max-height: 95vh;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .aiscan-columns {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+  }
+
+  .aiscan-right,
+  .aiscan-left {
+    max-height: 100%;
+    overflow-y: auto;
+  }
+
+  .aiscan-bottom {
+    margin-top: 30px;
+    padding-bottom: 30px;
+  }
+
+  .aiscan-cancelbtn {
+    width: 80%;
+    max-width: 300px;
   }
 
   .aiscan-modal-body {
@@ -538,5 +561,23 @@
   .aiscan-cancel-btn {
     width: 80%;
     max-width: 300px;
+  }
+}
+
+@media (max-width: 700px) {
+  .aiscan-dropdown {
+    width: 100%;
+    max-width: none;
+  }
+
+  .aiscan-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .aiscan-actions {
+    width: 100%;
+    justify-content: flex-start;
   }
 }
