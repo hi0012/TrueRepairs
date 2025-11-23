@@ -739,6 +739,7 @@ function ReportsBody({ onClose }) {
                       <p><strong>Make:</strong> {selectedVehicle.make}</p>
                       <p><strong>Model:</strong> {selectedVehicle.model}</p>
                       <p><strong>Engine:</strong> {selectedVehicle.engine}</p>
+                      <p><strong>Trim:</strong> {selectedVehicle.trim || "N/A"}</p>
                     </>) : (<p className="reportplaceholder">Select a vehicle above.</p>)
                   }
                 </div>

@@ -78,7 +78,6 @@
   padding-right: 6px;
 }
 
-/* Big white container */
 .aiscan-form,
 .aiscan-current-result {
   background: #fafafa;
@@ -438,22 +437,66 @@
   background: red;
 }
 
-.reportselectfield label {
+.reportselectfields label {
   font-weight: 600;
   display: block;
   margin-bottom: 4px;
 }
-.reportselectfield select {
+.reportselectfields select {
   width: 100%;
   padding: 8px;
   border-radius: 6px;
   border: 1px solid #ccc;
   font-size: 15px;
 }
-.reportselectfield select:disabled {
+.reportselectfields select:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
+.aiscan-selected-vehicle-box {
+  background: #f8fafc;
+  border: 1px solid #cfd8e3;
+  border-radius: 6px;
+  padding: 12px;
+  margin-top: 10px;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.aiscan-vehicle-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.aiscan-selected-vehicle-details p {
+  margin: 3px 0;
+  font-size: 14px;
+}
+
+/* Match Reports vehicle box */
+.reportselecteds {
+  background: #f8fafc;
+  border: 1px solid #cfd8e3;
+  border-radius: 6px;
+  padding: 12px;
+  margin-top: 10px;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+/* MATCH REPORT STYLE */
+.aiscan-placeholder {
+  color: #888;
+  font-style: italic;
+  text-align: center;
+  padding: 14px;
+  background: #f8fafc;
+  border: 1px solid #cfd8e3;
+  border-radius: 6px;
+  margin-top: 10px;
+}
+
 
 /* ANIMATIONS */
 @keyframes fadeIn {

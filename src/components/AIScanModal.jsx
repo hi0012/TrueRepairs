@@ -17,8 +17,6 @@ export default function AIScanModal({ open, onClose, userEmail }) {
   const [previews, setPreviews] = useState([]);
   const [msg, setMsg] = useState("");
   const [selectedVehicle, setSelectedVehicle] = useState(null);
-
-  // FULLSCREEN IMAGE VIEWER
   const [fullImage, setFullImage] = useState(null);
 
   // LOAD HISTORY WHEN MODAL OPENS
@@ -33,22 +31,33 @@ export default function AIScanModal({ open, onClose, userEmail }) {
   
   // Load user's vehicles
   useEffect(() => {
-    if (!userEmail) return;
-    (async () => {
-      try {
-        const res = await fetch(`${API}/api/vehicles?email=${encodeURIComponent(userEmail)}`);
-        const data = await res.json();
-        setVehicles(data.items || []);
-      } catch (e) {
-        console.error("Vehicle fetch error:", e);
-      }
-    })();
-  }, [userEmail]);
+      if (!open || !userEmail) return;
 
+      (async () => {
+          try {
+              const res = await fetch(`${API}/api/vehicles?email=${userEmail}`);
+              const data = await res.json();
+              setVehicles(data.items || []);
+          } catch (e) {
+              console.error("Vehicle fetch error:", e);
+          }
+      })();
+  }, [open, userEmail]);
 
   const handleClose = () => {
-    if (!submitting && onClose) onClose();
+    if (submitting) return;
+
+    setExpanded(null);
+    setSelectedVehicle(null);
+    setFiles([]);
+    setPreviews([]);
+    setResult(null);
+    setMsg("");
+    setCarouselIndex(0);
+
+    if (onClose) onClose();
   };
+
 
   const handleVehicleChange = (e) => {
     const vehicleId = e.target.value;
@@ -144,34 +153,49 @@ export default function AIScanModal({ open, onClose, userEmail }) {
         return;
       }
 
-      // Page 1 Screenshot
-      const canvas = await html2canvas(element, {
-        scale: 2,
-        backgroundColor: "#fff",
-        useCORS: true,
-      });
-
-      const imgData = canvas.toDataURL("image/png");
       const pdf = new jsPDF("p", "pt", "a4");
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const margin = 40;
 
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
+      const logoImg = new Image();
+      logoImg.src = "/logo.png";
+
+      const brandImg = new Image();
+      brandImg.src = "/TrueRepairs.png";
+
+      await Promise.all([logoImg.decode(), brandImg.decode()]);
+
+      const dateStr = new Date().toLocaleString();
+
+      const logoY = 30;
+      // Logos
+      pdf.addImage(logoImg, "PNG", margin, logoY, 45, 45);
+      pdf.addImage(brandImg, "PNG", margin + 45, logoY - 20, 100, 100);
+
+      // Date
+      pdf.setFontSize(11);
+      pdf.text(`Date: ${dateStr}`, pdfWidth - 170, 50);
+
+      // Title
+      pdf.setFontSize(18);
+      pdf.text("TrueRepairs Damage Report", margin, 110);
+
+      // Vehicle line
+      pdf.setFontSize(13);
+      pdf.text(`${est.vehicle?.year || ""} ${est.vehicle?.make || ""} ${est.vehicle?.model || ""}`, margin,130);
+
+      const canvas = await html2canvas(element, {scale: 2, backgroundColor: "#fff", useCORS: true,});
+      const imgData = canvas.toDataURL("image/png");
 
       const imgProps = pdf.getImageProperties(imgData);
-      const ratio = Math.min(
-        (pageWidth - 40) / imgProps.width,
-        (pageHeight - 120) / imgProps.height
-      );
+      const ratio = Math.min((pdfWidth - 40) / imgProps.width, (pdfHeight - 180) / imgProps.height);
 
       const imgWidth = imgProps.width * ratio;
       const imgHeight = imgProps.height * ratio;
 
-      pdf.addImage(imgData, "PNG", (pageWidth - imgWidth) / 2, 60, imgWidth, imgHeight);
-
-      // Page 2 — Parts Breakdown
+      pdf.addImage(imgData, "PNG", (pdfWidth - imgWidth) / 2, 150, imgWidth, imgHeight);
       pdf.addPage();
-
-      const margin = 40;
       let y = 60;
 
       pdf.setFontSize(18);
@@ -180,7 +204,6 @@ export default function AIScanModal({ open, onClose, userEmail }) {
       y += 30;
       pdf.setFontSize(11);
 
-      // Table header
       const headers = ["Part", "Op", "Severity", "Part Cost", "Paint", "Total"];
       const colWidths = [140, 60, 60, 70, 60, 70];
       const startX = margin;
@@ -192,34 +215,29 @@ export default function AIScanModal({ open, onClose, userEmail }) {
 
       y += 12;
       pdf.setDrawColor(150);
-      pdf.line(margin, y, pageWidth - margin, y);
+      pdf.line(margin, y, pdfWidth - margin, y);
       y += 16;
 
       let totalParts = 0;
       let totalPaint = 0;
 
       (est.parts || []).forEach((p) => {
-        const partTotal = Number(p.cost) + Number(p.paintCost);
-        totalParts += Number(p.cost);
-        totalPaint += Number(p.paintCost);
+        const partCost = Number(p.cost || 0);
+        const paintCost = Number(p.paintCost || 0);
+        const total = partCost + paintCost;
 
-        const row = [
-          p.name,
-          p.operation,
-          p.severity,
-          `$${Number(p.cost).toFixed(2)}`,
-          p.paintCost > 0 ? `$${p.paintCost}` : "$0",
-          `$${partTotal.toFixed(2)}`
-        ];
+        totalParts += partCost;
+        totalPaint += paintCost;
 
-        row.forEach((value, i) => {
-          const x = startX + colWidths.slice(0, i).reduce((a, b) => a + b, 0);
+        const row = [p.name || "Unknown", p.operation || "replace", p.severity || "unknown", `$${partCost.toFixed(2)}`, `$${paintCost.toFixed(2)}`, `$${total.toFixed(2)}`];
+
+        row.forEach((value, index) => {
+          const x = startX + colWidths.slice(0, index).reduce((a, b) => a + b, 0);
           pdf.text(String(value), x, y);
         });
 
         y += 18;
 
-        // INFO URL
         if (p.info_url) {
           pdf.setTextColor(0, 0, 255);
           pdf.setFontSize(9);
@@ -229,21 +247,22 @@ export default function AIScanModal({ open, onClose, userEmail }) {
           y += 14;
         }
 
-        if (y > pageHeight - 60) {
+        if (y > pdfHeight - 60) {
           pdf.addPage();
           y = 60;
         }
       });
 
-      // Totals Section
+      // Totals
       y += 10;
       pdf.setFontSize(13);
       pdf.text(`Parts Total: $${totalParts.toFixed(2)}`, margin, y);
       y += 20;
       pdf.text(`Paint Total: $${totalPaint.toFixed(2)}`, margin, y);
 
+      const laborTotal = est.breakdown.laborHours * est.breakdown.laborRate;
       y += 20;
-      pdf.text(`Labor (${est.breakdown.laborHours} hrs @ $${est.breakdown.laborRate}/hr): $${(est.breakdown.laborHours * est.breakdown.laborRate).toFixed(2)}`, margin, y);
+      pdf.text(`Labor (${est.breakdown.laborHours} hrs @ $${est.breakdown.laborRate}/hr): $${laborTotal.toFixed(2)}`, margin, y);
 
       y += 20;
       pdf.text(`Misc: $${est.breakdown.misc}`, margin, y);
@@ -298,82 +317,26 @@ export default function AIScanModal({ open, onClose, userEmail }) {
     setFiles((prev) => prev.filter((item, i) => i !== index));
   }
 
-  // BREAKDOWN TABLE
-  const renderBreakdown = (breakdown) => {
-    if (!breakdown) return null;
-
-    if (!Array.isArray(breakdown)) {
-      const laborHours = breakdown.laborHours ?? breakdown.totalLaborHours;
-      const partsTotal = breakdown.parts ?? breakdown.partsTotal;
-
-      return (
-        <div className="aiscan-breakdown">
-          <h4>Breakdown</h4>
-          <table className="aiscan-breakdown-table">
-            <tbody>
-              {laborHours && (
-                <tr>
-                  <td>Labor Hours</td>
-                  <td>{laborHours}</td>
-                </tr>
-              )}
-
-              {laborHours && (
-                <tr>
-                  <td>Labor Cost</td>
-                  <td>${(laborHours * laborRate).toFixed(2)}</td>
-                </tr>
-              )}
-
-              {partsTotal && (
-                <tr>
-                  <td>Parts</td>
-                  <td>${partsTotal.toFixed(2)}</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      );
-    }
-    return (
-      <div className="aiscan-breakdown">
-        <h4>Breakdown</h4>
-        <table className="aiscan-breakdown-table">
-          <thead>
-            <tr>
-              <th>Part</th>
-              <th>Operation</th>
-              <th>Hours</th>
-              <th>Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            {breakdown.map((b, i) => (
-              <tr key={i}>
-                <td>{b.part}</td>
-                <td>{b.operation}</td>
-                <td>{b.hours ?? "—"}</td>
-                <td>{b.total ? `$${b.total}` : "—"}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    );
-  };
-
   // ESTIMATE PANEL
   const renderEstimatePanel = (data, isHistory) => {
     if (!data) return null;
+
     const vehicle = data.vehicle || {};
     const id = isHistory ? `aiscan-report-${data._id}` : "aiscan-report";
 
+    const vehicleTitle = `${vehicle.year || ""} ${vehicle.make || ""} ${vehicle.model || ""} (${(data.parts || []).length} parts)`;
+    const created = data.createdAt ? new Date(data.createdAt).toLocaleString() : "Unknown Date";
+
     return (
       <div id={id} className="aiscan-report">
+        <p className="aiscan-vehicle-line">
+          <strong>{vehicleTitle}</strong>
+          <br />
+        </p>
+
         {vehicle.label && (
-          <p className="aiscan-vehicle-line">
-            <strong>Vehicle:</strong> {vehicle.label}
+          <p className="aiscan-vehicle-sub">
+            <strong>Detected:</strong> {vehicle.label}
             {vehicle.confidence && (
               <span> · {Math.round(vehicle.confidence * 100)}% accuracy</span>
             )}
@@ -381,13 +344,53 @@ export default function AIScanModal({ open, onClose, userEmail }) {
         )}
 
         {renderDamages(data.damages)}
-        {renderBreakdown(data.breakdown)}
 
+        <div className="aiscan-breakdown">
+          <h4>Breakdown</h4>
+          <table className="aiscan-breakdown-table">
+            <tbody>
+
+              {/* Labor */}
+              <tr>
+                <td>Labor Hours</td>
+                <td>{data.breakdown?.laborHours || 0}</td>
+              </tr>
+
+              <tr>
+                <td>Labor Cost</td>
+                <td>${(data.breakdown?.laborHours * data.breakdown?.laborRate).toFixed(2)}</td>
+              </tr>
+
+              {/* Parts total */}
+              <tr>
+                <td>Parts</td>
+                <td>${(data.breakdown?.parts || 0).toFixed(2)}</td>
+              </tr>
+
+              {/* Paint total */}
+              <tr>
+                <td>Paint</td>
+                <td>${(data.breakdown?.paintMaterials || 0).toFixed(2)}</td>
+              </tr>
+
+              {/* Misc */}
+              <tr>
+                <td>Misc</td>
+                <td>${(data.breakdown?.misc || 0).toFixed(2)}</td>
+              </tr>
+
+            </tbody>
+          </table>
+        </div>
+
+
+        {/* TOTAL */}
         {data.totalEstimated && (
           <p className="aiscan-total">
             <strong>Total:</strong> ${data.totalEstimated.toFixed(2)}
           </p>
         )}
+
       </div>
     );
   };
@@ -430,6 +433,10 @@ export default function AIScanModal({ open, onClose, userEmail }) {
     );
   };
 
+  function formatMake(s) {
+    if (!s) return "";
+    return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+  }
 
   return (
     <div className="aiscan-modal-overlay">
@@ -445,7 +452,7 @@ export default function AIScanModal({ open, onClose, userEmail }) {
             <form className="aiscan-form" onSubmit={handleSubmit}>
               {/* Vehicle select */}
 
-              <div className="reportselectfield">
+              <div className="reportselectfields">
                 <label>Select Vehicle:</label>
                 <select value={selectedVehicle?._id || ""} onChange={handleVehicleChange}>
                   <option value="">Select Vehicle</option>
@@ -455,6 +462,17 @@ export default function AIScanModal({ open, onClose, userEmail }) {
                     </option>
                   ))}
                 </select>
+                {selectedVehicle ? (
+                  <div className="reportselecteds aiscan-selected-vehicle-box">
+                    <p><strong>Year:</strong> {selectedVehicle.year}</p>
+                    <p><strong>Make:</strong> {selectedVehicle.make}</p>
+                    <p><strong>Model:</strong> {selectedVehicle.model}</p>
+                    <p><strong>Engine:</strong> {selectedVehicle.engine}</p>
+                    <p><strong>Trim:</strong> {selectedVehicle.trim || "—"}</p>
+                  </div>
+                ) : (
+                  <p className="aiscan-placeholder">Select a vehicle above.</p>
+                )}
               </div>
               <div className="aiscan-form-row">
                 <label>
@@ -521,7 +539,12 @@ export default function AIScanModal({ open, onClose, userEmail }) {
                 <div key={est._id} className="aiscan-history-item">
                   <div className="aiscan-history-header">
                     <div className="RepItemHeader">
-                      <strong>{new Date(est.createdAt).toLocaleString()}</strong>
+                      <div>
+                        <strong>
+                          {`${est.vehicle?.year || est.year || "Unknown Year"} ${formatMake(est.vehicle?.make)} ${est.vehicle?.model || ""} (${(est.parts || []).length} parts)`}
+                        </strong>
+                        <p>Date: {new Date(est.createdAt).toLocaleString()}</p>
+                      </div>
 
                       <div className="RepActions">
                         <button className="RepViewBtn" onClick={() => setExpanded(expanded === est._id ? null : est._id)}>
@@ -561,7 +584,7 @@ export default function AIScanModal({ open, onClose, userEmail }) {
       {/* FULLSCREEN VIEWER */}
       {fullImage && (
         <div className="aiscan-img-viewer" onClick={() => setFullImage(null)}>
-          <img src={fullImage} alt="Full View" />
+          <img src={fullImage} alt="Full View"/>
         </div>
       )}
     </div>

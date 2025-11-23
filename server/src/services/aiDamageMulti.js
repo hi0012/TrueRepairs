@@ -1,9 +1,6 @@
 require("dotenv").config({ path: require("path").join(__dirname, "../../.env") });
 const OpenAI = require("openai");
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
-});
+const openai = new OpenAI({apiKey: process.env.OPENAI_API_KEY});
 
 function bufferToDataUrl(buffer, mimetype) {
   const base64 = buffer.toString("base64");
@@ -12,9 +9,7 @@ function bufferToDataUrl(buffer, mimetype) {
 }
 
 function mergeVehicleGuesses(images) {
-  const guesses = images
-    .map(i => i.vehicleGuess)
-    .filter(Boolean);
+  const guesses = images.map(i => i.vehicleGuess).filter(Boolean);
 
   if (!guesses.length) return null;
 
@@ -40,13 +35,7 @@ function mergeDamages(images) {
       const confidence = typeof dmg.confidence === "number" ? dmg.confidence : 0;
 
       if (!map.has(key)) {
-        map.set(key, {
-          part: dmg.part,
-          operation: operation,
-          worstSeverity: severity,
-          maxConfidence: confidence,
-          sources: [idx]
-        });
+        map.set(key, {part: dmg.part, operation: operation, worstSeverity: severity, maxConfidence: confidence, sources: [idx]});
       } else {
         const existing = map.get(key);
         existing.sources.push(idx);
@@ -63,7 +52,6 @@ function mergeDamages(images) {
       }
     });
   });
-
   return Array.from(map.values());
 }
 
@@ -235,35 +223,16 @@ async function analyzeCarImages(imageFiles) {
     `.trim()
   });
 
-
-
-
   imageFiles.forEach((file, idx) => {
     const dataUrl = bufferToDataUrl(file.buffer, file.mimetype);
-    contentParts.push({
-      type: "text",
-      text: `Image index: ${idx}.`
-    });
-    contentParts.push({
-      type: "image_url",
-      image_url: { url: dataUrl }
-    });
+    contentParts.push({type: "text", text: `Image index: ${idx}.`});
+    contentParts.push({type: "image_url", image_url: { url: dataUrl }});
   });
 
   const completion = await openai.chat.completions.create({
     model: "gpt-4o-mini",
     response_format: { type: "json_object" },
-    messages: [
-      {
-        role: "system",
-        content:
-          "You are a careful assistant that only returns valid JSON and never includes extra commentary."
-      },
-      {
-        role: "user",
-        content: contentParts
-      }
-    ]
+    messages: [{role: "system", content: "You are a careful assistant that only returns valid JSON and never includes extra commentary."},{role: "user", content: contentParts}]
   });
 
   let parsed;
@@ -274,14 +243,7 @@ async function analyzeCarImages(imageFiles) {
   }
 
   const images = Array.isArray(parsed.images) ? parsed.images : [];
-
-  const normalizedImages = images.map(img => ({
-    index: typeof img.index === "number" ? img.index : 0,
-    view: img.view || "unknown",
-    vehicleGuess: img.vehicleGuess || null,
-    damages: Array.isArray(img.damages) ? img.damages : []
-  }));
-
+  const normalizedImages = images.map(img => ({index: typeof img.index === "number" ? img.index : 0, view: img.view || "unknown", vehicleGuess: img.vehicleGuess || null, damages: Array.isArray(img.damages) ? img.damages : []}));
   const vehicle = mergeVehicleGuesses(normalizedImages);
   const mergedDamages = mergeDamages(normalizedImages);
 
