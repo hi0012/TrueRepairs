@@ -39,14 +39,16 @@ const EstimateSchema = new mongoose.Schema(
   {
     userEmail: { type: String, index: true, required: true },
 
-    // legacy single-image fields (kept for backward compatibility)
     imageUrl: String,
     thumbUrl: String,
     cloudinaryPublicId: String,
     imageType: String,
+
     visionLabels: [{ description: String, score: Number }],
     visionObjects: [{ name: String, score: Number }],
+
     selection: { part: String, operation: String },
+
     breakdown: {
       parts: Number,
       laborHours: Number,
@@ -54,12 +56,22 @@ const EstimateSchema = new mongoose.Schema(
       paintMaterials: Number,
       misc: Number
     },
+
     totalEstimated: Number,
 
-    // new multi-image + AI fields
     images: [ImageInfoSchema],
     vehicle: VehicleGuessSchema,
     damages: [DamageSchema],
+
+    parts: [
+      {
+        name: String,
+        operation: String,
+        severity: String,
+        cost: Number
+      }
+    ],
+
     aiRaw: mongoose.Schema.Types.Mixed,
     vin: String
   },

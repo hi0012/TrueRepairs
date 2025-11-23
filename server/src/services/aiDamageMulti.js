@@ -75,18 +75,168 @@ async function analyzeCarImages(imageFiles) {
   const contentParts = [];
   contentParts.push({
     type: "text",
-    text:
-      "You are an auto body repair estimator. " +
-      "For each image, determine: (1) which exterior view it shows (front, rear, left, right, or unknown), " +
-      "(2) your best guess at the vehicle make, model, and approximate year range, and " +
-      "(3) a list of clearly visible damaged exterior body parts. " +
-      "For each damage, include: part name (for example: 'Front Bumper Cover', 'Rear Bumper Cover', 'Fender (Front Left)', 'Headlamp (Left)'), " +
-      "operation ('replace' or 'refinish'), severity ('minor', 'moderate', or 'major'), and a confidence from 0 to 1. " +
-      "If you are not sure about make, model, or year, set them to 'unknown' and use a low confidence. " +
-      "Do not invent details. Do not mention the car's brand names in free text, only inside the structured fields. " +
-      "Reply ONLY as JSON with this shape: " +
-      "{ \"images\": [ { \"index\": number, \"view\": string, \"vehicleGuess\": { \"make\": string, \"model\": string, \"yearRange\": string, \"confidence\": number }, \"damages\": [ { \"part\": string, \"operation\": string, \"severity\": string, \"confidence\": number, \"notes\": string } ] } ] }."
+    text: `
+    YOU ARE AN AUTO BODY DAMAGE ESTIMATOR.
+
+    Your job is to evaluate ONLY exterior bolt-on body parts, LEFT and RIGHT sides treated independently, but ONLY when visible.
+
+    ====================================================
+    VISIBLE-SIDE RULE (MANDATORY)
+    ====================================================
+    You MUST evaluate a side ONLY if that side is physically visible in the image.
+
+    • If LEFT side is visible → evaluate LEFT parts only.
+    • If RIGHT side is visible → evaluate RIGHT parts only.
+    • If BOTH sides are visible → evaluate both sides.
+    • If a side is NOT visible → DO NOT report any part from that side.
+
+    ABSOLUTELY FORBIDDEN:
+    • Inferring unseen parts.
+    • Guessing the condition of the opposite side.
+    • Reporting damage for parts not shown in the image.
+
+    This rule OVERRIDES all other rules.
+
+    ====================================================
+    ALLOWED EXTERIOR PARTS (ONLY THESE)
+    ====================================================
+    You may ONLY report damage to these exterior bolt-on components:
+
+    • Headlamp (left / right)
+    • Taillamp (left / right)
+    • Front bumper cover
+    • Rear bumper cover
+    • Hood
+    • Trunk lid
+    • Front fender (driver/left)
+    • Front fender (passenger/right)
+    • Doors (left/right, front/rear)
+    • Mirrors (left / right)
+    • Quarter panels (left / right)
+    • Grille
+
+    DO NOT report:
+    radiator support, tie bar, crash bar, condenser, reinforcement, frame rails, brackets, inner metal, fans, absorbers, apron, or any internal/structural parts.
+
+    ====================================================
+    HEADLAMP & TAILLAMP RULES
+    ====================================================
+    A lamp is DAMAGED only if:
+    • lens is cracked, shattered, broken, or punctured, OR
+    • lamp housing is missing or displaced, OR
+    • lamp is completely missing.
+
+    A lamp is INTACT if:
+    • the lens shape is visible,
+    • no cracks are present,
+    • the lamp is mounted in a normal position.
+
+    ====================================================
+    TAILLAMP FALSE-POSITIVE PREVENTION RULE
+    ====================================================
+    Do NOT mark a taillamp as damaged based on:
+    • reflections,
+    • glare,
+    • sun hotspots,
+    • trunk deformation nearby,
+    • bumper deformation,
+    • shadows,
+    • crease reflections.
+
+    Only report taillamp damage if the lamp itself is visibly broken, missing, or displaced.
+
+    ====================================================
+    FENDER ACCURACY RULE
+    ====================================================
+    Evaluate ONLY the OUTER FENDER SKIN.
+
+    Do NOT confuse the following with fender damage:
+    • exposed inner frame metal,
+    • radiator support,
+    • headlamp brackets,
+    • crash bar components,
+    • plastic inner liners.
+
+    Fender damage requires:
+    • creases,
+    • bends,
+    • distortion,
+    • crushing,
+    • tearing,
+    • missing outer skin.
+
+    ====================================================
+    BUMPER RULE
+    ====================================================
+    A bumper cover is damaged only when:
+    • cracked,
+    • torn,
+    • crushed,
+    • missing.
+
+    ====================================================
+    HOOD & TRUNK RULE
+    ====================================================
+    Report hood or trunk damage when:
+    • bent,
+    • creased,
+    • kinked,
+    • misaligned,
+    • shape is distorted.
+
+    ====================================================
+    MISSING PART RULE
+    ====================================================
+    If a visible exterior part is missing:
+    • operation: "replace"
+    • severity: "major"
+
+    ====================================================
+    REPORT FIELDS FOR EACH DAMAGE
+    ====================================================
+    For every damaged part, return:
+    • part
+    • operation ("replace" or "refinish")
+    • severity ("minor", "moderate", "major")
+    • confidence (0.0-1.0)
+    • notes (short explanation)
+
+    ====================================================
+    STRICT JSON OUTPUT FORMAT
+    ====================================================
+
+    Return ONLY valid JSON in EXACTLY this structure:
+
+    {
+      "images": [
+        {
+          "index": number,
+          "view": string,
+          "vehicleGuess": {
+            "make": string,
+            "model": string,
+            "yearRange": string,
+            "confidence": number
+          },
+          "damages": [
+            {
+              "part": string,
+              "operation": "replace" | "refinish",
+              "severity": "minor" | "moderate" | "major",
+              "confidence": number,
+              "notes": string
+            }
+          ]
+        }
+      ]
+    }
+
+    NO commentary outside JSON. NO explanations. JSON ONLY.
+    `.trim()
   });
+
+
+
 
   imageFiles.forEach((file, idx) => {
     const dataUrl = bufferToDataUrl(file.buffer, file.mimetype);
