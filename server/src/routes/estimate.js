@@ -8,104 +8,19 @@ const path = require("path");
 const cloudinary = require("../lib/cloudinary");
 const streamifier = require("streamifier");
 const Estimate = require("../../models/estimate");
+const { analyzeCarImages } = require("../services/aiDamageMulti");
 
-const COST = JSON.parse(fs.readFileSync(path.join(__dirname, "../data/cost_table.json"), "utf-8"));
-
-let visionClientInstance = null;
-function visionClient() {
-  if (!visionClientInstance) {
-    const vision = require("@google-cloud/vision");
-    const path = require("path");
-    visionClientInstance = new vision.ImageAnnotatorClient({
-      keyFilename: path.join(__dirname, "../../keys/gcv.json"),
-    });
-  }
-  return visionClientInstance;
-}
-
-function pickPartFromVision(labels = [], objects = []) {
-  const weightedText = [
-    ...labels.map((l) => l.description.toLowerCase()),
-    ...objects.flatMap((o) => Array(3).fill(o.name?.toLowerCase() || ""))
-  ].join(" | ");
-
-  const got = (t) => weightedText.includes(t);
-
-  // ====== REGION DETECTION FROM BOUNDING BOX ======
-  let region = "middle";
-  try {
-    const allY = objects.flatMap(o =>
-      o.boundingPoly?.normalizedVertices?.map(v => v.y) || []
-    );
-    if (allY.length) {
-      const avg = allY.reduce((a, b) => a + b, 0) / allY.length;
-      if (avg < 0.33) region = "upper";
-      else if (avg > 0.66) region = "lower";
-    }
-  } catch {}
-
-  // ====== STRONG FRONT/REAR SIGNALS ONLY ======
-  let isFront = false;
-  let isRear = false;
-
-  if (got("hood") || got("grille") || got("radiator")) isFront = true;
-  if (got("trunk") || got("tailgate") || got("license") || got("plate")) isRear = true;
-
-  // Region helps decide direction when mixed labels
-  if (!isFront && !isRear) {
-    if (region === "upper") {
-      if (got("hood")) isFront = true;
-      if (got("trunk")) isRear = true;
-    }
-    if (region === "lower") {
-      // lower = bumper zone; decide based on strongest labels
-      if (got("grille") || got("hood") || got("radiator")) isFront = true;
-      if (got("trunk") || got("license") || got("plate")) isRear = true;
-    }
-  }
-
-  // If still undecided → fallback to label hints
-  if (!isFront && !isRear) {
-    if (got("hood") || got("grille")) isFront = true;
-    if (got("trunk") || got("license")) isRear = true;
-  }
-
-  // ====== BUMPER DECISION ======
-  if (got("bumper") || got("bumper cover")) {
-    if (isFront) return { part: "Front Bumper Cover", defaultOp: "replace" };
-    if (isRear) return { part: "Rear Bumper Cover", defaultOp: "replace" };
-
-    // Region fallback
-    if (region === "lower") return { part: "Front Bumper Cover", defaultOp: "replace" };
-  }
-
-  // ====== HOOD/TRUNK ======
-  if (got("hood")) return { part: "Hood", defaultOp: "replace" };
-  if (got("trunk") || got("tailgate")) return { part: "Trunk Lid", defaultOp: "replace" };
-
-  // ====== HEADLIGHT / TAIL ======
-  if (got("headlight") || got("headlamp")) return { part: "Headlamp (Left)", defaultOp: "replace" };
-  if (got("taillight") || got("tail light")) return { part: "Tail Light", defaultOp: "replace" };
-
-  // ====== FENDERS ======
-  if (got("fender")) {
-    if (isFront) return { part: "Fender (Front Left)", defaultOp: "replace" };
-    if (isRear) return { part: "Quarter Panel (Rear Left)", defaultOp: "replace" };
-    return { part: "Fender", defaultOp: "replace" };
-  }
-
-  // ====== BODY DAMAGE ======
-  if (got("dent") || got("impact") || got("damage")) {
-    if (isFront) return { part: "Front Bumper Cover", defaultOp: "refinish" };
-    if (isRear) return { part: "Rear Bumper Cover", defaultOp: "refinish" };
-    return { part: "Body Panel", defaultOp: "refinish" };
-  }
-
-  // ====== FINAL FALLBACK ======
-  if (isFront) return { part: "Front Bumper Cover", defaultOp: "replace" };
-  if (isRear) return { part: "Rear Bumper Cover", defaultOp: "replace" };
-
-  return { part: "Front Bumper Cover", defaultOp: "replace" };
+// Load Toyota Parts Pricing
+let TOYOTA_PARTS = {};
+try {
+  TOYOTA_PARTS = JSON.parse(
+    fs.readFileSync(
+      path.join(__dirname, "../data/ToyotaParts.json"),
+      "utf-8"
+    )
+  );
+} catch (err) {
+  console.error("Could not load ToyotaParts.json:", err);
 }
 
 function safeSeg(s) {
@@ -114,83 +29,171 @@ function safeSeg(s) {
 
 router.get("/estimate/ping", (req, res) => res.json({ ok: true }));
 
-router.post("/estimate", upload.single("file"), async (req, res) => {
+router.post("/estimate", upload.array("files", 6), async (req, res) => {
   try {
-    if (!req.file) return res.status(400).json({ message: "image file is required" });
-
+    if (!req.files || !req.files.length) {
+      return res.status(400).json({ message: "At least one image file is required" });
+    }
     const email = (req.body.email || "guest@truerepairs.ai").trim().toLowerCase();
-    const client = visionClient();
+    const laborRate = Number(req.body.laborRate || 110);
 
-    const [labelResp] = await client.labelDetection({ image: { content: req.file.buffer } });
-    const [objectResp] = await client.objectLocalization({ image: { content: req.file.buffer } });
+    const selectedYear = String(req.body.year || "").trim();
+    const selectedMake = String(req.body.make || "").trim().toUpperCase();
+    const selectedModel = String(req.body.model || "").trim().toUpperCase();
+    const selectedTrim = String(req.body.trim || "").trim().toUpperCase();
+    const selectedEngine = String(req.body.engine || "").trim();
+    const aiResult = await analyzeCarImages(req.files);
+    const damages = aiResult.mergedDamages || [];
 
-    let objects = objectResp?.localizedObjectAnnotations || [];
-    const labels = (labelResp.labelAnnotations || [])
-      .filter(l => l.score >= 0.60)
-      .map(l => ({ description: l.description, score: l.score }));
+    const normalizePart = (name) => {
+      const lower = name.toLowerCase();
+      if (lower.includes("fender")) return "Fender";
+      if (lower.includes("bumper")) return "Bumper Cover";
+      if (lower.includes("headlamp") || lower.includes("headlight")) return "Headlamp Assembly";
+      if (lower.includes("taillamp") || lower.includes("tail")) return "Tail Lamp Assembly";
+      if (lower.includes("hood")) return "Hood";
+      if (lower.includes("trunk")) return "Trunk Lid";
+      if (lower.includes("grille")) return "Grille";
+      if (lower.includes("mirror")) return "Outside Mirror & Glass Assembly";
+      if (lower.includes("door")) return "Outside Door Handle";
+      if (lower.includes("quarter")) return "Quarter Panel";
+      return name.trim();
+    };
 
-    console.log("VISION LABELS:", labels.map(l => l.description));
-    console.log("VISION OBJECTS:", objects.map(o => o.name));
+    // LOOKUP JSON
+    function findPartList(normalizedKey) {
+      const yearBlock = TOYOTA_PARTS[selectedYear];
+      if (!yearBlock) return [];
 
-    const guess = pickPartFromVision(labels, objects);
+      const modelBlock = yearBlock[selectedModel];
+      if (!modelBlock) return [];
 
-    const chosenPart = guess?.part || null;
-    const operation = guess?.defaultOp || "replace";
+      const engineBlock = modelBlock[selectedEngine];
+      if (!engineBlock) return [];
 
-    if (!chosenPart || !COST[chosenPart] || !COST[chosenPart][operation]) {
-      return res.json({ detected: false, message: "Could not confidently determine a repairable part." });
+      const bodyLamp = engineBlock["Body & Lamp Assembly"];
+      if (!bodyLamp) return [];
+
+      const matched = Object.keys(bodyLamp).find((k) => k.toLowerCase().includes(normalizedKey.toLowerCase()));
+
+      return matched ? bodyLamp[matched] : [];
     }
 
-    const laborRate = Number(req.body.laborRate || process.env.DEFAULT_LABOR_RATE || 110);
-    const row = COST[chosenPart][operation];
+    function getPriceObj(items) {
+      if (!Array.isArray(items) || items.length === 0) {
+        return { price: 125, info_url: null };
+      }
 
-    const parts = row.parts_avg ?? 0;
-    const hours = row.labor_hours ?? 0;
-    const paint = row.paint_materials ?? 0;
+      const valid = items.filter((p) => p.price && p.price > 0);
+      if (valid.length === 0) {
+        return { price: 120, info_url: null };
+      }
+
+      valid.sort((a, b) => a.price - b.price);
+
+      return {
+        price: valid[0].price,
+        info_url: valid[0].info_url || null
+      };
+    }
+
+    // PAINT
+    const paintableParts = [
+      "Fender",
+      "Bumper Cover",
+      "Quarter Panel",
+      "Hood",
+      "Trunk Lid",
+      "Grille",
+      "Outside Door Handle",
+      "Outside Mirror & Glass Assembly"
+    ];
+
+    const PAINT_COST = 80;
+
+    function getPaintCost(normalizedKey) {
+      return paintableParts.includes(normalizedKey) ? PAINT_COST : 0;
+    }
+
+    // TOTALS
+    let totalParts = 0;
+    let totalPaint = 0;
+    let totalHours = 0;
     const misc = 50;
-    const total = Math.round(parts + hours * laborRate + paint + misc);
 
-    const folder = `truerepairs/${safeSeg(email)}`;
-    const uploadStream = () =>
-      new Promise((resolve, reject) => {
-        const up = cloudinary.uploader.upload_stream(
-          { folder, resource_type: "image", overwrite: false },
-          (err, result) => (err ? reject(err) : resolve(result))
-        );
-        streamifier.createReadStream(req.file.buffer).pipe(up);
-      });
+    const detailedParts = damages.map((dmg, index) => {
+      const normalizedKey = normalizePart(dmg.part);
 
-    const original = await uploadStream();
+      const list = findPartList(normalizedKey);
+      const { price, info_url } = getPriceObj(list);
 
-    const thumb = cloudinary.url(original.public_id, {
-      type: "upload",
-      transformation: [{ width: 480, height: 480, crop: "fill", gravity: "auto" }],
-      secure: true
+      const paintCost = getPaintCost(normalizedKey);
+
+      totalParts += Number(price);
+      totalPaint += Number(paintCost);
+      totalHours++;
+
+      return {
+        name: dmg.part,
+        normalized: normalizedKey,
+        operation: dmg.operation || "replace",
+        severity: dmg.worstSeverity || "unknown",
+        cost: Number(price),
+        paintCost: Number(paintCost),
+        info_url
+      };
     });
+
+    const total = Math.round(totalParts + totalPaint + totalHours * laborRate + misc);
+
+    // CLOUDINARY UPLOADS
+    const folder = `truerepairs/${safeSeg(email)}`;
+    const uploadedImages = [];
+
+    async function uploadOne(file) {
+      return new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream({ folder, resource_type: "image" }, (err, result) => (err ? reject(err) : resolve(result)));
+        streamifier.createReadStream(file.buffer).pipe(stream);
+      });
+    }
+
+    for (let i = 0; i < req.files.length; i++) {
+      const original = await uploadOne(req.files[i]);
+      const thumb = cloudinary.url(original.public_id, {transformation: [{ width: 480, height: 480, crop: "fill" }], secure: true});
+      uploadedImages.push({imageUrl: original.secure_url, thumbUrl: thumb, cloudinaryPublicId: original.public_id,index: i});
+    }
+
+    const breakdown = {parts: totalParts, laborHours: totalHours, laborRate, paintMaterials: totalPaint, paintTotal: totalPaint, misc};
 
     const doc = await Estimate.create({
       userEmail: email,
-      imageUrl: original.secure_url,
-      thumbUrl: thumb,
-      cloudinaryPublicId: original.public_id,
-      imageType: req.file.mimetype || "image/jpeg",
-      visionLabels: labels,
-      visionObjects: objects,
-      selection: { part: chosenPart, operation },
-      breakdown: { parts, laborHours: hours, laborRate, paintMaterials: paint, misc },
-      totalEstimated: total
+      imageUrl: uploadedImages[0]?.imageUrl,
+      thumbUrl: uploadedImages[0]?.thumbUrl,
+      cloudinaryPublicId: uploadedImages[0]?.cloudinaryPublicId,
+      imageType: req.files[0].mimetype,
+
+      breakdown,
+      totalEstimated: total,
+      images: uploadedImages,
+      vehicle: {year: selectedYear, make: selectedMake, model: selectedModel, trim: selectedTrim, engine: selectedEngine},
+
+      damages,
+      parts: detailedParts,
+      aiRaw: aiResult.raw
     });
 
     res.json({
-      detected: true,
+      detected: damages.length > 0,
       id: doc._id,
-      imageUrl: doc.imageUrl,
-      thumbUrl: doc.thumbUrl,
-      selection: doc.selection,
-      breakdown: doc.breakdown,
-      totalEstimated: doc.totalEstimated
+      breakdown,
+      totalEstimated: total,
+      vehicle: doc.vehicle,
+      damages,
+      parts: detailedParts,
+      images: uploadedImages
     });
   } catch (e) {
+    console.error("estimate error:", e);
     res.status(500).json({ message: e.message || "estimation failed" });
   }
 });
@@ -221,9 +224,20 @@ router.delete("/estimates/:id", async (req, res) => {
     if (!doc) return res.status(404).json({ message: "not found" });
     if (doc.cloudinaryPublicId) {
       try {
-        await cloudinary.uploader.destroy(doc.cloudinaryPublicId, { resource_type: "image" });
+        await cloudinary.uploader.destroy(doc.cloudinaryPublicId, {resource_type: "image",});
       } catch {}
     }
+
+    if (doc.images && doc.images.length) {
+      for (const img of doc.images) {
+        if (img.cloudinaryPublicId) {
+          try {
+            await cloudinary.uploader.destroy(img.cloudinaryPublicId, {resource_type: "image"});
+          } catch {}
+        }
+      }
+    }
+
     await doc.deleteOne();
     res.json({ ok: true });
   } catch {

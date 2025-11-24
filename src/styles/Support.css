@@ -173,73 +173,58 @@
     right: -20px;
 }
 
-
-/*  MOBILE */
+/* === MOBILE LAYOUT LIKE REPORT POPUP === */
 @media (max-width: 900px) {
-    .support-container {
-         display: block;
-        position: relative;
-        overflow-y: visible;
-        max-height: 400px; 
-        padding: 10px;
-        background: transparent;
-        overflow-y: auto;
-        border: 1px solid #ccc;
-        border-radius: 12px;
-    }
-    .support-popup {
-        display: flex;
-        flex-direction: column;
-        height: 90vh;
-        max-height: 90vh;
-        position: relative;
+
+  .support-overlay {
+    align-items: flex-start;
+    padding: 20px 0;
+  }
+
+  .support-popup {
+    height: auto;
+    max-height: 95vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 20px;
+  }
+
+  .support-container {
+    flex-direction: column;
+    gap: 20px;
+    overflow-y: visible;
+    width: 100%;
+  }
+
+  .support-showcase {
+    width: 100%;
+    min-width: unset;
+  }
+
+  .left-btn, .right-btn {
+    display: none;
+  }
+
+  .support-bottom {
+    margin-top: 25px;
+    padding-bottom: 25px;
+  }
+
+  .support-cancel-btn {
+    width: 80%;
+    max-width: 300px;
+  }
 }
-    
-    .support-bottom { 
-        padding: 20px 0;
-        text-align: center;
-    }
 
-    .left-btn, .right-btn {
-       position: fixed;
-        top: 50%;
-        transform: translateY(-50%);
-        font-size: 16px;
-        background: white;
-        border: none;
-        cursor: pointer;
-        color: #0274d7;
-        width: 60px;
-        height: 60px;
-        border-radius: 50%;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-        z-index: 20;
-        transition: 0.2s ease;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .left-btn {
-        left: 20px;
-    }
-
-    .right-btn {
-        right: 20px;
-    }
-    .support-showcase {
-        width: 100%;
-        margin: 20px 0;
-        flex: 0 0 auto;
-        box-sizing: border-box;
-        position: relative;
-        height: 350px;
-    }
-    .support-images,
-    .support-images-first {
-        font-size: 40px; 
-    }
+@media (max-width: 700px) {
+  .support-showcase h1 {
+    font-size: 20px;
+  }
+  .support-showcase p {
+    font-size: 14px;
+  }
 }
+
 
 /* Animations */
 @keyframes fadeIn { from {opacity: 0;} to {opacity: 1;} }

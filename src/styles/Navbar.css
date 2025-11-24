@@ -401,6 +401,9 @@
     .nav-logo:nth-of-type(2) {
         display: none !important;
     }
+    .nav-logo-large {
+        display: none !important;
+    }
     .navbar .nav-logo {
         width: 120px;
     }
