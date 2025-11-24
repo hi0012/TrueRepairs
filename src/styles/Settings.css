@@ -1,3 +1,4 @@
+
 .settings-overlay{
     display: flex;
     align-items: center;
@@ -32,6 +33,7 @@
     box-shadow: 0 6px 25px rgba(0, 0, 0, 0.5);
     z-index: 1000;
     animation: slideUp 0.4s ease-in-out;
+    overflow-y: auto;
 }  
 .settings-header{  
     text-align: center;  

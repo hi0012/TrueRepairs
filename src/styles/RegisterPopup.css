@@ -104,10 +104,12 @@
     color: red;
     font-size: 15px;
     margin-bottom: 15px;
+    list-style: none;
 }
 .password-equal {
     color: #28a745;
     font-size: 15px;
+    list-style: none;
     margin-bottom: 15px;
 }
 
