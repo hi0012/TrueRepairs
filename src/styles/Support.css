@@ -12,10 +12,11 @@
     height: 100%;   
     backdrop-filter: blur(4px);   
     background: rgba(0, 0, 0, 0.2);
+    animation: fadeIn 0.3s ease-in-out;
 }  
 
 /* POPUP - NOW AUTO-FITS LIKE SETTINGS */
-.support-popup {  
+.support-popup { 
     background: #fff;
     width: 95%;
     max-width: 2300px;
@@ -29,7 +30,7 @@
     z-index: 1000;
     overflow: hidden;
     box-shadow: 0 6px 25px rgba(0,0,0,0.5);
-    
+    animation: slideUp 0.4s ease-in-out;
 }
 
 
