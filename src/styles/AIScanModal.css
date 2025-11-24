@@ -1,0 +1,583 @@
+/* OVERLAY */
+.aiscan-modal-overlay {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  backdrop-filter: blur(4px);
+  background: rgba(0, 0, 0, 0.3);
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+/* POPUP */
+.aiscan-modal {
+  background: #fff;
+  width: 95%;
+  max-width: 2300px;
+  height: 90%;
+  border-radius: 12px;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.5);
+  animation: slideUp 0.4s ease-in-out;
+  overflow: hidden;
+}
+
+/* HEADER */
+.aiscan-modal-header {
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.aiscan-modal-header h1 {
+  font-size: 32px;
+  font-weight: 800;
+  margin: 0;
+}
+
+.aiscan-modal-header p {
+  margin-top: 4px;
+  font-size: 15px;
+  color: #555;
+}
+
+.aiscan-close-btn {
+  border: none;
+  font-size: 32px;
+  background: transparent;
+  cursor: pointer;
+  margin-left: auto;
+}
+
+/* GRID LAYOUT */
+.aiscan-modal-body {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* LEFT COLUMN BOXES */
+.aiscan-left-column {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+.aiscan-form,
+.aiscan-current-result {
+  background: #fafafa;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  padding: 30px;
+}
+
+.aiscan-form-row label {
+  font-weight: 600;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.aiscan-form-row input[type="number"],
+.aiscan-form-row input[type="file"] {
+  width: 100%;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 15px;
+}
+
+.aiscan-message {
+  color: red;
+  margin-top: 8px;
+  margin-bottom: 12px;
+}
+
+/* Submit button */
+.aiscan-submit-btn {
+  align-self: center;
+  background: #0068d2;
+  color: white;
+  border: none;
+  padding: 12px 28px;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  margin-top: 14px;
+}
+
+.aiscan-submit-btn:hover:not(:disabled) {
+  background: #004ea3;
+}
+
+/* ESTIMATE BOXES */
+.aiscan-current-result h3 {
+  text-align: center;
+  font-size: 22px;
+  margin-bottom: 10px;
+}
+
+.aiscan-report {
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  padding: 14px 16px;
+  font-size: 14px;
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+/* DAMAGE LIST */
+.aiscan-damages-list {
+  margin-top: 12px;
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.aiscan-damage-item {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.aiscan-damage-meta {
+  font-size: 13px;
+  color: #555;
+  margin-top: 4px;
+}
+
+/* BREAKDOWN TABLE */
+.aiscan-breakdown h4 {
+  margin-top: 14px;
+  margin-bottom: 6px;
+  font-size: 15px;
+}
+
+.aiscan-breakdown-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.aiscan-breakdown-table th,
+.aiscan-breakdown-table td {
+  padding: 6px 8px;
+  border-bottom: 1px solid #eee;
+}
+
+.aiscan-breakdown-table th {
+  background: #f3f4f6;
+  font-weight: 600;
+}
+
+/* IMAGE GRID */
+.aiscan-images {
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  padding: 16px;
+  margin-top: 14px;
+}
+
+.aiscan-images-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.aiscan-image-card {
+  width: 110px;
+  text-align: center;
+  font-size: 12px;
+}
+
+/* RIGHT COLUMN */
+.aiscan-history-column {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.aiscan-history {
+  flex: 1;
+  background: #fafafa;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 25px;
+  overflow-y: auto;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.aiscan-history h3 {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+/* History Items */
+.aiscan-history-item {
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+
+.aiscan-history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.aiscan-history-header > button {
+  background: none;
+  border: none;
+  font-size: 15px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.aiscan-history-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.aiscan-history-actions button {
+  background: #0068d2;
+  color: #fff;
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.aiscan-history-actions button:hover {
+  background: #004ea3;
+}
+
+.aiscan-history-actions button:last-child {
+  background: #e53935;
+}
+
+.aiscan-history-actions button:last-child:hover {
+  background: #b71c1c;
+}
+
+.aiscan-img-viewer {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5000;
+  cursor: zoom-out;
+}
+
+.aiscan-img-viewer img {
+  max-width: 90%;
+  max-height: 90%;
+  border-radius: 12px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.6);
+}
+
+
+/* FOOTER BUTTON */
+.aiscan-modal-footer {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+  padding-bottom: 10px;
+}
+
+.aiscan-cancel-btn {
+  border: 1.5px solid red;
+  color: red;
+  font-weight: 600;
+  background: white;
+  border-radius: 50px;
+  padding: 12px 60px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.aiscan-cancel-btn:hover {
+  background: red;
+  color: white;
+  border-color: white;
+}
+
+/* SCROLLBARS */
+.aiscan-history::-webkit-scrollbar,
+.aiscan-left-column::-webkit-scrollbar {
+  width: 6px;
+}
+.aiscan-history::-webkit-scrollbar-thumb,
+.aiscan-left-column::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 3px;
+}
+
+.aiscan-carousel {
+  text-align: center;
+  margin-top: 15px;
+}
+
+.carousel-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 260px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.carousel-image {
+  width: auto;
+  height: 240px;
+  border-radius: 8px;
+  object-fit: contain;
+  cursor: pointer;
+}
+
+.carousel-arrow {
+  background: #111;
+  color: white;
+  border: none;
+  padding: 12px 15px;
+  font-size: 28px;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: 0.2s;
+  opacity: 0.7;
+}
+
+.carousel-arrow:hover {
+  opacity: 1;
+}
+
+.carousel-arrow.left {
+  position: absolute;
+  left: 5px;
+}
+
+.carousel-arrow.right {
+  position: absolute;
+  right: 5px;
+}
+
+.carousel-index {
+  font-size: 13px;
+  color: #888;
+}
+
+.preview-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.preview-item {
+  position: relative;
+  width: 110px;
+  height: 110px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #f3f3f3;
+  border: 1px solid #ccc;
+}
+
+.preview-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.preview-delete {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background: rgba(0,0,0,0.75);
+  color: white;
+  border: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  font-size: 14px;
+  cursor: pointer;
+}
+.preview-delete:hover {
+  background: red;
+}
+
+.reportselectfields label {
+  font-weight: 600;
+  display: block;
+  margin-bottom: 4px;
+}
+.reportselectfields select {
+  width: 100%;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 15px;
+}
+.reportselectfields select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.aiscan-selected-vehicle-box {
+  background: #f8fafc;
+  border: 1px solid #cfd8e3;
+  border-radius: 6px;
+  padding: 12px;
+  margin-top: 10px;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.aiscan-vehicle-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.aiscan-selected-vehicle-details p {
+  margin: 3px 0;
+  font-size: 14px;
+}
+
+/* Match Reports vehicle box */
+.reportselecteds {
+  background: #f8fafc;
+  border: 1px solid #cfd8e3;
+  border-radius: 6px;
+  padding: 12px;
+  margin-top: 10px;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+/* MATCH REPORT STYLE */
+.aiscan-placeholder {
+  color: #888;
+  font-style: italic;
+  text-align: center;
+  padding: 14px;
+  background: #f8fafc;
+  border: 1px solid #cfd8e3;
+  border-radius: 6px;
+  margin-top: 10px;
+}
+
+
+/* ANIMATIONS */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(40px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* MOBILE */
+@media (max-width: 900px) {
+  .aiscan-modal-overlay {
+    align-items: flex-start;
+    padding: 20px 0;
+  }
+
+  .aiscan-modal {
+    height: auto;
+    max-height: 95vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .aiscan-columns {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+  }
+
+  .aiscan-right,
+  .aiscan-left {
+    max-height: 100%;
+    overflow-y: auto;
+  }
+
+  .aiscan-bottom {
+    margin-top: 30px;
+    padding-bottom: 30px;
+  }
+
+  .aiscan-cancelbtn {
+    width: 80%;
+    max-width: 300px;
+  }
+
+  .aiscan-modal-body {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    overflow-y: auto;
+  }
+
+  .aiscan-left-column,
+  .aiscan-history-column {
+    max-height: 100%;
+    overflow-y: auto;
+  }
+
+  .aiscan-cancel-btn {
+    width: 80%;
+    max-width: 300px;
+  }
+}
+
+@media (max-width: 700px) {
+  .aiscan-dropdown {
+    width: 100%;
+    max-width: none;
+  }
+
+  .aiscan-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .aiscan-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}

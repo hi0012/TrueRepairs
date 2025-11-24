@@ -1,0 +1,234 @@
+
+/*OVERLAY*/
+.support-overlay {  
+    display: flex;   
+    align-items: center;   
+    justify-content: center;   
+    z-index: 999;  
+    position: fixed;   
+    top: 0;   
+    left: 0;   
+    width: 100%;   
+    height: 100%;   
+    backdrop-filter: blur(4px);   
+    background: rgba(0, 0, 0, 0.2);
+}  
+
+/* POPUP - NOW AUTO-FITS LIKE SETTINGS */
+.support-popup {  
+    background: #fff;
+    width: 95%;
+    max-width: 2300px;
+    height: 90%;
+    border-radius: 12px;
+    padding: 40px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    z-index: 1000;
+    overflow: hidden;
+    box-shadow: 0 6px 25px rgba(0,0,0,0.5);
+    
+}
+
+
+/*  Title */
+.support-title {
+    text-align: center;
+}
+.support-title h1 {
+    font-size: clamp(22px, 2vw, 30px);
+}
+
+.support-title p { 
+    font-size: 16px;
+    color: #555;
+} 
+
+/* CONTAINER FOR CARDS */
+.support-container {
+    display: flex;
+    gap: 20px;
+    height: 70%;
+    width: 100%;
+    justify-content: center;
+    align-items: stretch;
+    position: relative;
+    padding-right: 10px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+/* Chrome/Safari */
+.support-container::-webkit-scrollbar {
+    display: none;
+}
+
+
+/* CARD (SMALLER + FITS BETTER) */
+.support-showcase {
+     padding: 50px; 
+    display: flex; 
+    flex-direction: column; 
+    border: 2px solid #ccc; 
+    height: 100%; 
+    width: 50%; 
+    border-radius: 6px; 
+    align-items: center; 
+    gap: 30px; 
+    transition: transform 0.2s ease, box-shadow 0.2s ease; 
+    box-sizing: border-box;
+}
+.support-showcase:hover {
+    transform: scale(1.02);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+/* Make the first card blue */
+.support-showcase.first-card {
+    background: #0274d7;
+    border-color: #0274d7;
+    color: white;
+}
+
+/* Icon for the cards*/
+.support-images,
+.support-images-first {
+    font-size: 40px;
+}
+
+/* Card text content */
+.support-showcase h1 {
+    font-size: clamp(18px, 2vw, 24px);
+    text-align: center;
+    word-wrap: break-word;
+}
+.support-showcase p {
+    overflow-y: auto;
+    text-align: center;
+    font-size: clamp(14px, 1.4vw, 18px);
+}
+.support-showcase p::-webkit-scrollbar {
+    display: none;
+}
+.support-showcase a {
+    color: #0274d7;
+}
+
+/* CANCEL BUTTON Div */
+.support-bottom {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+}
+.support-cancel-btn {
+    padding: 10px 35px;
+    border-radius: 50px;
+    background: white;
+    border: 1px solid red;
+    color: red;
+    font-size: clamp(14px, 1vw, 16px);
+    cursor: pointer;
+    transition: 0.2s;
+}
+.support-cancel-btn:hover {
+    background: red;
+    color: white;
+}
+
+/* Arrow buttons for left and right */
+.left-btn, .right-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 32px;
+    background: white;
+    border: none;
+    cursor: pointer;
+    color: #0274d7;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%; 
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    z-index: 20;
+    transition: 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center; 
+}
+
+/* Hover */
+.left-btn:hover, .right-btn:hover {
+    transform: translateY(-50%) scale(1.15);
+}
+
+/* Position arrows on the far edges of the popup */
+.left-btn {
+    left: -20px;
+}
+
+.right-btn {
+    right: -20px;
+}
+
+/* === MOBILE LAYOUT LIKE REPORT POPUP === */
+@media (max-width: 900px) {
+
+  .support-overlay {
+    align-items: flex-start;
+    padding: 20px 0;
+  }
+
+  .support-popup {
+    height: auto;
+    max-height: 95vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 20px;
+  }
+
+  .support-container {
+    flex-direction: column;
+    gap: 20px;
+    overflow-y: visible;
+    width: 100%;
+  }
+
+  .support-showcase {
+    width: 100%;
+    min-width: unset;
+  }
+
+  .left-btn, .right-btn {
+    display: none;
+  }
+
+  .support-bottom {
+    margin-top: 25px;
+    padding-bottom: 25px;
+  }
+
+  .support-cancel-btn {
+    width: 80%;
+    max-width: 300px;
+  }
+}
+
+@media (max-width: 700px) {
+  .support-showcase h1 {
+    font-size: 20px;
+  }
+  .support-showcase p {
+    font-size: 14px;
+  }
+}
+
+
+/* Animations */
+@keyframes fadeIn { from {opacity: 0;} to {opacity: 1;} }
+@keyframes slideUp {
+  from { transform: translateY(40px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}

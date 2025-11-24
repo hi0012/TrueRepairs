@@ -1,0 +1,382 @@
+.VehInfoOverlay {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  backdrop-filter: blur(4px);
+  background: rgba(0, 0, 0, 0.3);
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.VehInfoPopup {
+  background: #fff;
+  width: 95%;
+  max-width: 2300px;
+  height: 90%;
+  border-radius: 12px;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  animation: slideUp 0.4s ease-in-out;
+}
+
+.VehInfoHeader {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.VehInfoHeader h1 {
+  font-size: 32px;
+  margin-bottom: 10px;
+  font-weight: 800;
+}
+
+.VehInfoHeader p {
+  font-size: 18px;
+  font-weight: 500;
+  color: #555;
+}
+
+.VehInfoColumns {
+  flex: 1;
+  overflow-y: auto;
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  padding-right: 6px;
+}
+
+.VehInfoLeft {
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 20px;
+  background: #fafafa;
+  display: flex;
+  flex-direction: column;
+  max-height: 750px;
+}
+
+.VehInfoRight {
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 20px;
+  background: #fafafa;
+  display: flex;
+  flex-direction: column;
+  max-height: 750px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.VehInfoRight::-webkit-scrollbar {
+  width: 8px;
+}
+
+.VehInfoRight::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 4px;
+}
+
+.VehInfoRight::-webkit-scrollbar-thumb:hover {
+  background: #888;
+}
+
+.VehInfoLeft h2,
+.VehInfoRight h2 {
+  margin-bottom: 15px;
+  font-size: 22px;
+  font-weight: 700;
+  color: #222;
+}
+
+.VehInfoVinSection label {
+  font-weight: 600;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.VehInfoRow {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.VehInfoInput {
+  flex: 1;
+  padding: 10px 12px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+.VehInfoBtn {
+  padding: 10px 16px;
+  font-size: 16px;
+  border-radius: 8px;
+  border: 1px solid #0068d2;
+  background: white;
+  color: #0068d2;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-weight: 500;
+}
+
+.VehInfoBtn:hover {
+  background: #0068d2;
+  color: white;
+}
+
+.VehInfoDivider {
+  text-align: center;
+  margin: 20px 0;
+  font-weight: 600;
+  color: #777;
+  position: relative;
+}
+
+.VehInfoDivider::before,
+.VehInfoDivider::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 40%;
+  height: 1px;
+  background: #ccc;
+}
+
+.VehInfoDivider::before {
+  left: 0;
+}
+
+.VehInfoDivider::after {
+  right: 0;
+}
+
+.VehInfoManual label {
+  font-weight: 600;
+  margin-top: 8px;
+  display: block;
+}
+
+.VehInfoManual .VehInfoInput {
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.VehInfoList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.VehInfoItem {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  border-bottom: 1px solid #ddd;
+  padding: 16px 0;
+}
+
+.VehInfoItem strong {
+  display: block;
+  font-size: 17px;
+  margin-bottom: 4px;
+}
+
+.VehInfoItem p {
+  margin: 0;
+  font-size: 15px;
+  color: #444;
+}
+
+.VehInfoDeleteBtn {
+  border: none;
+  background: #f55;
+  color: #fff;
+  border-radius: 8px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: 0.2s;
+}
+
+.VehInfoDeleteBtn:hover {
+  background: #d22;
+}
+
+.VehInfoEmpty {
+  color: #777;
+  font-style: italic;
+  margin-top: 10px;
+}
+
+.VehInfoMessage {
+  text-align: center;
+  margin-top: 15px;
+  color: #0068d2;
+  font-weight: 600;
+}
+
+.VehInfoBottom {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 15px;
+  padding-top: 10px;
+  border-top: 1px solid #ddd;
+  background: #fff;
+}
+
+.VehInfoCancelBtn {
+  border: none;
+  color: red;
+  font-weight: 500;
+  padding: 13px 50px;
+  background-color: white;
+  font-size: clamp(15px, 1vw, 15px);
+  border-radius: 50px;
+  cursor: pointer;
+  border: 1px solid red;
+  transition: all 0.3s;
+}
+
+.VehInfoCancelBtn:hover {
+  background-color: red;
+  color: white;
+  border: 1px solid white;
+}
+
+.VehInfoItemHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.VehInfoActions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.VehInfoViewBtn {
+  border: none;
+  background: #0068d2;
+  color: white;
+  border-radius: 8px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.VehInfoViewBtn:hover {
+  background: #004ea3;
+}
+
+.VehInfoDropdown {
+  background: #f7f7f7;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  margin-top: 12px;
+  padding: 16px 20px;
+  font-size: 15px;
+  width: 100%;
+  max-width: 600px;
+  box-sizing: border-box;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.VehInfoDropdown p {
+  margin: 4px 0;
+  color: #333;
+  font-size: 15px;
+}
+
+.VehInfoDropdown strong {
+  font-weight: 600;
+  color: #111;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(40px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Responsive layout */
+@media (max-width: 900px) {
+  .VehInfoOverlay {
+    align-items: flex-start;
+    padding: 20px 0;
+  }
+
+  .VehInfoPopup {
+    height: auto;
+    max-height: 95vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .VehInfoColumns {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+  }
+
+  .VehInfoLeft,
+  .VehInfoRight {
+    max-height: 100%;
+    overflow-y: auto;
+  }
+
+  .VehInfoBottom {
+    margin-top: 30px;
+    padding-bottom: 30px;
+  }
+
+  .VehInfoCancelBtn {
+    width: 80%;
+    max-width: 300px;
+  }
+}
+
+@media (max-width: 700px) {
+  .VehInfoDropdown {
+    width: 100%;
+    max-width: none;
+  }
+
+  .VehInfoItemHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .VehInfoActions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}

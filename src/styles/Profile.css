@@ -36,13 +36,8 @@
 } 
 
 .profile-header p { 
-<<<<<<< HEAD
     font-size: 25px; 
     font-weight: 600; 
-=======
-    font-size: 16px;
-    color: #555;
->>>>>>> origin/clean-main
 } 
 
 .profile-container { 
@@ -433,7 +428,6 @@
 .save-password-btn:hover{ 
     background-color: #0068d2;  
     color: white;  
-<<<<<<< HEAD
 }
 
 .email-message {
@@ -449,9 +443,6 @@
 .email-message.error {
   color: #dc3545;
 }
-=======
-} 
->>>>>>> origin/clean-main
 
 @keyframes fadeIn { 
     from { opacity: 0; } 
@@ -475,7 +466,6 @@
 }
 
 @media (max-width: 900px) {
-<<<<<<< HEAD
     .profile-popup {
         height: auto;
     }
@@ -488,38 +478,13 @@
     .profile-edit-left {
         width: 100%;
         height: auto;
-=======
-    .profile-overlay {
-        align-items: flex-start;
-        padding: 20px 0;
-    }
-    .profile-popup {
-        height: auto;
-        max-height: 95vh;
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
-    }
-    .profile-container {
-        display: flex;
-        flex-direction: column;
-        gap: 25px;
-    }
-    .profile-edit-left {
-        max-height: 100%;
-        overflow-y: auto;
->>>>>>> origin/clean-main
     }
     .profile-edit-left h2 {
         font-size: clamp(18px, 2.5vw, 26px);
     }
     .profile-password-right {
-<<<<<<< HEAD
         width: 100%;
         height: auto;
-=======
-        max-height: 100%;
-        overflow-y: auto;
->>>>>>> origin/clean-main
     }
     .profile-password-right h2 {
         font-size: clamp(18px, 2.5vw, 26px);
@@ -532,7 +497,6 @@
         padding: 10px 24px;
         font-size: clamp(8px, 2.5vw, 15px);
     }
-<<<<<<< HEAD
     .profile-cancel-btn{
         padding: 10px 24px;
         font-size: clamp(8px, 2.5vw, 15px);
@@ -564,25 +528,12 @@
     display: none;
   }
 }
-=======
-    .profile-bottom {
-        margin-top: 30px;
-        padding-bottom: 30px;
-    }
-    .profile-cancel-btn {
-        width: 80%;
-        max-width: 300px;
-    }
-}
-
->>>>>>> origin/clean-main
 
 @media (max-width: 480px) {
     .profile-popup {
         height: auto;
     }
     .profile-container {
-<<<<<<< HEAD
     margin: 20px 0;
     gap: 1rem;
   }
@@ -614,31 +565,4 @@
   .profile-header h1 {
     font-size: clamp(18px, 5vw, 24px);
   }
-=======
-        margin: 20px 0;
-        gap: 1rem;
-    }
-  
-  .profile-edit-left {
-        width: 100%;
-        padding: 10px;
-    }
-    .profile-password-right {
-        width: 100%;
-        padding: 10px;
-    }
-
-    .save-email-btn {
-        padding: 8px 12px;
-        font-size: clamp(8px, 4vw, 12px);
-    }
-    .password-save-btn{
-        padding: 8px 12px;
-        font-size: clamp(8px, 4vw, 12px);
-    }
-
-    .profile-header h1 {
-        font-size: clamp(18px, 5vw, 24px);
-    }
->>>>>>> origin/clean-main
 }

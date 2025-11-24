@@ -85,7 +85,7 @@ const RegisterPopup = ({open, onClose}) => {
                 </ul>
                 )}
                 {passwordConfirm.length > 0 && (
-                  <p className={passwordEqual ? "password-equal" : "password-mismatch"}>{passwordEqual ? (
+                  <li className={passwordEqual ? "password-equal" : "password-mismatch"}>{passwordEqual ? (
                     <>
                       <FaCheckCircle/> Passwords match.
                     </>
@@ -93,7 +93,7 @@ const RegisterPopup = ({open, onClose}) => {
                     <>
                       <RiErrorWarningLine/> Passwords don't match.
                     </>
-                  )}</p>
+                  )}</li>
                 )}
                 {message && (
                   <p
