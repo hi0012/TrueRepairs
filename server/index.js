@@ -17,6 +17,14 @@ const vehdb = require("./src/services/vehdb");
 const Vehicle = require("./models/Vehicle.js");
 const { getCarSpecs, vinDecode } = require("./src/services/ninjaApi");
 const reportRoutes = require("./src/routes/reportRoutes.js");
+const deactivateAccountRouter = require('./src/routes/deactivate-account');
+const deleteAccountRouter = require('./src/routes/delete-account');
+const loginRouter = require('./src/routes/login');
+
+//These two lines below must be here in order for update email to work
+const Estimate = require("./models/estimate.js");
+const Report = require("./models/Report.js");
+
 // const externalRoutes = require("./src/routes/external.js");
 const estimateRoutes = require("./src/routes/estimate.js");
 const fs = require("fs");
@@ -28,7 +36,9 @@ if (process.env.SENDGRID_API_KEY) sgMail.setApiKey(process.env.SENDGRID_API_KEY)
 const app = express();
 app.use(cors());
 app.use(express.json());
-
+app.use(deactivateAccountRouter);
+app.use(deleteAccountRouter);
+app.use(loginRouter);
 
 app.use("/api", estimateRoutes);
 
@@ -382,27 +392,6 @@ app.get("/db-health", (req, res) => {
   });
 });
 
-app.post("/login", async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    if(!email) {
-      return res.status(400).json({success: false, message: "Email is required"})
-    }
-    if(!password) {
-      return res.status(400).json({success: false, message: "Password is required"})
-    }
-    const user = await UserModel.findOne({ email });
-    if (!user) return res.status(400).json({success: false, message: "User does not exist. Please try again."});
-
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(400).json({success: false, message: "The password is incorrect. Please try again."});
-
-    res.json({ success: true, user: { id: user._id, email: user.email } });
-  } catch {
-    res.status(500).json({ message: "Server error" });
-  }
-});
-
 app.post("/register", async (req, res) => {
   try {
     const { email, password, passwordConfirm } = req.body;
@@ -632,7 +621,7 @@ app.post("/update-profile", async (req, res) => {
     
     res.json({
       success: true,
-      message: `Verification email sent to ${newEmail}. Please check your inbox.`,
+      message: `Verification email sent. Please check your inbox.`,
     });
   } catch {
     res.status(500).json({
@@ -670,71 +659,6 @@ app.get("/verify-email-update/:token", async (req, res) => {
   } catch (err) {
     console.error("Email verification update error:", err);
     res.redirect(`${process.env.CLIENT_URL}/?email-update=failed`);
-  }
-});
-
-app.post("/deactivate-account", async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    const user = await UserModel.findOne({ email });
-    if (!user) {
-      return res
-        .status(404)
-        .json({ success: false, message: "User not found" });
-    }
-
-    const validPassword = await bcrypt.compare(password, user.password);
-    if (!validPassword) {
-      return res
-        .status(401)
-        .json({ success: false, message: "Invalid password" });
-    }
-
-    user.isActive = false;
-    await user.save();
-
-    res.json({
-      success: true,
-      message: "Account deactivated successfully",
-    });
-  } catch {
-    res.status(500).json({ success: false, message: "Server error" });
-  }
-});
-
-app.post("/delete-account", async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    const user = await UserModel.findOne({ email });
-    if (!user) {
-      return res
-        .status(404)
-        .json({ success: false, message: "User not found." });
-    }
-
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res
-        .status(401)
-        .json({ success: false, message: "Incorrect password." });
-    }
-
-    await Promise.all([
-      UserModel.deleteOne({ email }),
-      Vehicle.deleteMany({ email }),
-      Lookup.deleteMany({ userEmail: email }),
-      Report.deleteMany({ email }),
-      Estimate.deleteMany({ userEmail: email })
-    ]);
-
-    return res.json({
-      success: true,
-      message: "Account deleted successfully.",
-    });
-  } catch {
-    return res.status(500).json({ success: false, message: "Server error." });
   }
 });
 

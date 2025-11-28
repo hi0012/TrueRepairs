@@ -56,7 +56,7 @@ const Settings = ({ open, onClose }) => {
 
             if (res.data.success) {
             // Show a quick local confirmation (optional)
-            setMessage("Account deleted successfully.");
+            setMessage("Goodbye!");
 
             // Clear all stored user data
             localStorage.clear();
@@ -82,6 +82,11 @@ const Settings = ({ open, onClose }) => {
                         <h1>Account Settings</h1>
                         <p>Change, Deactivate, or Delete your account.</p>
                     </div>
+                    {message && (
+                        <div className="settings-message-toast">
+                            {message}
+                        </div>
+                    )}
                     <div className='settings-container'>
                         <div className='settings-left'>
                             <div className='settings-left-title'>

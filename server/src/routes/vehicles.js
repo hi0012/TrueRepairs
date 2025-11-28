@@ -2,12 +2,14 @@ const express = require("express");
 const router = express.Router();
 const Vehicle = require("../models/Vehicle");
 
-// GET
+// GET. Fetch all vehicles belonging to a specific user (by email)
 router.get("/", async (req, res) => {
   try {
+    // Validate email query parameter and if bad, return 400
     const email = (req.query.email || "").trim().toLowerCase();
     if (!email) return res.status(400).json({ message: "Email is required" });
 
+    // Query vehicles by email
     const items = await Vehicle.find({ email }).sort({ createdAt: -1 }).lean();
     res.json({ items });
   } catch (err) {
@@ -16,9 +18,10 @@ router.get("/", async (req, res) => {
   }
 });
 
-// POST
+// POST. Creates a new vehicle entry in the database.
 router.post("/", async (req, res) => {
   try {
+    // Create a new instance of the Vehicle model using request body data and save to DB
     const vehicle = new Vehicle(req.body);
     await vehicle.save();
     res.json(vehicle);
@@ -28,9 +31,10 @@ router.post("/", async (req, res) => {
   }
 });
 
-// DELETE
+// DELETE. Deletes a vehicle by MongoDB document ID
 router.delete("/:id", async (req, res) => {
   try {
+    // Attempt deletion of a document matching the provided ID and return success status
     const result = await Vehicle.deleteOne({ _id: req.params.id });
     res.json({ ok: result.deletedCount > 0 });
   } catch (err) {
@@ -40,3 +44,8 @@ router.delete("/:id", async (req, res) => {
 });
 
 module.exports = router;
+
+// Robert Simovski
+// Sources:
+// https://expressjs.com/
+// https://mongoosejs.com/docs/

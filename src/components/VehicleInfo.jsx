@@ -2,19 +2,14 @@ import React, { useState, useEffect } from "react";
 import "../styles/VehicleInfo.css";
 
 export default function VehicleInfo({ open, onClose }) {
+  // Get user email from local storage
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const userEmail = user?.email || "";
 
+  // State variables for form inputs, vehicle list, loading states, and messages
   const [vin, setVin] = useState("");
-  const [manual, setManual] = useState({
-    nickname: "",
-    year: "",
-    make: "",
-    model: "",
-    engine: "",
-    trim: "",
-  });
-
+  // Manual vehicle entry state 
+  const [manual, setManual] = useState({nickname: "", year: "", make: "", model: "", engine: "", trim: "",});
   const [vehicles, setVehicles] = useState([]);
   const [expanded, setExpanded] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -29,26 +24,21 @@ export default function VehicleInfo({ open, onClose }) {
   const [loadingTrims, setLoadingTrims] = useState(false);
   const [years, setYears] = useState([]);
 
-  // Load years
+  // This effect runs on first render and fetches the supported years list from backend (/api/years).
   useEffect(() => {
     fetch("http://localhost:5000/api/years")
       .then((r) => r.json())
-      .then((data) => {
-        // sort descending by year
-        const sorted = [...data].sort((a, b) => Number(b) - Number(a));
-        setYears(sorted);
-      })
+      .then((data) => {const sorted = [...data].sort((a, b) => Number(b) - Number(a)); setYears(sorted);})
       .catch((e) => console.error("Error loading years:", e));
   }, []);
 
-  // Fetch vehicles
+  // Load user's vehicles whenever.
   useEffect(() => {
     if (!open || !userEmail) return;
     (async () => {
       try {
-        const res = await fetch(
-          `http://localhost:5000/api/vehicles?email=${encodeURIComponent(userEmail)}`
-        );
+        // Fetch vehicles for the user
+        const res = await fetch(`http://localhost:5000/api/vehicles?email=${encodeURIComponent(userEmail)}`);
         if (res.ok) {
           const data = await res.json();
           setVehicles(data.items || []);
@@ -59,14 +49,16 @@ export default function VehicleInfo({ open, onClose }) {
     })();
   }, [open, userEmail]);
 
-  // Fetch makes
+  // Fetch available MAKES when manual.year changes. Resets dependent fields (models, engines) because year changed
   useEffect(() => {
     async function fetchMakes() {
       if (!manual.year) return;
       setLoadingMakes(true);
       try {
+        // Fetch makes from backend
         const res = await fetch("http://localhost:5000/api/makes");
         const data = await res.json();
+        // Set makes and reset dependent fields (models, engines)
         setMakes(data || []);
         setModels([]);
         setEngines([]);
@@ -81,14 +73,16 @@ export default function VehicleInfo({ open, onClose }) {
     fetchMakes();
   }, [manual.year]);
 
-  // Fetch models
+  // Fetch MODELS when manual make changes
   useEffect(() => {
     async function fetchModels() {
       if (!manual.year || !manual.make) return;
       setLoadingModels(true);
       try {
+        // Fetch models from backend
         const res = await fetch(`http://localhost:5000/api/models/${manual.year}`);
         const data = await res.json();
+        // Set models and reset dependent fields (engines)
         setModels(data || []);
         setEngines([]);
         setManual({ ...manual, model: "", engine: "" });
@@ -102,15 +96,14 @@ export default function VehicleInfo({ open, onClose }) {
     fetchModels();
   }, [manual.make]);
 
-  // Fetch engines
+  // Fetch ENGINES when manual.model changes
   useEffect(() => {
     async function fetchEngines() {
       if (!manual.year || !manual.make || !manual.model) return;
       setLoadingEngines(true);
       try {
-        const res = await fetch(
-          `http://localhost:5000/api/engines/${manual.year}/${manual.model}`
-        );
+        // Fetch engines from backend
+        const res = await fetch(`http://localhost:5000/api/engines/${manual.year}/${manual.model}`);
         const data = await res.json();
         setEngines(data || []);
       } catch (err) {
@@ -123,15 +116,14 @@ export default function VehicleInfo({ open, onClose }) {
     fetchEngines();
   }, [manual.model]);
 
-  // Fetch TRIM
+  // Fetch TRIMS when manual.engine changes
   useEffect(() => {
     async function fetchTrims() {
       if (!manual.year || !manual.model || !manual.engine) return;
       setLoadingTrims(true);
       try {
-        const res = await fetch(
-          `http://localhost:5000/api/trims/${manual.year}/${manual.model}/${encodeURIComponent(manual.engine)}`
-        );
+        // Fetch trims from backend
+        const res = await fetch(`http://localhost:5000/api/trims/${manual.year}/${manual.model}/${encodeURIComponent(manual.engine)}`);
         const data = await res.json();
         setTrims(data || []);
       } catch (err) {
@@ -143,30 +135,36 @@ export default function VehicleInfo({ open, onClose }) {
     }
     fetchTrims();
   }, [manual.engine]);
-  // VIN validation
+  // VIN validation 
   const isValidVIN = /^[A-HJ-NPR-Z0-9]{17}$/i.test(vin);
 
-  // VIN Lookup
+  // VIN Lookup 
   async function handleVinLookup() {
+    // Validate VIN format
     if (!isValidVIN) {
       setMessage("Please enter a valid 17-character VIN.");
       return;
     }
 
+    // Perform VIN lookup
     setLoading(true);
     setMessage("");
 
     try {
+      // Send POST request to backend for VIN lookup
       const res = await fetch("http://localhost:5000/api/vehicleinfo", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ vin, email: userEmail }),
       });
 
+      // Parse JSON response
       const j = await res.json();
 
+      // Handle response status 
       if (!res.ok) throw new Error(j.message || "VIN lookup failed");
 
+      // On success, add vehicle to list and reset VIN input
       if (j.vehicle) {
         setVehicles((prev) => [...prev, j.vehicle]);
         setMessage(j.message || "Vehicle added successfully!");
@@ -182,14 +180,16 @@ export default function VehicleInfo({ open, onClose }) {
     }
   }
 
-  // Manual Add
+  // MANUAL Vehicle Add
   async function handleManualAdd() {
+    // Validate required fields
     if (!manual.make || !manual.model || !manual.engine || !manual.trim) {
       setMessage("Please select Make, Model, Engine, and Trim.");
       return;
     }
-
+    
     try {
+      // Prepare new vehicle data
       const newVehicle = {
         email: userEmail,
         year: manual.year,
@@ -199,12 +199,14 @@ export default function VehicleInfo({ open, onClose }) {
         trim: manual.trim,
       };
 
+      // Send POST request to backend to save manual vehicle
       const res = await fetch("http://localhost:5000/api/manual-vehicle", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newVehicle),
       });
 
+      // Parse JSON response
       const j = await res.json();
 
       if (res.ok) {
@@ -223,6 +225,7 @@ export default function VehicleInfo({ open, onClose }) {
   // Delete Vehicle
   async function handleDelete(v) {
     try {
+      // Send DELETE request to backend
       await fetch(`http://localhost:5000/api/vehicles/${v._id}`, {
         method: "DELETE",
       });
@@ -234,6 +237,7 @@ export default function VehicleInfo({ open, onClose }) {
     }
   }
 
+  // Expand/Collapse Vehicle Details
   function toggleExpand(id) {
     setExpanded(expanded === id ? null : id);
   }
@@ -243,6 +247,7 @@ export default function VehicleInfo({ open, onClose }) {
   return (
     <div className="VehInfoOverlay">
       <div className="VehInfoPopup">
+        {/* TITLE */}
         <div className="VehInfoHeader">
           <h1>Vehicle Information</h1>
           <p>Add, manage, and view your vehicles</p>
@@ -257,18 +262,8 @@ export default function VehicleInfo({ open, onClose }) {
             <div className="VehInfoVinSection">
               <label>VIN Lookup</label>
               <div className="VehInfoRow">
-                <input
-                  className="VehInfoInput"
-                  value={vin}
-                  onChange={(e) => setVin(e.target.value.trim().toUpperCase())}
-                  placeholder="Enter VIN"
-                  maxLength={17}
-                />
-                <button
-                  className="VehInfoBtn"
-                  onClick={handleVinLookup}
-                  disabled={loading}
-                >
+                <input className="VehInfoInput" value={vin} onChange={(e) => setVin(e.target.value.trim().toUpperCase())} placeholder="Enter VIN" maxLength={17}/>
+                <button className="VehInfoBtn" onClick={handleVinLookup} disabled={loading}>
                   {loading ? "Searching..." : "Search & Save"}
                 </button>
               </div>
@@ -281,106 +276,46 @@ export default function VehicleInfo({ open, onClose }) {
             {/* Manual Add */}
             <div className="VehInfoManual">
               <label>Year</label>
-              <select
-                className="VehInfoInput"
-                value={manual.year}
-                onChange={(e) =>
-                  setManual({
-                    year: e.target.value,
-                    make: "",
-                    model: "",
-                  })
-                }
-              >
+              <select className="VehInfoInput" value={manual.year} onChange={(e) => setManual({year: e.target.value, make: "", model: "",})}>
                 <option value="">Select Year</option>
-                {years.map((y) => (
-                  <option key={y} value={y}>
-                    {y}
-                  </option>
-                ))}
+                {years.map((y) => (<option key={y} value={y}>{y}</option>))}
               </select>
 
               <label>Make</label>
-              <select
-                className="VehInfoInput"
-                value={manual.make}
-                disabled={!manual.year || loadingMakes}
-                onChange={(e) =>
-                  setManual({ ...manual, make: e.target.value, model: "" })
-                }
-              >
+              <select className="VehInfoInput" value={manual.make} disabled={!manual.year || loadingMakes} onChange={(e) => setManual({ ...manual, make: e.target.value, model: "" })}>
                 {loadingMakes ? (
-                  <option>Loading makes...</option>
-                ) : (
-                  <>
+                  <option>Loading makes...</option>) : (<>
                     <option value="">Select Make</option>
-                    {makes.map((m) => (
-                      <option key={m} value={m}>
-                        {m}
-                      </option>
-                    ))}
+                    {makes.map((m) => (<option key={m} value={m}>{m}</option>))}
                   </>
                 )}
               </select>
 
               <label>Model</label>
-              <select
-                className="VehInfoInput"
-                value={manual.model}
-                disabled={!manual.make || loadingModels}
-                onChange={(e) => setManual({ ...manual, model: e.target.value })}
-              >
+              <select className="VehInfoInput" value={manual.model} disabled={!manual.make || loadingModels} onChange={(e) => setManual({ ...manual, model: e.target.value })}>
                 {loadingModels ? (
-                  <option>Loading models...</option>
-                ) : (
-                  <>
+                  <option>Loading models...</option>) : (<>
                     <option value="">Select Model</option>
-                    {models.map((m) => (
-                      <option key={m} value={m}>
-                        {m}
-                      </option>
-                    ))}
+                    {models.map((m) => (<option key={m} value={m}>{m}</option>))}
                   </>
                 )}
               </select>
               <label>Engine</label>
-              <select
-                className="VehInfoInput"
-                value={manual.engine}
-                disabled={!manual.model || loadingEngines}
-                onChange={(e) => setManual({ ...manual, engine: e.target.value })}
-              >
+              <select className="VehInfoInput" value={manual.engine} disabled={!manual.model || loadingEngines} onChange={(e) => setManual({ ...manual, engine: e.target.value })}>
                 {loadingEngines ? (
-                  <option>Loading engines...</option>
-                ) : (
-                  <>
+                  <option>Loading engines...</option>) : (<>
                     <option value="">Select Engine</option>
-                    {engines.map((eng, i) => (
-                      <option key={i} value={eng}>
-                        {eng}
-                      </option>
-                    ))}
+                    {engines.map((eng, i) => (<option key={i} value={eng}>{eng}</option>))}
                   </>
                 )}
               </select>
               
               <label>Trim</label>
-              <select
-                className="VehInfoInput"
-                value={manual.trim}
-                disabled={!manual.engine || loadingTrims}
-                onChange={(e) => setManual({ ...manual, trim: e.target.value })}
-              >
+              <select className="VehInfoInput" value={manual.trim} disabled={!manual.engine || loadingTrims} onChange={(e) => setManual({ ...manual, trim: e.target.value })}>
                 {loadingTrims ? (
-                  <option>Loading trims...</option>
-                ) : (
-                  <>
+                  <option>Loading trims...</option>) : (<>
                     <option value="">Select Trim</option>
-                    {trims.map((t, i) => (
-                      <option key={i} value={t}>
-                        {t}
-                      </option>
-                    ))}
+                    {trims.map((t, i) => (<option key={i} value={t}>{t}</option>))}
                   </>
                 )}
               </select>
@@ -393,30 +328,20 @@ export default function VehicleInfo({ open, onClose }) {
           {/* RIGHT SIDE */}
           <div className="VehInfoRight">
             <h2>My Vehicles</h2>
-            {vehicles.length === 0 && (
-              <p className="VehInfoEmpty">No vehicles added yet.</p>
-            )}
+            {vehicles.length === 0 && (<p className="VehInfoEmpty">No vehicles added yet.</p>)}
             <ul className="VehInfoList">
               {vehicles.map((v, i) => (
                 <li key={v._id || i} className="VehInfoItem">
                   <div className="VehInfoItemHeader">
                     <div>
                       <strong>{v.nickname || `${v.year || ""} ${v.make || ""} ${v.model || ""}`.trim()}</strong>
-                      <p>
-                        {v.year} {v.make} {v.model}
-                      </p>
+                      <p>{v.year} {v.make} {v.model}</p>
                     </div>
                     <div className="VehInfoActions">
-                      <button
-                        className="VehInfoViewBtn"
-                        onClick={() => toggleExpand(v._id || i)}
-                      >
+                      <button className="VehInfoViewBtn" onClick={() => toggleExpand(v._id || i)}>
                         {expanded === (v._id || i) ? "Hide" : "View"}
                       </button>
-                      <button
-                        className="VehInfoDeleteBtn"
-                        onClick={() => handleDelete(v)}
-                      >
+                      <button className="VehInfoDeleteBtn" onClick={() => handleDelete(v)}>
                         Delete
                       </button>
                     </div>
@@ -446,3 +371,9 @@ export default function VehicleInfo({ open, onClose }) {
     </div>
   );
 }
+
+// Robert Simovski
+// Sources:
+// https://react.dev/reference/react/useState
+// https://developer.mozilla.org/en-US/docs/Web/API/
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/
