@@ -250,3 +250,6 @@ const Profile = ({ open, onClose }) => {
 }
 
 export default Profile
+
+// Ishmeal Gonzales {50%}
+// Jibran Iq1bal {50%}

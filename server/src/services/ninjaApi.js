@@ -38,7 +38,7 @@ async function vinDecode(vin) {
 
 module.exports = { getCarSpecs, vinDecode };
 
-// Robert Simovski
+// Robert Simovski {100%}
 // Sources: 
 // https://api-ninjas.com/
 // https://axios-http.com/docs/intro

@@ -13,3 +13,4 @@ const HrDividerWhiteCar = () => {
 }
 
 export default HrDividerWhiteCar
+// Ishmeal Gonzales {100%}

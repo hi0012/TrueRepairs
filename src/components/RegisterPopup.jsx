@@ -132,3 +132,6 @@ const RegisterPopup = ({open, onClose}) => {
 }
 
 export default RegisterPopup
+
+// Ishmeal Gonzales {50%}
+// Jibran Iq1bal {50%}

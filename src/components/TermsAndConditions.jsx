@@ -24,3 +24,5 @@ const TermsAndConditions = ({onClose}) => {
 }
 
 export default TermsAndConditions
+
+// Ishmeal Gonzales {100%}

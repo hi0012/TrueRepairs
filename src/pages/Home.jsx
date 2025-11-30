@@ -99,3 +99,7 @@ const Home = () => {
 };
 
 export default Home;
+
+// Robert Simovski {15%}
+// Ishmeal Gonzales {15%}
+// Jibran Iq1bal {70%}

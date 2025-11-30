@@ -169,3 +169,6 @@ const Settings = ({ open, onClose }) => {
 }
 
 export default Settings
+
+// Ishmeal Gonzales {50%}
+// Jibran Iq1bal {50%}

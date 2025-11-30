@@ -45,3 +45,4 @@ const Footer = () => {
 }
 
 export default Footer
+// Ishmeal Gonzales {100%}

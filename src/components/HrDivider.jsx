@@ -13,3 +13,5 @@ const HrDivider = () => {
 }
 
 export default HrDivider
+
+// Ishmeal Gonzales {100%}

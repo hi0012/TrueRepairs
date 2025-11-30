@@ -1018,7 +1018,7 @@ function ReportsBody({ onClose }) {
   );
 }
 
-// Robert Simovski
+// Robert Simovski {100%}
 // Sources: 
 // https://react.dev/reference/react/hooks
 // https://developer.mozilla.org/en-US/docs/Web/API

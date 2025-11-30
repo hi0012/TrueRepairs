@@ -13,7 +13,6 @@ const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 const sgMail = require("@sendgrid/mail");
 const Lookup = require("./models/lookup.js");
-const vehdb = require("./src/services/vehdb");
 const Vehicle = require("./models/Vehicle.js");
 const { getCarSpecs, vinDecode } = require("./src/services/ninjaApi");
 const reportRoutes = require("./src/routes/reportRoutes.js");
@@ -25,7 +24,6 @@ const loginRouter = require('./src/routes/login');
 const Estimate = require("./models/estimate.js");
 const Report = require("./models/Report.js");
 
-// const externalRoutes = require("./src/routes/external.js");
 const estimateRoutes = require("./src/routes/estimate.js");
 const fs = require("fs");
 const toyotaData = JSON.parse(fs.readFileSync(path.join(__dirname, "src", "data", "toyotaENGTRIM.json"), "utf-8"));
@@ -353,38 +351,6 @@ app.get("/api/history", async (req, res) => {
   }
 });
 
-app.post("/api/history", async (req, res) => {
-  try {
-    const email = (req.body.email || "").trim().toLowerCase();
-    const vin = (req.body.vin || "").trim().toUpperCase();
-    if (!email || !vin) {
-      return res.status(400).json({ message: "email and vin are required" });
-    }
-
-    const apiResp = await vehdb.vinDecode(vin);
-    const payload = { vehicledb: apiResp.data };
-    await Lookup.create({ userEmail: email, vin, data: payload });
-    res.json(payload);
-  } catch (e) {
-    res
-      .status(e.response?.status || 500)
-      .json({ message: e.message || "Lookup failed" });
-  }
-});
-
-app.delete("/api/history/:id", async (req, res) => {
-  try {
-    await Lookup.deleteOne({ _id: req.params.id });
-    res.json({ ok: true });
-  } catch {
-    res.status(500).json({ ok: false });
-  }
-});
-
-app.get("/api/health", (req, res) => {
-  res.json({ ok: true });
-});
-
 app.get("/db-health", (req, res) => {
   res.json({
     connected: mongoose.connection.readyState === 1,
@@ -682,3 +648,9 @@ app.use((err, req, res, next) => {
     process.exit(1);
   }
 })();
+
+// Full Team Contributions:
+// Jibran Iq1bal {25%}
+// Robert Simovski {25%}
+// Hisham Issa {25%}
+// Ishmeal Gonzales {25%}

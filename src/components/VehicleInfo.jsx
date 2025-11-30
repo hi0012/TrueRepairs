@@ -372,7 +372,7 @@ export default function VehicleInfo({ open, onClose }) {
   );
 }
 
-// Robert Simovski
+// Robert Simovski {100%}
 // Sources:
 // https://react.dev/reference/react/useState
 // https://developer.mozilla.org/en-US/docs/Web/API/

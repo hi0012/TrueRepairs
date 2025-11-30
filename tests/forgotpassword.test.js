@@ -76,3 +76,5 @@ describe("handlePassReset unit testing", () => {
     expect(fakeClosePopup).not.toHaveBeenCalled();
   });
 });
+
+// Ishmeal Gonzales {100%}

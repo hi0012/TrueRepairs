@@ -39,5 +39,5 @@ const ReportSchema = new mongoose.Schema({
 
 module.exports = mongoose.model("Report", ReportSchema);
 
-// Robert Simovski
+// Robert Simovski {100%}
 // Sources: https://mongoosejs.com/docs/

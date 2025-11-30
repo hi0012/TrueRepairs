@@ -70,3 +70,5 @@ const ContactUs = () => {
 }
 
 export default ContactUs
+
+// Ishmeal Gonzales {100%}

@@ -40,3 +40,8 @@ const App = () => {
 };
 
 export default App;
+
+// Robert Simovski {25%}
+// Ishmeal Gonzales {25%}
+// Jibran Iq1bal {25%}
+// Hisham Issa {25%}

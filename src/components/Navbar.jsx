@@ -82,3 +82,5 @@ const Navbar = ({ setSignInActive }) => {
 }
 
 export default Navbar
+
+// Ishmeal Gonzales {100%}

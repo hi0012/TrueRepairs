@@ -12,3 +12,5 @@ const LookupSchema = new mongoose.Schema(
 LookupSchema.index({ userEmail: 1, createdAt: -1 });
 
 module.exports = mongoose.model("Lookup", LookupSchema);
+
+// Hisham Issa {100%}

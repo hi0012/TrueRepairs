@@ -590,3 +590,5 @@ export default function AIScanModal({ open, onClose, userEmail }) {
     </div>
   );
 }
+
+// Hisham Issa {100%}

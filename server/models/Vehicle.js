@@ -25,5 +25,5 @@ VehicleSchema.index({ email: 1, createdAt: -1 });
 
 module.exports = mongoose.model("Vehicle", VehicleSchema);
 
-// Robert Simovski
+// Robert Simovski {100%}
 // Sources: https://mongoosejs.com/docs/

@@ -108,3 +108,5 @@ describe("unit test for handleDeleteAccount function", () => {
 
   });
 });
+
+// Ishmeal Gonzales {100%}

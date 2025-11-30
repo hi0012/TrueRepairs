@@ -1,7 +1,5 @@
 async function handleDeleteAccount(email, password, axios, setMessage, clearStorage, redirectPage) {
 
-
-  
   try {
     const res = await axios.post("http://localhost:5000/delete-account", { email, password });
 
@@ -22,3 +20,5 @@ async function handleDeleteAccount(email, password, axios, setMessage, clearStor
 }
 
 module.exports = handleDeleteAccount;
+
+// Ishmeal Gonzales {100%}

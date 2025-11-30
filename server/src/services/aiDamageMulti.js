@@ -258,3 +258,6 @@ async function analyzeCarImages(imageFiles) {
 module.exports = {
   analyzeCarImages
 };
+
+// Histham Issa {70%}
+// Robert Simovski {30%}

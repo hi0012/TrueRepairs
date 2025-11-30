@@ -23,3 +23,5 @@ UserSchema.pre('save', async function (next) {
 
 const UserModel = mongoose.model("users", UserSchema)
 module.exports = UserModel
+
+// Jibran Iq1bal {100%}

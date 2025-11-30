@@ -59,3 +59,5 @@ const Support = ({ open, onClose }) => {
 }
 
 export default Support
+
+// Ishmeal Gonzales {100%}

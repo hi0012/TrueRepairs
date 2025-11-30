@@ -45,7 +45,7 @@ router.delete("/:id", async (req, res) => {
 
 module.exports = router;
 
-// Robert Simovski
+// Robert Simovski {100%}
 // Sources:
 // https://expressjs.com/
 // https://mongoosejs.com/docs/

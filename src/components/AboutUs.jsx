@@ -34,3 +34,5 @@ const AboutUs = () => {
 }
 
 export default AboutUs
+
+// Ishmeal Gonzales {100%}

@@ -23,3 +23,5 @@ const PrivacyPolicy = ({ onClose }) => {
 }
 
 export default PrivacyPolicy
+
+// Ishmeal Gonzales {100%}

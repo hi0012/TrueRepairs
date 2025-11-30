@@ -18,3 +18,5 @@ function handlePassReset(email, axios, setMessage, closePopup, displayAlert) {
 }
 
 module.exports = handlePassReset;
+
+// Ishmeal Gonzales {100%}
