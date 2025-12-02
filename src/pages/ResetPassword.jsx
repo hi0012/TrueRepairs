@@ -27,14 +27,17 @@ const ResetPassword = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
+    // Check if password matches
     if (password !== confirm) {
       setMessage("Passwords do not match.");
       return;
     }
 
+    // Send the new password to the backend using the reset token in the URL
     axios.post(`http://localhost:5000/reset-password/${token}`, { password })
       .then((res) => {
         setMessage(res.data.message || "Password reset successful!");
+        // After 2 seconds redirect user back to login page
         setTimeout(() => {
           navigate("/");
         }, 2000);
@@ -50,18 +53,8 @@ const ResetPassword = () => {
       <div className="reset-form">
         <h3>Reset Your Password</h3>
         <form onSubmit={handleSubmit}>
-          <input
-            type="password"
-            placeholder="New Password"
-            required
-            onChange={(e) => { setPassword(e.target.value); setClickPassword(true); }}
-          />
-          <input
-            type="password"
-            placeholder="Confirm Password"
-            required
-            onChange={(e) => setConfirm(e.target.value)}
-          />
+          <input type="password" placeholder="New Password" required onChange={(e) => { setPassword(e.target.value); setClickPassword(true); }}/>
+          <input type="password" placeholder="Confirm Password" required onChange={(e) => setConfirm(e.target.value)}/> 
 
           {/* Password requirements */}
           {clickPassword && (
@@ -73,7 +66,6 @@ const ResetPassword = () => {
               <li className={passwordReq.specialChar ? "correct" : "incorrect"}>{passwordReq.specialChar ? <FaCheckCircle /> : <RiErrorWarningLine />} At least 1 special character (@ # $ % ^ &)</li>
             </ul>
           )}
-
 
           <div className="reset-forms-btns">
             <button type="submit">Update Password</button>

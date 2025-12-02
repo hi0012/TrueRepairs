@@ -70,64 +70,67 @@ app.get("/api/models/:year", (req, res) => {
 app.get("/api/engines/:year/:model", (req, res) => {
   const { year, model } = req.params;
   const yearData = toyotaData.find((y) => y.year === parseInt(year));
-  const modelData = yearData?.models.find(
-    (m) => m.model.toLowerCase() === model.toLowerCase()
-  );
+  const modelData = yearData?.models.find((m) => m.model.toLowerCase() === model.toLowerCase());
   if (!modelData) return res.json([]);
   const engines = modelData.engines.map((e) => e.engine);
   res.json(engines);
 });
 
+// Get all trims for a specific year > model > engine
 app.get("/api/trims/:year/:model/:engine", (req, res) => {
   const { year, model, engine } = req.params;
   const yearData = toyotaData.find(y => y.year == year);
   if (!yearData) return res.json([]);
 
+  // Find the matching year
   const modelData = yearData.models.find(m => m.model === model);
   if (!modelData) return res.json([]);
 
+  // Find the matching engine within the model
   const engineData = modelData.engines.find(e => e.engine === engine);
   if (!engineData) return res.json([]);
 
   res.json(engineData.trims || []);
 });
 
+// Manually add a vehicle to the user's account
 app.post("/api/manual-vehicle", async (req, res) => {
   try {
     const { year, make, model, engine, trim, email } = req.body;
+    // Validate all required fields are present
     if (!year || !make || !model || !engine || !trim || !email)
       return res.status(400).json({
         message: "Year, make, model, engine, trim, and email are required",
       });
 
-    // Formatters
+    // Capitalize each word (LE trims remain uppercase)
     const cap = (s = "") => s.split(" ").map(w => w === w.toUpperCase() ? w : w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(" ");
 
+    // Normalize and format input
     const yearStr = String(year);
     const makeFormatted = cap(make);
     const modelFormatted = cap(model);
     const engineFormatted = engine.trim();
     const trimFormatted = cap(trim);
 
+    // Default values
     let fuel = "Gas";
     let drivetrain = "FWD";
 
+    // Try to match year > model > engine from dataset
     const yearData = toyotaData.find((y) => String(y.year) === yearStr);
     if (yearData) {
-      const modelData = yearData.models.find(
-        (m) => m.model.toLowerCase() === modelFormatted.toLowerCase()
-      );
+      const modelData = yearData.models.find((m) => m.model.toLowerCase() === modelFormatted.toLowerCase());
       if (modelData) {
-        const engineData = modelData.engines.find(
-          (e) => e.engine.toLowerCase() === engineFormatted.toLowerCase()
-        );
+        const engineData = modelData.engines.find((e) => e.engine.toLowerCase() === engineFormatted.toLowerCase());
+        // If found in dataset, use its fuel/drivetrain metadata
         if (engineData) {
           if (engineData.fuel) fuel = engineData.fuel;
           if (engineData.drivetrain) drivetrain = engineData.drivetrain;
         }
       }
     }
-
+    // Generate display nickname for UI
     const nickname = `${yearStr} ${makeFormatted} ${modelFormatted} ${trimFormatted}`.trim();
 
     // Save to DB
@@ -147,6 +150,7 @@ app.post("/api/manual-vehicle", async (req, res) => {
       class: "Unknown",
     });
 
+    // Save to database
     await newVehicle.save();
 
     res.json({
@@ -158,6 +162,7 @@ app.post("/api/manual-vehicle", async (req, res) => {
   }
 });
 
+// Fetch detailed car specs (year + make + model)
 app.get("/api/cardetails/details", async (req, res) => {
   try {
     const { year, make, model } = req.query;
@@ -172,6 +177,7 @@ app.get("/api/cardetails/details", async (req, res) => {
   }
 });
 
+// Get all saved vehicles for a specific user
 app.get("/api/vehicles", async (req, res) => {
   try {
     const { email } = req.query;
@@ -184,6 +190,7 @@ app.get("/api/vehicles", async (req, res) => {
   }
 });
 
+// Add a new vehicle to the database
 app.post("/api/vehicles", async (req, res) => {
   try {
     const newVehicle = new Vehicle(req.body);
@@ -194,6 +201,7 @@ app.post("/api/vehicles", async (req, res) => {
   }
 });
 
+// Delete a vehicle by ID
 app.delete("/api/vehicles/:id", async (req, res) => {
   try {
     await Vehicle.findByIdAndDelete(req.params.id);
@@ -203,20 +211,19 @@ app.delete("/api/vehicles/:id", async (req, res) => {
   }
 });
 
+// Add a vehicle using VIN decoding
 app.post("/api/vehicleinfo", async (req, res) => {
   try {
     const { vin, email } = req.body;
+    // Basic validation
     if (!vin || !email) {
       return res.status(400).json({ message: "VIN and email required" });
     }
 
-    const capWords = (str = "") =>
-      String(str)
-        .toLowerCase()
-        .split(/([\s-]+)/)
-        .map((p) => (/^[a-z]/.test(p) ? p[0].toUpperCase() + p.slice(1) : p))
-        .join("");
+    // Capitalize words correctly while keeping uppercase sections intact
+    const capWords = (str = "") =>String(str).toLowerCase().split(/([\s-]+)/).map((p) => (/^[a-z]/.test(p) ? p[0].toUpperCase() + p.slice(1) : p)).join("");
 
+    // Normalize fuel type value Ensures consistency for Gasoline, Diesel, Electric
     const formatFuel = (fuel) => {
       if (!fuel) return "Unknown";
       const f = String(fuel).toLowerCase();
@@ -226,6 +233,7 @@ app.post("/api/vehicleinfo", async (req, res) => {
       return fuel.charAt(0).toUpperCase() + fuel.slice(1);
     };
 
+    // Normalize drivetrain values (FWD, AWD, etc.)
     const formatDrivetrain = (drive) => {
       if (!drive) return "Unknown";
       const d = String(drive).toLowerCase();
@@ -241,41 +249,24 @@ app.post("/api/vehicleinfo", async (req, res) => {
     let payload = { source: "NinjaAPI", data: ninjaResp || {} };
     let v = payload.data || {};
 
+    // Extract baseline values
     let makeBase = v.make || v.manufacturer || v.brand;
     let modelBase = v.model || v.model_name || v.series;
     let yearBase = v.year || v.model_year;
 
     // Enrich using Ninja car specs if anything key is missing
-    const missingKey =
-      (!v.engine && !v.engine_size) ||
-      !v.fuel_type ||
-      !(v.drive || v.drivetrain) ||
-      !v.transmission ||
-      !v.city_mpg ||
-      !v.highway_mpg;
+    const missingKey =(!v.engine && !v.engine_size) ||!v.fuel_type || !(v.drive || v.drivetrain) || !v.transmission || !v.city_mpg || !v.highway_mpg;
 
     if (makeBase && modelBase && yearBase && missingKey) {
       try {
-        const specsList = await getCarSpecs({
-          make: makeBase,
-          model: modelBase,
-          year: yearBase,
-        });
+        // Try to load specs
+        const specsList = await getCarSpecs({make: makeBase, model: modelBase, year: yearBase,});
+        
         if (specsList && specsList.length) {
           const s = specsList[0];
-          const enrichedEngine = s.displacement
-            ? `${s.displacement}L ${s.cylinders || ""}-Cyl`.trim()
-            : v.engine || v.engine_size || "Unknown";
-
-          v = {
-            ...v,
-            engine: enrichedEngine,
-            fuel_type: v.fuel_type || s.fuel_type || "Unknown",
-            drive: v.drive || v.drivetrain || s.drive || "Unknown",
-            transmission: v.transmission || s.transmission || "Unknown",
-            city_mpg: v.city_mpg || s.city_mpg || "Unknown",
-            highway_mpg: v.highway_mpg || s.highway_mpg || "Unknown",
-          };
+          const enrichedEngine = s.displacement ? `${s.displacement}L ${s.cylinders || ""}-Cyl`.trim() : v.engine || v.engine_size || "Unknown";
+          // Merge enriched data into VIN payload
+          v = {...v, engine: enrichedEngine, fuel_type: v.fuel_type || s.fuel_type || "Unknown", drive: v.drive || v.drivetrain || s.drive || "Unknown", transmission: v.transmission || s.transmission || "Unknown", city_mpg: v.city_mpg || s.city_mpg || "Unknown", highway_mpg: v.highway_mpg || s.highway_mpg || "Unknown",};
           payload.data = v;
         }
       } catch {}
@@ -287,14 +278,8 @@ app.post("/api/vehicleinfo", async (req, res) => {
     const year = String(v.year || v.model_year || "Unknown");
     const trim = capWords(v.trim || "");
 
-    const engine =
-      v.engine || v.engine_size
-        ? String(v.engine || v.engine_size).replace(
-            /\b([a-z])/g,
-            (c) => c.toUpperCase()
-          )
-        : "Unknown";
-
+    // Engine formatting
+    const engine = v.engine || v.engine_size ? String(v.engine || v.engine_size).replace( /\b([a-z])/g, (c) => c.toUpperCase()): "Unknown";
     const fuel = formatFuel(v.fuel_type);
     const drivetrain = formatDrivetrain(v.drive || v.drivetrain);
     const transmission = v.transmission || "Unknown";
@@ -335,15 +320,13 @@ app.post("/api/vehicleinfo", async (req, res) => {
   }
 });
 
+// Fetch last 20 VIN lookup history
 app.get("/api/history", async (req, res) => {
   try {
     const email = (req.query.email || "").trim().toLowerCase();
     if (!email) return res.status(400).json({ message: "email is required" });
 
-    const items = await Lookup.find({ userEmail: email })
-      .sort({ createdAt: -1 })
-      .limit(20)
-      .lean();
+    const items = await Lookup.find({ userEmail: email }).sort({ createdAt: -1 }).limit(20).lean();
 
     res.json({ items });
   } catch {
@@ -425,6 +408,7 @@ app.get("/verify/:token", async (req, res) => {
   }
 });
 
+// Handle forgot-password requests
 app.post("/forgot-password", async (req, res) => {
   try {
     const { email } = req.body;
@@ -435,12 +419,18 @@ app.post("/forgot-password", async (req, res) => {
         .json({ message: "No account with that email found." });
     }
 
+    // Generate a secure reset token
     const token = crypto.randomBytes(20).toString("hex");
+
+    // Store token + expiry time (1 hour)
     user.resetPasswordToken = token;
     user.resetPasswordExpires = Date.now() + 3600000;
     await user.save();
 
+    // Construct password reset URL for the frontend
     const resetURL = `${process.env.CLIENT_URL}/reset-password/${token}`;
+
+    // Email details for SendGrid
     const msg = {
       to: email,
       from: { email: process.env.FROM_EMAIL, name: "TrueRepairs Support" },
@@ -508,15 +498,18 @@ app.post("/update-password", async (req, res) => {
   }
 });
 
+// Handle user support/contact form submissions
 app.post("/send-support", async (req, res) => {
   try {
     const { name, email, feedback } = req.body;
+    // Validate required fields
     if(!email) {
       return res.status(400).json({success: false, message: "Email is required"})
     }
     if(!feedback) {
       return res.status(400).json({success: false, message: "Feedback is required"})
     }
+    // Prepare email body for SendGrid
     const msg = {
       to: "truerepairs.noreply@gmail.com",
       from: { email: "truerepairs.noreply@gmail.com", name: "TrueRepairs Support" },
