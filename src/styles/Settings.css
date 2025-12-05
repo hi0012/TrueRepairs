@@ -24,8 +24,9 @@
     background: #fff;
     width: 95%;
     max-width: 2300px;
-    height: 90%;
     border-radius: 12px;
+    height: auto;
+    max-height: 90vh;
     padding: 40px;
     display: flex;
     flex-direction: column;
@@ -37,24 +38,34 @@
 }  
 .settings-header{  
     text-align: center;  
+    margin-bottom: 40px;
 }  
 .settings-container{  
     display: flex;  
     justify-content: space-between;  
-    height: 70%;  
+    height: auto;
     gap: 20px;  
     width: 100%;  
-  align-items: stretch; 
+    align-items: stretch; 
+    margin-bottom: 60px;
 
 } 
- 
+
+.settings-deactivate-btn,
+.settings-delete-btn,
+.settings-cancel-btn {
+    white-space: normal;
+    text-align: center;
+}
+
 .settings-left{  
     background-color: #0274d7;  
     padding: 100px;  
     display: flex;  
     flex-direction: column;  
+    height: auto;
+    flex-grow: 1;
     border: 2px solid #0274d7; 
-    height: 100%;  
     width: 50%;  
     border-radius: 6px;  
     align-items: center;  
@@ -102,14 +113,15 @@
     padding: 100px;  
     display: flex;  
     flex-direction: column;  
-    border: 2px solid #ccc;  
-    height: 100%;  
+    border: 2px solid #ccc;    
+    height: auto;
+    flex-grow: 1;
     width: 50%;  
     border-radius: 6px;  
     align-items: center;  
     gap: 50px;  
     transition: transform 0.2s ease, box-shadow 0.2s ease;  
-    justify-content: space-between; 
+    justify-content: flex-start;
     box-sizing: border-box;
 }  
 .settings-middle:hover{  
@@ -161,8 +173,9 @@
     padding: 100px;  
     display: flex;  
     flex-direction: column;  
+    height: auto;
+    flex-grow: 1;
     border: 2px solid #ccc;  
-    height: 100%;  
     width: 50%;  
     border-radius: 6px;  
     align-items: center;  
@@ -446,10 +459,12 @@
     .settings-left,
     .settings-middle,
     .settings-right {
-        width: 100%;
         height: auto;
-        padding: 40px;
-        gap: 35px;
+        min-height: 100%;
+        padding: clamp(40px, 4vw, 70px);
+        overflow-wrap: break-word;
+        word-break: break-word;
+        align-items: stretch;
     }
 
     /* Ensure text wraps cleanly */
