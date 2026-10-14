@@ -1,99 +1,87 @@
 # TrueRepairs
 
-## Prerequisites
+**An AI-powered car repair cost estimator.** Upload photos of vehicle damage, and TrueRepairs identifies the damaged parts, rates the severity, and produces an itemized parts-and-labor estimate you can save as a PDF report.
 
-The TrueRepairs frontend is built using React + Vite, which requires Node.js v18 or higher.
-Download and install Node.js here: https://nodejs.org/en
+Senior design project at Wayne State University (Fall 2025), built by a 4-person team.
 
-These tools are required to install and run the application.
-Check installation:
+---
+
+## Features
+
+- **AI damage scan:** upload one or more photos. The backend sends them to OpenAI's GPT-4o vision model, which identifies damaged parts and how severe the damage is.
+- **Repair cost estimate:** maps detected damage to parts and labor using a cost table and vehicle-specific parts data.
+- **Vehicle lookup:** make, model, and trim details through the API Ninjas car API, plus manual vehicle entry.
+- **PDF reports:** export an estimate as a PDF (jsPDF + html2canvas). Past reports are saved to your account history.
+- **User accounts:** registration, login, password reset by email (SendGrid), profile updates, and account deactivation or deletion. Routes are protected with JWT authentication, and passwords are hashed with bcrypt.
+- **Image storage:** uploaded photos are handled with Multer and stored in Cloudinary.
+- **API testing:** Postman collections for every major endpoint are in `server/postman_tests/`.
+
+## Tech stack
+
+| Layer | Tools |
+|---|---|
+| Frontend | React, Vite, React Router, Lucide icons, jsPDF, html2canvas |
+| Backend | Node.js, Express, Multer |
+| Database | MongoDB with Mongoose |
+| AI & APIs | OpenAI API (GPT-4o vision), API Ninjas (vehicle data), SendGrid (email), Cloudinary (images) |
+| Security | JWT authentication, bcrypt password hashing, environment-based secrets |
+| Testing | Postman collections |
+
+## My role (Hisham Issa)
+
+- **Team lead:** coordinated the 4-person team, managed the project's progress, and owned all project documentation (creating and organizing it).
+- **AI estimate feature:** built it end to end. That covered the AI scan modal in React, image upload to Cloudinary, and the `/api/estimate` Express route that calls the OpenAI API, then tested the full flow from front end to back end.
+- **Vehicle data:** integrated the vehicle database API.
+- **UI work:** improved the AI scan flow and fixed image upload.
+
+## Team
+
+- **Hisham Issa** ([@hi0012](https://github.com/hi0012)): team lead
+- [@rawbert65](https://github.com/rawbert65)
+- [@screencode1](https://github.com/screencode1)
+- [@scalenetoast](https://github.com/scalenetoast)
+
+> This repository is a copy of our team's project with its full commit history. Credentials were removed from the history before it was published.
+
+---
+
+## Running it locally
+
+**Requirements:** Node.js 18 or newer.
+
+### 1. Install dependencies
+
 ```bash
-node -v
-npm -v
+git clone https://github.com/hi0012/TrueRepairs.git
+cd TrueRepairs
+npm install            # frontend
+cd server && npm install   # backend
 ```
-## Install Frontend Project Dependencies
-After installing Node.js and cloning the repository, **make sure you are inside the root TrueRepairs folder,** then install all required dependencies by running:
-```bash
-npm install
+
+### 2. Configure environment variables
+
+Create `server/.env` with your own keys. Never commit this file.
+
 ```
-### Install EVERYTHING in a Single Command Option 1
-```bash
-npm install axios html2canvas jsonwebtoken jspdf lucide-react mongodb react react-dom react-icons react-router-dom streamifier
+MONGODB_URI=
+MONGO_URI=              # same value as MONGODB_URI
+OPENAI_API_KEY=
+NINJA_API_KEY=
+CLOUDINARY_CLOUD_NAME=
+CLOUDINARY_API_KEY=
+CLOUDINARY_API_SECRET=
+SENDGRID_API_KEY=
+FROM_EMAIL=
+CLIENT_URL=http://localhost:5173
+TEMP_SECRET=
 ```
-### Install Each Dependency Individually Option 2
+
+### 3. Start both servers
+
 ```bash
-npm install axios
-npm install html2canvas
-npm install jsonwebtoken
-npm install jspdf
-npm install lucide-react
-npm install mongodb
-npm install react
-npm install react-dom
-npm install react-icons
-npm install react-router-dom
-npm install streamifier
-```
-## Install Backend Project Dependencies
-After installing the frontend and ensuring everything works, navigate to the backend folder:
-```bash
-cd server
-```
-Once inside the /server directory, install all required backend dependencies by running:
-```bash
-npm install
-```
-### Install ALL Backend Dependencies in a Single Command Option 1
-```bash
-npm install @sendgrid/mail axios bcrypt bcryptjs cloudinary cors dotenv express jsonwebtoken lucide-react mongoose multer nodemon openai streamifier
-``` 
-### Install Each Backend Dependency Individually Option 2
-```bash
-npm install @sendgrid/mail
-npm install axios
-npm install bcrypt
-npm install bcryptjs
-npm install cloudinary
-npm install cors
-npm install dotenv
-npm install express
-npm install jsonwebtoken
-npm install lucide-react
-npm install mongoose
-npm install multer
-npm install nodemon
-npm install openai
-npm install streamifier
-```
-## ***How to Run the Project (Frontend + Backend)***
-After installing all dependencies in both folders, follow these steps to launch the full application.
-### 1. Start the Frontend (React + Vite)
-From the root TrueRepairs folder:<br>
-Development mode
-```bash
+# Backend (from /server) – runs on http://localhost:5000
+npm start
+
+# Frontend (from the project root) – runs on http://localhost:5173
 npm run dev
 ```
-**OR**<br>
-Production build
-```bash
-npm run build
-npm run preview
-```
-This launches the frontend at:
-http://localhost:5173
-### 2. Start the Backend (Node.js + Express)
-Navigate to the server directory:
-```bash
-cd server
-```
-Run the backend: <br>
-Using Nodemon
-```bash
-npm start
-```
-**OR**<br> Directly
-```bash
-node index.js
-```
-This launches the backend at:
-http://localhost:5000
