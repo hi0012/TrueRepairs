@@ -85,3 +85,30 @@ npm start
 # Frontend (from the project root) – runs on http://localhost:5173
 npm run dev
 ```
+# TrueRepairs Project Documentation
+
+These are the formal documents our team submitted for CSC 4996 (Senior Design) at Wayne State University in Fall 2025. As Documentation Lead, I (Hisham Issa) organized the full documentation set.
+
+| Document | What it covers |
+|---|---|
+| [Software Requirements Specification (SRS)](TrueRepairs-SRS.pdf) | Functional and non-functional requirements, use cases, and system models |
+| [Software Design Specification (SDS)](TrueRepairs-SDS.pdf) | Architecture, sequence and data flow diagrams, class and database design, API endpoints, UI design |
+| [Development Plan](TrueRepairs-DevelopmentPlan.pdf) | Objectives, team organization and roles, problem resolution policies, schedule |
+| [Test Plan](TrueRepairs-TestPlan.pdf) | Test strategy (black-box and gray-box), schedule, environment, entry and exit criteria, 51 test cases, risk analysis, defect management, test report |
+| [Traceability Matrix](TrueRepairs-TraceabilityMatrix.csv) | Maps each requirement to its use case and test cases, with pass/fail results |
+| [User Manual](TrueRepairs-UserManual.pdf) | Step-by-step guide to every feature, with screenshots |
+
+## Team roles (from the Development Plan and Test Plan)
+
+| Role | Member |
+|---|---|
+| Team Lead | Hisham |
+| Documentation Lead | Hisham |
+| AI Lead | Hisham |
+| Test Lead | Hisham |
+| QA / Presentation Lead | Robert |
+| Frontend Lead | Ishmael / Robert |
+| Database / Backend Lead | Jibran / Robert |
+
+> Test account emails and passwords have been redacted from these public copies.
+
