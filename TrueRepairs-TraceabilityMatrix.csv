@@ -1,0 +1,46 @@
+,Requirement ID,Requirement Name,Use Case ID,Test Case ID,Priority,Pass/Fail,Tester,Date,Comment
+Funtional Requirements,FR1,User Registration,UC-01,TC-01,High,Pass,Jibran,11/30/2025,"User registers, verification email is sent, clicking verification link activates account, user logs in as expected."
+,,,,TC-02,High,Pass,Jibran,11/19/2025,"The message ""Please fill out this field"" is displayed and no account is created as expected."
+,,,,TC-03,High,Pass,Jibran,11/30/2025,"The ""Create Account"" button is disabled and no account is created as expected."
+,,,,TC-04,High,Pass,Robert,10/11/2025,
+,,,,TC-05,High,Pass,Robert,10/13/2025,
+,,,,TC-06,High,Pass,Jibran,11/30/2025,No account is created and the user remains on the registration popup as expected.
+,,,,TC-07,High,Pass,Jibran,11/25/2025,"The message ""This email is already associated with an account."" is displayed and no account is created as expected."
+,,,,TC-21,High,Pass,Ishmael,10/25/2025,
+,,,,TC-22,High,Pass,Ishmael,10/25/2025,
+,FR2,User Sign-In,UC-02,TC-08,High,Pass,Hisham,10/12/2025,
+,,,,TC-09,High,Pass,Hisham,10/14/2025,
+,,,,TC-10,High,Pass,Hisham,10/15/2025,
+,,,,TC-11,High,Pass,Hisham,10/17/2025,
+,,,,TC-12,High,Pass,Robert,10/17/2025,
+,,,,TC-13,High,Pass,Robert,10/18/2025,
+,,,,TC-23,High,Pass,Ishmael,10/26/2025,
+,,,,TC-24,High,Pass,Ishmael,10/26/2025,
+,FR3,Profile Management,UC-07,TC-14,High,Pass,Jibran,11/30/2025,"The verification email is sent,  clicking the link will verify and update the account email as expected."
+,FR4,Settings Management,UC-08,TC-25,Medium,Pass,Ishmael,10/27/2025,
+,,,,TC-26,Medium,Pass,Ishmael,10/28/2025,
+,,,,TC-27,Medium,Pass,Ishmael,10/29/2025,
+,,,,TC-28,Medium,Pass,Ishmael,10/30/2025,
+,,,UC-09,TC-29,High,Pass,Ishmael,10/30/2025,
+,,,,TC-30,High,Pass,Jibran,11/30/2025,The account is not deleted is an incorrect password is entered. A 400 status code is returned.
+,,,,TC-31,High,Pass,Jibran,11/20/2025,"The account is successfully deleted with the message ""Goodbye!"" being displayed as expected."
+,,,,TC-43,Low,Pass,Jibran,11/30/2025,The function does not delete the account as expected.
+,,,,TC-44,Low,Pass,Jibran,11/30/2025,The function does not delete the account as expected.
+,FR5,AI Scan Diagnostic,UC-04,TC-18,High,Pass,Robert,10/23/2025,
+,,AI Scan Diagnostic,UC-05,TC-19,High,Pass,Hisham,10/22/2025,
+,FR6,Automated Repair Report Generation,,TC-18,High,Pass,Hisham,10/21/2025,
+,FR7,Vehicle Information Profile,UC-03,TC-32,High,Pass,Ishmael,11/3/2025,
+,,,,TC-33,High,Pass,Ishmael,11/4/2025,
+,,,,TC-34,High,Pass,Robert,11/2/2025,
+,,,,TC-37,High,Pass,Robert,11/5/2025,
+,,,,TC-38,High,Pass,Hisham,11/5/2025,
+,FR8,Report Management,UC-06,TC-16,High,Pass,Hisham,10/18/2025,
+,,,,TC-17,High,Pass,Hisham,10/19/2025,
+,,,,TC-20,High,Pass,Robert,10/23/2025,
+,FR9,Manual Repair Report Generation,UC-10,TC-15,High,Pass,Robert,10/18/2025,
+,,,,TC-16,High,Pass,Robert,10/18/2025,
+,FR10,Forgot Password,UC-11,TC-39,Low,Pass,Jibran,11/23/2025,"The message ""Please enter your email first"" is displayed as expected."
+,,,,TC-40,Low,Pass,Jibran,11/30/2025,The reset password email is successfully sent to the email inbox as expected.
+,,,,TC-41,Low,Pass,Hisham,11/14/2025,
+,FR11,Vehicle Profile Management,UC-12,TC-35,High,Pass,Ishmael,11/8/2025,
+,,,,TC-36,High,Pass,Ishmael,11/10/2025,
