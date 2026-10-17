@@ -29,10 +29,14 @@ Senior design project at Wayne State University (Fall 2025), built by a 4-person
 
 ## My role (Hisham Issa)
 
-- **Team lead:** coordinated the 4-person team, managed the project's progress, and owned all project documentation (creating and organizing it).
-- **AI estimate feature:** built it end to end. That covered the AI scan modal in React, image upload to Cloudinary, and the `/api/estimate` Express route that calls the OpenAI API, then tested the full flow from front end to back end.
-- **Vehicle data:** integrated the vehicle database API.
-- **UI work:** improved the AI scan flow and fixed image upload.
+Per our Development Plan and Test Plan, I held four roles on the team:
+
+- **Team Lead:** coordinated the 4-person team and managed the project's progress from planning through delivery.
+- **Documentation Lead:** created and organized all project documentation, including the SRS, SDS, Development Plan, Test Plan, Traceability Matrix, and User Manual.
+- **AI Lead:** built the AI estimate feature end to end: the AI scan modal in React, image upload to Cloudinary, and the `/api/estimate` Express route that calls the OpenAI API, then tested the full flow from front end to back end.
+- **Test Lead:** led testing for the project under the team's Test Plan.
+
+I also integrated the vehicle database API and improved the AI scan flow, including fixing image upload.
 
 ## Team
 
